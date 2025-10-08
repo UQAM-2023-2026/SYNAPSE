@@ -52,14 +52,21 @@ Chaque interaction révèle un cycle de **photosynthèse et d’échange**, symb
 ## ⚙️ Structure du dépôt  
 
 ```
-Mycorhize/
-├── docs/ → documentation, cahier de conception, notes du jury
-├── src/ → scripts Python et modules de contrôle (caméra, LED, IA, capteurs)
-├── assets/ → médias visuels et sonores (textures, prototypes)
-├── TouchDesigner/ → patchs pour projections et interactions visuelles
-├── hardware/ → schémas électroniques, câblage et fichiers Arduino/RPi
-├── README.md → ce document
-└── requirements.txt → dépendances Python (OpenCV, PyTorch, etc.)
+mycorhize/
+├─ docs/                      # Documentation projet
+│  ├─ onboarding/             # Guides pour nouveaux arrivants
+│  ├─ methodology/            # Méthodologie, décisions, RACI, etc.
+│  └─ architecture/           # Diagrammes (Mermaid, PNG, PDF)
+├─ src/                       # Code source (TouchDesigner, Python, etc.)
+│  ├─ touchdesigner/
+├─ assets/                    # Images, logos, polices
+├─ hardware/                  # Schémas, BOM, STL, DXF, gerbers
+├─ data/                      # Données (échantillons) — petites tailles
+├─ scripts/                   # Outils dev/ops (build, export, sync)
+├─ env/                       # Environnements
+│  └─ environment.yml         # (renommer PF.yaml)
+└─ README.md
+
 ```
 
 ---
