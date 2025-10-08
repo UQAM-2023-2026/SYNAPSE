@@ -171,10 +171,22 @@ Très pratique pour comprendre l’évolution du projet.
 🚞️ Étapes de base :
 <br>
 ```
-1️⃣ Fetch / Pull origin  →  récupérer la dernière version
-2️⃣ Modifier vos fichiers
-3️⃣ Commit to main       →  sauvegarder localement
-4️⃣ Push origin          →  envoyer sur GitHub
+    ┌──────────────┐
+    │   git pull   │ ←── Télécharge les dernières modifs
+    └──────┬───────┘
+           │
+    ┌──────▼───────┐
+    │   git add .  │ ←── Sélectionne les fichiers modifiés
+    └──────┬───────┘
+           │
+    ┌──────▼───────┐
+    │ git commit -m│ ←── Enregistre localement les changements
+    └──────┬───────┘
+           │
+    ┌──────▼───────┐
+    │   git push   │ ←── Envoie les changements sur GitHub
+    └──────────────┘
+
 ```
 <br>
 🔁 Répétez ce cycle chaque fois que vous travaillez sur le projet.
