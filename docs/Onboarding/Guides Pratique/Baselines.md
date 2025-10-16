@@ -13,10 +13,10 @@
 ### Workflows
 1. **TouchDesigner**
 2. **Ableton**
-3. **Fritzing**
-4. **Diagram.net**
-5. **Github Desktop**
-6. **Resolume**
-7. **MadMapper + MadLaser**
-8. **DaVinci**
-9. **Adobe Suite**
+3. **Arduino IDE**
+4. **Fritzing**
+5. **Diagram.net**
+6. **Github Desktop**
+7. **Resolume**
+9. **DaVinci**
+10. **Adobe Suite**
