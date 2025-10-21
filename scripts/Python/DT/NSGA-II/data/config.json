@@ -1,0 +1,10 @@
+{
+  "num_objects": 8,
+  "entrances": [[3.0, 1.0], [9.0, 6.0]],
+  "walkable_png": "data/Full-Plan - SB.png",
+  "meters_per_pixel": 0.0556,
+  "min_clearance_m": 3.0,
+  "min_obj_to_wall_m": 1.0,
+  "pop-size": 150,
+  "n_generations": 320
+}
