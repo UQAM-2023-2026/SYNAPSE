@@ -1,4 +1,4 @@
-# MYCORHIZE  
+# SYN/APSE  
 **Cohorte UQAM Médias Interactifs 2023-2026**
 
 > _Explorer un écosystème du futur, où chaque geste humain nourrit un réseau vivant et lumineux._  
