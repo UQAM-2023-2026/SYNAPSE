@@ -1,4 +1,4 @@
-# MYCORHIZE  
+# SYN/APSE  
 **Cohorte UQAM Médias Interactifs 2023-2026**
 
 > _Explorer un écosystème du futur, où chaque geste humain nourrit un réseau vivant et lumineux._  
@@ -7,12 +7,12 @@
 
 ## 🌿 Introduction  
 
-**Mycorhize** est une installation interactive et collective qui invite le public à explorer un écosystème symbiotique inspiré des **réseaux mycorhiziens** — ces structures souterraines où racines et champignons échangent énergie et informations.  
+**SYN/APSE** est une installation interactive et collective qui invite le public à explorer un écosystème symbiotique inspiré des **réseaux mycorhiziens** — ces structures souterraines où racines et champignons échangent énergie et informations.  
 
 L’œuvre se déploie en deux niveaux — **la Canopée (haut)** et **le Mycélium (bas)** — où les participant·es interagissent à l’aide d’**objets-racines** connectés.  
 Chaque geste contribue à la **“communergie”** : un flux d’énergie collective qui illumine, transforme et fait croître un monde partagé.  
 
-Mycorhize explore les notions de **collaboration, équilibre écologique, espoir et futurité**, à travers une approche **low-tech, écologique et sensible** mêlant art, biologie, design et technologie interactive.
+SYN/APSE explore les notions de **collaboration, équilibre écologique, espoir et futurité**, à travers une approche **low-tech, écologique et sensible** mêlant art, biologie, design et technologie interactive.
 
 ---
 
@@ -52,7 +52,7 @@ Chaque interaction révèle un cycle de **photosynthèse et d’échange**, symb
 ## ⚙️ Structure du dépôt  
 
 ```
-mycorhize/
+SYN/APSE/
 ├─ docs/                      # Documentation projet
 │  ├─ onboarding/             # Guides pour nouveaux arrivants
 │  ├─ methodology/            # Méthodologie, décisions, RACI, etc.
