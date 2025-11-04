@@ -1,4 +1,4 @@
-﻿"""
+"""
 RZ → NODE (version clean sans max de node) + Idle_Socket
 """
 
