@@ -7,8 +7,8 @@ import random
 
 # --- paramètres généraux ---
 MAX_ENERGY  = 30
-rand_min = op('../Rz2').par.Randmin
-rand_max = op('../Rz2').par.Randmax
+rand_min = op('../Rz3').par.Randmin
+rand_max = op('../Rz3').par.Randmax
 ENERGY_RATE = random.uniform(rand_min, rand_max)  # vitesse de recharge aléatoire (facultatif)
 
 
