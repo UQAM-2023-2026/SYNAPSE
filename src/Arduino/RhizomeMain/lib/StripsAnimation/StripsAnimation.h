@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
-void SetupStrips();
+void SetupStrips(uint8_t brightness);
+
+void StripLoop(bool state);
 
 #endif

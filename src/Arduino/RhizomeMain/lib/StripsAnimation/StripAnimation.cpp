@@ -9,14 +9,14 @@
 #define COLOR_ORDER GRB
 CRGB leds[NUM_LEDS];
 
-void SetupStrips() {
+void SetupStrips(uint8_t brightness) {
     FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
     FastLED.clear();
     FastLED.show();
-    FastLED.setBrightness(50);
+    FastLED.setBrightness(brightness);
 }
 
-void anim1() {
+/*void anim1() {
     if (!fadingOut) {
     // Allume une LED de plus à chaque cycle
     leds[currentLED] = CRGB(0, 100, 255); // couleur cyan
@@ -53,16 +53,11 @@ void anim1() {
 
     delay(50); // vitesse du fade
   }
-}
+}*/
 
-void loop() {  
-  uint16_t potRead = analogRead(POT_PIN);
-  uint8_t brightness = map(potRead, 0, 4095, 0, 255);
-  FastLED.setBrightness(brightness);
-
-  bool boutonD = digitalRead(BUTTON_PIN1);
+void StripLoop(bool state) {
   
-  if(boutonD){
+  if(state){
     leds[0] = CHSV(160, random8(), random8(100,255));
 
     EVERY_N_MILLISECONDS(100) {
