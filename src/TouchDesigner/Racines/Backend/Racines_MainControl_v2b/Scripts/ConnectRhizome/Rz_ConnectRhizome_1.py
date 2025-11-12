@@ -6,7 +6,7 @@ Chaque rhizome gère sa propre énergie et émet un trigger quand il est plein.
 import random
 
 # --- paramètres généraux ---
-MAX_ENERGY  = 30
+MAX_ENERGY  = op('../Rz_Units')[0]
 rand_min = op('../Rz1').par.Randmin
 rand_max = op('../Rz1').par.Randmax
 ENERGY_RATE = random.uniform(rand_min, rand_max)  # vitesse de recharge aléatoire (facultatif)
