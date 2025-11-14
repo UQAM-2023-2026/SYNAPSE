@@ -1,0 +1,54 @@
+# Configuration LED – Projet RaG / RaM / RaP
+
+> **Infos importantes :**  
+> - 128 px / univers  
+> - 6 univers max  
+> - 768 pixels max  
+> - 3 cercles de racines par section  
+> - 48 m par output  
+
+---
+
+## 📊 Tableau de répartition des contrôles Advatek
+
+### 🎯 Contrôleur Advatek S
+| Nomenclature | Mètre | LED  | Output 1  | Pixels     | Output 2  | Pixels     | Output 3  | Pixels    | Output 4  | Pixels / Notes |
+|--------------|:-----:|:----:|:--------- |:----------:|:--------- |:----------:|:--------- |:---------:|:--------- |:-------------:|
+| **RaGS1**    | 9     | 144  | **RaGS1** | 0 à 144    | RaMS1     | 0 à 128    | RaMS2     | 0 à 64    | NOEUD     |               |
+| **RaGS2**    | 9     | 144  | RaGS2     | 144 à 288  | RaMS1     | 128 à 256  | RaMS2     | 64 à 128  |           |               |
+| **RaGS3**    | 9     | 144  | RaGS3     | 288 à 432  | RaMS1     | 256 à 384  | RaMS2     | 128 à 192 |           |               |
+| **RaGP1**    | 16,3  | 260,8| Mètre     | 27         |           | 24         |           | 24        |           | 192 à 256     |
+| **RaGP2**    | 10    | 160  | Nb pixels | 432        |           | 384        |           | 384       |           | 256 à 320     |
+|              |       |      | Nb univers| 4          |           | 3          |           | 3         |           | 320 à 384     |
+
+### 🎯 Contrôleur Advatek P
+| Nomenclature | Mètre | LED  | RaGP1 | RaGP2 | RaMP1.0 | RaMP1.1 | RaMP2.0 | RaMP2.1 | RaMP3.0 | RaMP3.1 | RaMP4.0 | RaMP4.1 | RaMP5.0 | RaMP5.1 |
+|--------------|:-----:|:----:|:-----:|:-----:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|:-------:|
+| **RaGI1**    | 8     | 128  |       |       |         |         |         |         |         |         |         |         |         |         |
+| **RaGI2**    | 9     | 144  |       |       |         |         |         |         |         |         |         |         |         |         |
+| **RaGI3**    | 10    | 160  |       |       |         |         |         |         |         |         |         |         |         |         |
+|              |       |      | Mètre | 16,3  | 10      | 4,5     | 11,5    | 4,5     | 13      | 4,5     | 15      | 4,5     | 17      |         |
+|              |       |      | Pixels| 260,8 | 160     | 72      | 184     | 72      | 208     | 72      | 240     | 72      | 272     |         |
+|              |       |      | Univers| 3    | 2       | 1       | 2       | 1       | 2       | 1       | 2       | 1       | 3       |         |
+
+### 🎯 Contrôleur Advatek I
+| Nomenclature | Mètre | LED  | Output 1  | Pixels     | Output 2  | Pixels     | Output 3  | Pixels    | Output 4  | Pixels / Notes |
+|--------------|:-----:|:----:|:--------- |:----------:|:--------- |:----------:|:--------- |:---------:|:--------- |:-------------:|
+| **RaMI1**    | 24    | 384  |           |            |           |            |           |           |           |               |
+| **RaMI2**    | 24    | 384  |           |            |           |            |           |           |           |               |
+| **RaMP1.0**  | 4,5   | 72   | RaGI3     | 0 à 144    | RaMI1     | 0 à 128    | RaMI2     | 0 à 64    | NOEUD     |               |
+| **RaMP1.1**  | 11,5  | 184  | RaGI1     | 144 à 288  | RaMI1     | 128 à 256  | RaMI2     | 64 à 128  |           |               |
+| **RaMP2.0**  | 4,5   | 72   | RaGI2     | 288 à 432  | RaMI1     | 256 à 384  | RaMI2     | 128 à 192 |           |               |
+| **RaMP2.1**  | 11,5  | 184  | Mètre     | 27         |           | 24         |           | 24        |           | 192 à 256     |
+| **RaMP3.0**  | 4,5   | 72   | Nb pixels | 432        |           | 384        |           | 384       |           | 256 à 320     |
+| **RaMP3.1**  | 13    | 208  | Nb univers| 4          |           | 3          |           | 3         |           | 320 à 384     |
+| **RaMP4.0**  | 4,5   | 72   |           |            |           |            |           |           |           |               |
+| **RaMP4.1**  | 15    | 240  |           |            |           |            |           |           |           |               |
+| **RaMP5.0**  | 4,5   | 72   |           |            |           |            |           |           |           |               |
+| **RaMP5.1**  | 17    | 272  |           |            |           |            |           |           |           |               |
+
+### 📈 Totaux
+| Description | Valeur   |
+|-------------|:--------:|
+| **Total Mètres** | 266,8 m  |
+| **Total LEDs** | 4 268,8  |
