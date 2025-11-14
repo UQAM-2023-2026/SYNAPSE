@@ -19,6 +19,8 @@ public:
   void setCount(uint8_t newCount);
   void setEnergy(float newEnergy);
   void setState(uint8_t newState);
+
+  void incrementCount();
  
 
   // Debug

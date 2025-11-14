@@ -16,6 +16,10 @@ void RhizomeStateAndID::setCount(uint8_t newCount) { count = newCount; }
 void RhizomeStateAndID::setState(uint8_t newState) { state = newState % 4; }
 void RhizomeStateAndID::setEnergy(float newEnergy) { energy = constrain(newEnergy, 0.0f, 1.0f); }
 
+void RhizomeStateAndID::incrementCount() {
+  count = (count + 1);
+}
+
 // Debug
 void RhizomeStateAndID::printDebug(Stream &output) const {
   output.print(F("ID: ")); output.print(id);
