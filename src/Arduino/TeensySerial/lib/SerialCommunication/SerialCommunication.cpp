@@ -57,48 +57,13 @@ void SetupSerialCommunication(RhizomeStateAndID &rh) {
   Serial.println("Serial Communication Initialized.");
 }
 
-void sendDiscover();
-void updateNumberOfConnectedRhizomes();
-
-void checkConnectionStatus() {
-  if (connectedEvent) {
-    connectedEvent = false;
-    bool currentlyConnected = (digitalRead(CONNECT_PIN) == LOW); // LOW means connected
-    if (currentlyConnected != connectionState) {
-      connectionState = currentlyConnected;
-
-      if (connectionState) {
-        digitalWrite(13, HIGH); // indicate connection
-        sendDiscover();
-
-      } else {
-        digitalWrite(13, LOW); // indicate disconnection
-        setConnectionToRhizome(false); // we are disconnected from a rhizome
-        setConnectionToNode(false); // we are disconnected from a node
-        setGeneratingState(false); // we are no longer generating
-        discoveryMode = false;
-        discoveredCount = 0;
-        numberOfConnectedRhizomes(0);
-        connectedRhizomesCount = 0;
-        StateLoop(0);
-        // Serial.print("Disconnected. Number of connected rhizomes: ");
-        // Serial.println(discoveredCount);
-
-      }
-    }
-  }
-  if (!connectionState) {
-    discoveryMode = false;
-    discoveredCount = 0;
-    numberOfConnectedRhizomes(0);
-    connectedRhizomesCount = 0;
-    setGeneratingState(false);
-    setConnectionToRhizome(false);
-    setConnectionToNode(false);
-    StateLoop(0);
-    return;
-  }
+// update the number of connected rhizomes
+void updateNumberOfConnectedRhizomes() {
+  pRhizome->setCount(discoveredCount);
 }
+
+
+/*--------------Send Messages-------------------*/
 
 void sendDiscover() {
   if (!pRhizome) return;
@@ -114,13 +79,57 @@ void sendDiscover() {
   // Serial.println(discoveredCount);
 }
 
+/*--------------------------------------------------*/
+
+/*--------------------------------------------------*/
+// Main loops to check connection status and handle messages
+void checkConnectionStatus() {
+  if (connectedEvent) {
+    connectedEvent = false;
+    bool currentlyConnected = (digitalRead(CONNECT_PIN) == LOW); // LOW means connected
+    if (currentlyConnected != connectionState) {
+      connectionState = currentlyConnected;
+
+      if (connectionState) {
+        digitalWrite(13, HIGH); // indicate connection
+        sendDiscover();
+
+      } else {
+        digitalWrite(13, LOW); // indicate disconnection
+        discoveredCount = 0;
+        pRhizome->setCount(0);
+        pRhizome->setState(0); // set to idle state
+        discoveryMode = false;
+        // Serial.print("Disconnected. Number of connected rhizomes: ");
+        // Serial.println(discoveredCount);
+
+      }
+    }
+  }
+  // if (!connectionState) {
+  //   discoveryMode = false;
+  //   discoveredCount = 0;
+  //   numberOfConnectedRhizomes(0);
+  //   connectedRhizomesCount = 0;
+  //   setGeneratingState(false);
+  //   setConnectionToRhizome(false);
+  //   setConnectionToNode(false);
+  //   StateLoop(0);
+  //   return;
+  // }
+}
+
+
+
 // call frequently from loop()
 void lookForMessages() {
   oscSlip.onOscMessageReceived(oscMessageReceived);
   updateNumberOfConnectedRhizomes();
   //Serial.println(discoveredCount);
 }
+/*--------------------------------------------------*/
 
+/*---------------Handle OSC Messages-------------------*/
 void oscMessageReceived(MicroOscMessage &msg) {
   if (!pRhizome) return;
 
@@ -129,7 +138,7 @@ void oscMessageReceived(MicroOscMessage &msg) {
     int origin = msg.nextAsInt();
     discoveredCount = msg.nextAsInt();
     pRhizome->setCount(discoveredCount);
-    setConnectionToRhizome(true);
+    pRhizome->setState(1); // set to connection state
     // Serial.print("Received discover message from ID: ");
     // Serial.print(origin);
     // Serial.print(" with count: ");
@@ -146,38 +155,29 @@ void oscMessageReceived(MicroOscMessage &msg) {
         // Le token vient de revenir à l'origine → fin de découverte
         oscSlip.sendMessage("/discover_done", "i", discoveredCount);
         discoveryMode = false;
-        numberOfConnectedRhizomes(discoveredCount); // optional immediate update
-        pRhizome->setCount(discoveredCount); // reset count before discovery
-        StateLoop(2);
+        pRhizome->setCount(discoveredCount);
+        pRhizome->setState(2); // set to generating state
         return;
     }
-  } else {
-    numberOfConnectedRhizomes(0);
-    connectedRhizomesCount = 0;
-    setGeneratingState(false);
-  }
-  
-  // Node
-  if (msg.checkOscAddress("/node")) {
-    setConnectionToNode(true);
+
+  } else if (msg.checkOscAddress("/node")) {
+    pRhizome->setState(3); // set to giving to node state
     setNodeDrainRate(msg.nextAsFloat());
-    StateLoop(3); // Update LED strips animation
     return;
-  }
 
-  if (msg.checkOscAddress("/discover_done")) {
+  } else if (msg.checkOscAddress("/discover_done")) {
     int total = msg.nextAsInt();
-    numberOfConnectedRhizomes(total);
-    setConnectionToRhizome(true);
-    setGeneratingState(true);
+    pRhizome->setCount(total);
+    pRhizome->setState(2); // set to generating state
     discoveryMode = false;
-    StateLoop(2);
+    return;
+
+  } else {
+    pRhizome->setState(0); // set to idle state
+    pRhizome->setCount(0);
     return;
   }
 }
 
-void updateNumberOfConnectedRhizomes() {
-  connectedRhizomesCount = discoveredCount; 
-  pRhizome->setCount(discoveredCount); // reset count before discovery
-}
+
 

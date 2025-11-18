@@ -1,9 +1,8 @@
 /*-------------------Libraries----------------------*/
-#include "SharedState.h"
+#include "EnergyManagement.h"
 
 #include <Arduino.h>
 
-#include "EnergyManagement.h"
 #include <RhizomeStateAndID.h>
 static RhizomeStateAndID *pRhizome = nullptr; // pointer to external rhizome object
 
@@ -35,6 +34,7 @@ const unsigned long updateInterval = 100; // ms
 
 void SetupEnergyManagement(RhizomeStateAndID &rh) {
   pRhizome = &rh;
+  
   if (pRhizome) energy = pRhizome->getEnergy();
   Serial.print("Energy Management Initialized. Energy: ");
   Serial.println(energy);

@@ -16,7 +16,7 @@ void setup() {
 
   SetupSerialCommunication(rhizome); // Initialize serial communication with rhizome reference
   SetupEnergyManagement(rhizome); // Initialize energy management with rhizome reference
-  SetupStrips(50); // Setup LED strips with brightness 50
+  SetupStrips(rhizome,50); // Setup LED strips with brightness 50
 
 }
 

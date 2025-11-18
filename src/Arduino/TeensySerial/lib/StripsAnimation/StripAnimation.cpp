@@ -42,7 +42,9 @@ static unsigned long genLastMove = 0;
 
 
 
-void SetupStrips(uint8_t brightness) {
+void SetupStrips(RhizomeStateAndID &rh, uint8_t brightness) {
+    pRhizome = &rh;
+    
     FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
     FastLED.clear();
     FastLED.show();
@@ -51,13 +53,16 @@ void SetupStrips(uint8_t brightness) {
 
 /*---------------Setters----------------------*/
 void LedsSetState() {
-  state = pRhizome->getState();
+  if (pRhizome) state = pRhizome->getState();
+  else state = 0;
 }
 void LedsSetEnergy() {
-  currentEnergy = pRhizome->getEnergy();
+  if (pRhizome) currentEnergy = pRhizome->getEnergy();
+  else currentEnergy = 0;
 }
 void LedsSetNbConnected() {
-  nbConnected = pRhizome->getCount();
+  if (pRhizome) nbConnected = pRhizome->getCount();
+  else nbConnected = 1;
 }
 /*--------------------------------------------------*/
 
@@ -113,7 +118,7 @@ void LedsIdle() {
 /*----------------CONNEXION ANIMATION-----------------------------------*/
 
 // quick one-shot white burst -> fade to black, triggered when state==1
-void LedsConnexion() {
+void LedsConnection() {
   FastLED.show();
 }
 /*--------------------------------------------------*/
@@ -170,7 +175,7 @@ void StripLoop() {
             LedsIdle();
             break;
         case 1:
-            LedsConnexion();
+            LedsConnection();
             break;
         case 2:
             LedsGenerating();
