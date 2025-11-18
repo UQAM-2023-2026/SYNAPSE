@@ -4,7 +4,6 @@
 #include <Arduino.h>
 
 void SetupStrips(uint8_t brightness);
-
-void StripLoop(bool state);
+void StripLoop();            // fixed signature to match implementation
 
 #endif

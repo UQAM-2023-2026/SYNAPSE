@@ -1,9 +1,9 @@
 #ifndef SERIAL_COMMUNICATION_H
 #define SERIAL_COMMUNICATION_H
 
-#include <RhizomeStateAndID.h>
+#include <NodeStateAndID.h>
 
-void SetupSerialCommunication(RhizomeStateAndID &rh);
+void beginSerialCommunication(NodeStateAndID &node);
 void checkConnectionStatus();
 void lookForMessages(); // call from your main loop()
 

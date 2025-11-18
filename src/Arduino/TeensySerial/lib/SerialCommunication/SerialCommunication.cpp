@@ -1,18 +1,36 @@
+/*-------------------Libraries----------------------*/
 #include "SerialCommunication.h"
+
 #include <Arduino.h>
 #include <MicroOscSlip.h> // For communication over Serial with OSC messages
-#include <EnergyManagement.h>
-#include "SharedState.h"
 
+#include <EnergyManagement.h>
+#include <StripsAnimation.h>
+
+#include <RhizomeStateAndID.h>
+static RhizomeStateAndID *pRhizome = nullptr; // pointer to external rhizome object
+
+
+// ==========================================================
+// Gestion de la communication - Projet Synapse
+// ==========================================================
+
+/* Serial configuration */
 #define CONNECT_PIN 9 // pin used to detect connection
 #define SERIAL_PORT Serial2
 #define SERIAL_BAUD 9600
+/*--------------------------------------------------------*/
 
-MicroOscSlip<32> oscSlip(&Serial2); // Using Serial2 for communication
+/*------------------Global Variables-----------------*/
+// Variables for osc
+MicroOscSlip<32> oscSlip(&SERIAL_PORT); // Using Serial2 for communication
 void oscMessageReceived(MicroOscMessage &msg);
 
-// stored pointer to the external rhizome object
-static RhizomeStateAndID *pRhizome = nullptr;
+//Discovery process variables
+static bool discoveryMode = false;
+static int discoveryOrigin = -1;
+static int discoveredCount = 0;
+/*--------------------------------------------------------*/
 
 /*--------------------ISR---------------------------*/
 // ISR-safe event flag (set by ISR), and persistent connection state
@@ -25,24 +43,22 @@ void connected() {
 }
 /*--------------------------------------------------*/
 
-//Discovery process variables
-static bool discoveryMode = false;
-static int discoveryOrigin = -1;
-static int discoveredCount = 0;
-void sendDiscover();
-void updateNumberOfConnectedRhizomes();
 
-void beginSerialCommunication(RhizomeStateAndID &rh) {
+
+void SetupSerialCommunication(RhizomeStateAndID &rh) {
   pRhizome = &rh;
 
-  Serial2.begin(9600); // Pins 7 (RX2) et 8 (TX2)
-  pinMode(9, INPUT_PULLUP); // grounded when connected
+  Serial2.begin(SERIAL_BAUD); // Pins 7 (RX2) et 8 (TX2)
+  pinMode(CONNECT_PIN, INPUT_PULLUP); // grounded when connected
   pinMode(13, OUTPUT);
 
-  attachInterrupt(digitalPinToInterrupt(9), connected, CHANGE); // use CHANGE to detect connect/disconnect
-  
+  attachInterrupt(digitalPinToInterrupt(CONNECT_PIN), connected, CHANGE); // use CHANGE to detect connect/disconnect
+
   Serial.println("Serial Communication Initialized.");
 }
+
+void sendDiscover();
+void updateNumberOfConnectedRhizomes();
 
 void checkConnectionStatus() {
   if (connectedEvent) {
@@ -64,6 +80,7 @@ void checkConnectionStatus() {
         discoveredCount = 0;
         numberOfConnectedRhizomes(0);
         connectedRhizomesCount = 0;
+        StateLoop(0);
         // Serial.print("Disconnected. Number of connected rhizomes: ");
         // Serial.println(discoveredCount);
 
@@ -78,6 +95,7 @@ void checkConnectionStatus() {
     setGeneratingState(false);
     setConnectionToRhizome(false);
     setConnectionToNode(false);
+    StateLoop(0);
     return;
   }
 }
@@ -87,6 +105,7 @@ void sendDiscover() {
   discoveryMode = true;
   discoveryOrigin = pRhizome->getID();
   discoveredCount = 1;
+  pRhizome->setCount(discoveredCount); // reset count before discovery
 
   oscSlip.sendMessage("/discover", "ii", discoveryOrigin, discoveredCount);
   // Serial.print("Sent ID: ");
@@ -109,6 +128,7 @@ void oscMessageReceived(MicroOscMessage &msg) {
   if (msg.checkOscAddress("/discover")) {
     int origin = msg.nextAsInt();
     discoveredCount = msg.nextAsInt();
+    pRhizome->setCount(discoveredCount);
     setConnectionToRhizome(true);
     // Serial.print("Received discover message from ID: ");
     // Serial.print(origin);
@@ -118,6 +138,7 @@ void oscMessageReceived(MicroOscMessage &msg) {
     // Si nous ne sommes PAS l'origine → on s'ajoute au count
     if (origin != pRhizome->getID()) {
         discoveredCount += 1; // nous comptons
+        pRhizome->setCount(discoveredCount);
         oscSlip.sendMessage("/discover", "ii", origin, discoveredCount);
         // Serial.print("Forwarded discover message. New count: ");
         // Serial.println(count);
@@ -126,12 +147,22 @@ void oscMessageReceived(MicroOscMessage &msg) {
         oscSlip.sendMessage("/discover_done", "i", discoveredCount);
         discoveryMode = false;
         numberOfConnectedRhizomes(discoveredCount); // optional immediate update
+        pRhizome->setCount(discoveredCount); // reset count before discovery
+        StateLoop(2);
         return;
     }
   } else {
     numberOfConnectedRhizomes(0);
     connectedRhizomesCount = 0;
     setGeneratingState(false);
+  }
+  
+  // Node
+  if (msg.checkOscAddress("/node")) {
+    setConnectionToNode(true);
+    setNodeDrainRate(msg.nextAsFloat());
+    StateLoop(3); // Update LED strips animation
+    return;
   }
 
   if (msg.checkOscAddress("/discover_done")) {
@@ -140,21 +171,13 @@ void oscMessageReceived(MicroOscMessage &msg) {
     setConnectionToRhizome(true);
     setGeneratingState(true);
     discoveryMode = false;
+    StateLoop(2);
     return;
   }
-
-  // Node
-  if (msg.checkOscAddress("/node")) {
-    setConnectionToNode(true);
-    setNodeDrainRate(msg.nextAsFloat());
-    return;
-  }
-
-
-  
 }
 
 void updateNumberOfConnectedRhizomes() {
   connectedRhizomesCount = discoveredCount; 
+  pRhizome->setCount(discoveredCount); // reset count before discovery
 }
 

@@ -4,7 +4,7 @@
 #include <Arduino.h>
 
 void SetupStrips(uint8_t brightness);
-
-void StripLoop(bool state);
+void StripLoop();            // fixed signature to match implementation
+void SetEnergy(uint8_t e);   // update energy from main (0-100)
 
 #endif
