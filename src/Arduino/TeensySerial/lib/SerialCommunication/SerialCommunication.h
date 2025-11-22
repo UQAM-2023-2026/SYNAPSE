@@ -3,7 +3,7 @@
 
 #include <RhizomeStateAndID.h>
 
-void beginSerialCommunication(RhizomeStateAndID &rh);
+void SetupSerialCommunication(RhizomeStateAndID &rh);
 void checkConnectionStatus();
 void lookForMessages(); // call from your main loop()
 
