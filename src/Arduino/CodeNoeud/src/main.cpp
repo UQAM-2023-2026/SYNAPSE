@@ -4,7 +4,7 @@
 #include <SerialCommunication.h> // Custom serial communication header
 
 /*-----------Rhizome base stats----------------------*/
-NodeStateAndID node(1); // Initialize Node with ID 1
+NodeStateAndID node(0); // Initialize Node with ID 1
 /*---------------------------------------------------*/
 
 void setup() {
