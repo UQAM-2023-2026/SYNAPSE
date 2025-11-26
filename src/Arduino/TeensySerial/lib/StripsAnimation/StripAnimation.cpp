@@ -119,6 +119,9 @@ void LedsIdle() {
 
 // quick one-shot white burst -> fade to black, triggered when state==1
 void LedsConnection() {
+  for(int i = 0; i < NUM_LEDS; ++i) {
+    leds[i] = CRGB::White;
+  }
   FastLED.show();
 }
 /*--------------------------------------------------*/
@@ -127,28 +130,14 @@ void LedsConnection() {
 /*----------------GENERATING ANIMATION-----------------------------------*/
 // orange left->right pulse; speed depends on nbConnected
 void LedsGenerating() {
-  // compute delay by number connected (more connected -> faster)
-  // map 1..10 -> delay ms 300..40
-  unsigned long stepDelay = map(constrain(nbConnected, 1, 20), 1, 10, 300, 40);
+  uint8_t baseHue = hueFromEnergy(currentEnergy);
+  leds[0] = CHSV(baseHue, random8(), random8(100, 255));
 
-  // fade everything slightly for tail effect
-  fadeToBlackBy(leds, NUM_LEDS, 64); // tail fade amount
-
-  if (millis() - genLastMove >= stepDelay) {
-    genLastMove = millis();
-    // advance head position left->right
-    genPos = (genPos + 1) % NUM_LEDS;
-    // set head to bright orange (hue ~ 32)
-    leds[genPos] = CHSV(32, 220, 255);
-    // give a short trailing gradient
-    for (int i = 1; i <= 6; ++i) {
-      int idx = (int)genPos - i;
-      if (idx < 0) idx += NUM_LEDS;
-      uint8_t val = 255 - i * 36;
-      if (val > 0) leds[idx] = CHSV(28, 200, val);
+  EVERY_N_MILLISECONDS(100) {
+    for(int i = NUM_LEDS - 1; i > 0; i--){
+      leds[i] = leds[i - 1];
     }
   }
-
   FastLED.show();
 }
 /*--------------------------------------------------*/
