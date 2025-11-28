@@ -3,7 +3,7 @@
 #include <MicroOscSlip.h> // For communication over Serial with OSC messages
 
 
-#define CONNECT_PIN 9 // pin used to detect connection
+#define CONNECT_PIN 3 // pin used to detect connection
 #define SERIAL_PORT Serial2
 #define SERIAL_BAUD 9600
 
@@ -28,12 +28,11 @@ void sendNodeMsg();
 
 void beginSerialCommunication(NodeStateAndID &node) {
   pNode = &node;
-
-  Serial2.begin(9600); // Pins 7 (RX2) et 8 (TX2)
-  pinMode(9, INPUT_PULLUP); // grounded when connected
+  Serial2.begin(9600, SERIAL_8N1, 4, 5); // Pins 4 (TX2) et 5 (RX2)
+  pinMode(3, INPUT_PULLUP); // grounded when connected
   pinMode(13, OUTPUT);
 
-  attachInterrupt(digitalPinToInterrupt(9), connected, CHANGE); // use CHANGE to detect connect/disconnect
+  attachInterrupt(digitalPinToInterrupt(CONNECT_PIN), connected, CHANGE); // use CHANGE to detect connect/disconnect
   
   Serial.println("Serial Communication Initialized.");
 }
@@ -48,6 +47,7 @@ void checkConnectionStatus() {
       if (connectionState) {
         digitalWrite(13, HIGH); // indicate connection
         sendNodeMsg();
+        Serial.println("Connected.");
 
       } else {
         digitalWrite(13, LOW); // indicate disconnection
@@ -59,18 +59,18 @@ void checkConnectionStatus() {
 void sendNodeMsg() {
   if (!pNode) return;
   float drainRate = pNode->getDrainRate();
-
+  Serial.println("Sending node message...");
   oscSlip.sendMessage("/node", "f", drainRate);
-  // Serial.print("Sent ID: ");
-  // Serial.print(discoveryOrigin);
-  // Serial.print(" with count: ");
-  // Serial.println(discoveredCount);
+//   Serial.print("Sent ID: ");
+//  Serial.print(discoveryOrigin);
+//   Serial.print(" with count: ");
+//  Serial.println(discoveredCount);
 }
 
 // call frequently from loop()
 void lookForMessages() {
   oscSlip.onOscMessageReceived(oscMessageReceived);
-  //Serial.println(discoveredCount);
+///  Serial.println(discoveredCount);
 }
 
 void oscMessageReceived(MicroOscMessage &msg) {
@@ -78,7 +78,10 @@ void oscMessageReceived(MicroOscMessage &msg) {
 
   // --- DISCOVERY TOKEN ---
   if (msg.checkOscAddress("/energy")) {
+    Serial.println("received");
+    int id = msg.nextAsInt();
     int energy = msg.nextAsInt();
+    Serial.print("energy: ");
     Serial.println(energy);
     // Serial.print("Received discover message from ID: ");
     // Serial.print(origin);
