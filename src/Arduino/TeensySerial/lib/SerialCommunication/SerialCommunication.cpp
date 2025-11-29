@@ -16,7 +16,8 @@ static RhizomeStateAndID *pRhizome = nullptr; // pointer to external rhizome obj
 // ==========================================================
 
 /* Serial configuration */
-#define CONNECT_PIN 9 // pin used to detect connection
+#define CONNECT_PIN 20 // pin used to detect connection
+#define CONNECT_LED1 23
 #define SERIAL_PORT Serial2
 #define SERIAL_BAUD 9600
 /*--------------------------------------------------------*/
@@ -50,7 +51,7 @@ void SetupSerialCommunication(RhizomeStateAndID &rh) {
 
   Serial2.begin(SERIAL_BAUD); // Pins 7 (RX2) et 8 (TX2)
   pinMode(CONNECT_PIN, INPUT_PULLUP); // grounded when connected
-  pinMode(13, OUTPUT);
+  pinMode(CONNECT_LED1, OUTPUT);
 
   attachInterrupt(digitalPinToInterrupt(CONNECT_PIN), connected, CHANGE); // use CHANGE to detect connect/disconnect
 
@@ -91,16 +92,17 @@ void checkConnectionStatus() {
       connectionState = currentlyConnected;
 
       if (connectionState) {
-        digitalWrite(13, HIGH); // indicate connection
+        digitalWrite(CONNECT_LED1, HIGH); // indicate connection
         sendDiscover();
+        //Serial.println("Connected to another rhizome.");
 
       } else {
-        digitalWrite(13, LOW); // indicate disconnection
+        digitalWrite(CONNECT_LED1, LOW); // indicate disconnection
         discoveredCount = 0;
         pRhizome->setCount(0);
         pRhizome->setState(0); // set to idle state
         discoveryMode = false;
-        // Serial.print("Disconnected. Number of connected rhizomes: ");
+        //Serial.print("Disconnected. Number of connected rhizomes: ");
         // Serial.println(discoveredCount);
 
       }
@@ -133,6 +135,7 @@ void lookForMessages() {
 void oscMessageReceived(MicroOscMessage &msg) {
   if (!pRhizome) return;
 
+
   // --- DISCOVERY TOKEN ---
   if (msg.checkOscAddress("/discover")) {
     int origin = msg.nextAsInt();
@@ -163,6 +166,12 @@ void oscMessageReceived(MicroOscMessage &msg) {
   } else if (msg.checkOscAddress("/node")) {
     pRhizome->setState(3); // set to giving to node state
     setNodeDrainRate(msg.nextAsFloat());
+    oscSlip.sendMessage("/energy", "ii", pRhizome->getID(), pRhizome->getEnergy());
+    Serial.print("Node connected. Drain rate set to: ");
+    Serial.print(msg.nextAsFloat());
+    Serial.print(". Current energy: ");
+    Serial.println(pRhizome->getEnergy());
+
     return;
 
   } else if (msg.checkOscAddress("/discover_done")) {
