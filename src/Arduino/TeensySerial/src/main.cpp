@@ -16,12 +16,12 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Setup complete.");
 
-  // SetupSerialCommunication(rhizome); // Initialize serial communication with rhizome reference
-  // SetupEnergyManagement(rhizome); // Initialize energy management with rhizome reference
-  // SetupStrips(rhizome,50); // Setup LED strips with brightness 50
-  //SetupAudio(); // Initialize audio system
+  //SetupEnergyManagement(rhizome); // Initialize energy management with rhizome reference
+  //SetupSerialCommunication(rhizome); // Initialize serial communication with rhizome reference
+  //SetupStrips(rhizome,50); // Setup LED strips with brightness 50
+  SetupAudio(); // Initialize audio system
 
-  SetupHaptic(); // Initialize haptic feedback system
+  //SetupHaptic(); // Initialize haptic feedback system
 
 }
 
@@ -33,9 +33,9 @@ void loop() {
 
   //StripLoop(); // Update LED strips animation
 
-  //AudioLoop(); // Update audio playback
+  AudioLoop(); // Update audio playback
 
-  HapticLoop(); // Update haptic feedback
+  //HapticLoop(); // Update haptic feedback
 
   // Serial.print("Rhizome ID: ");
   // Serial.print(rhizome.getID());

@@ -12,10 +12,17 @@ static RhizomeStateAndID *pRhizome = nullptr; // pointer to external rhizome obj
 // ==========================================================
 
 /* LED strip configuration */
-#define LED_PIN     17
-#define NUM_LEDS    60
-#define LED_TYPE    WS2812B
-#define COLOR_ORDER GRB
+#define NUM_LEDS    15
+#define DATA_PIN    13
+#define CLOCK_PIN   12
+#define LED_TYPE    APA102
+#define COLOR_ORDER BGR
+/*--------------------------------------------------*/
+/* LED strip configuration */
+#define NUM_LEDS2    4
+#define DATA_PIN2    1
+#define LED_TYPE2    WS2812B
+#define COLOR_ORDER2 GRB
 /*--------------------------------------------------*/
 
 CRGB leds[NUM_LEDS]; // LED array
@@ -38,6 +45,11 @@ const unsigned long connexionDuration = 600; // ms
 // generating animation state
 static uint16_t genPos = 0;
 static unsigned long genLastMove = 0;
+
+unsigned long previousMillis = 0;
+const unsigned long colorInterval = 5000;  // half a second per color
+int mode = 0;
+uint8_t hue = 0;
 /*--------------------------------------------------*/
 
 
@@ -45,7 +57,7 @@ static unsigned long genLastMove = 0;
 void SetupStrips(RhizomeStateAndID &rh, uint8_t brightness) {
     pRhizome = &rh;
     
-    FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+    FastLED.addLeds<LED_TYPE2, DATA_PIN2, COLOR_ORDER2>(leds, NUM_LEDS2);
     FastLED.clear();
     FastLED.show();
     FastLED.setBrightness(brightness);
@@ -156,27 +168,64 @@ void LedsGivingToNode() {
 }
 /*--------------------------------------------------*/
 
+void apaLoop() {
+  unsigned long currentMillis = millis();
+  // Every 500 ms, change mode
+  if (currentMillis - previousMillis >= colorInterval) {
+    previousMillis = currentMillis;
+    mode = (mode + 1) % 4;  // 0=R,1=G,2=B,3=Rainbow
+  }
+
+  switch (mode) {
+    case 0:
+      Serial.println("Red Mode");
+      fill_solid(leds, NUM_LEDS, CRGB::Red);
+      break;
+
+    case 1:
+      Serial.println("Green Mode");
+      fill_solid(leds, NUM_LEDS, CRGB::Green);
+      break;
+
+    case 2:
+      Serial.println("Blue Mode");
+      fill_solid(leds, NUM_LEDS, CRGB::Blue);
+      break;
+
+    case 3:  // Rainbow (continuous)
+      Serial.println("Rainbow Mode");
+      for (int i = 0; i < NUM_LEDS; i++) {
+        leds[i] = CHSV(hue + i * 5, 255, 255);
+      }
+      hue++;
+      break;
+  }
+
+  FastLED.show();
+}
 
 // Main loop for strip animation
 void StripLoop() {
-    switch (state) {
-        case 0:
-            LedsIdle();
-            break;
-        case 1:
-            LedsConnection();
-            break;
-        case 2:
-            LedsGenerating();
-            break;
-        case 3:
-            LedsGivingToNode();
-            break;
-        default:
-            LedsIdle();
-            break;
-    }
-    LedsSetState();
-    LedsSetEnergy();
-    LedsSetNbConnected();
+    // switch (state) {
+    //     case 0:
+    //         LedsIdle();
+    //         break;
+    //     case 1:
+    //         LedsConnection();
+    //         break;
+    //     case 2:
+    //         LedsGenerating();
+    //         break;
+    //     case 3:
+    //         LedsGivingToNode();
+    //         break;
+    //     default:
+    //         LedsIdle();
+    //         break;
+    // }
+    // LedsSetState();
+    // LedsSetEnergy();
+    // LedsSetNbConnected();
+    apaLoop();
 }
+
