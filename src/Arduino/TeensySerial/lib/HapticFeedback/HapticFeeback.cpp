@@ -163,3 +163,33 @@ void HapticLoop() {
   delay(1000);
 }
 
+void hapticOne() {
+  drv1.setWaveform(0, 47); 
+  drv1.setWaveform(1, 0); 
+  drv1.go();
+  //Serial.println("Haptic One Triggered");
+}
+
+void hapticTwo() {
+  drv2.setWaveform(0, 47); 
+  drv2.setWaveform(1, 0); 
+  drv2.go();
+  //Serial.println("Haptic Two Triggered");
+}
+
+void h_connection(bool which) {
+  if (which) {
+    // Trigger motor 2
+    drv2.setWaveform(0, 10); 
+    drv2.setWaveform(1, 0); 
+    drv2.go();
+    //Serial.println("Haptic Connection Two Triggered");
+  } else {
+    // Trigger motor 1
+    drv1.setWaveform(0, 10); 
+    drv1.setWaveform(1, 0); 
+    drv1.go();
+    //Serial.println("Haptic Connection One Triggered");
+  }
+}
+

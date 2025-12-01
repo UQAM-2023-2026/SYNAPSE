@@ -10,4 +10,9 @@ extern Adafruit_DRV2605 drv;
 void SetupHaptic();
 void HapticLoop();
 
+void hapticOne();
+void hapticTwo();
+
+void h_connection(bool which);
+
 #endif

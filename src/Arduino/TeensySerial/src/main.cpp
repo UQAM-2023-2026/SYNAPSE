@@ -16,24 +16,24 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Setup complete.");
 
-  //SetupEnergyManagement(rhizome); // Initialize energy management with rhizome reference
-  //SetupSerialCommunication(rhizome); // Initialize serial communication with rhizome reference
+  SetupEnergyManagement(rhizome); // Initialize energy management with rhizome reference
+  SetupSerialCommunication(rhizome); // Initialize serial communication with rhizome reference
   //SetupStrips(rhizome,50); // Setup LED strips with brightness 50
-  SetupAudio(); // Initialize audio system
+  //SetupAudio(); // Initialize audio system
 
-  //SetupHaptic(); // Initialize haptic feedback system
+  SetupHaptic(); // Initialize haptic feedback system
 
 }
 
 void loop() {
-  //energyLoop(); // Update energy management
+  energyLoop(); // Update energy management
 
-  //checkConnectionStatus(); // Check for connection changes
+  checkConnectionStatus(); // Check for connection changes
   //lookForMessages(); // Check for incoming messages
 
   //StripLoop(); // Update LED strips animation
 
-  AudioLoop(); // Update audio playback
+  //AudioLoop(); // Update audio playback
 
   //HapticLoop(); // Update haptic feedback
 
