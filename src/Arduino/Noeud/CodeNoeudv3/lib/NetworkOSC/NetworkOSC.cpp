@@ -76,16 +76,39 @@ void initNetworkOSC(
 
 // -------------------------------------------------------------------
 // Update à appeler dans loop()
+#include <OSCMessage.h>
+
+#include "NetworkOSC.h"
+
 void updateNetworkOSC() {
     if (!eth_connected) return;
 
     OSCMessage msgIn;
-    int size = Udp.parsePacket();
-    if (size > 0) {
-        while (size--) msgIn.fill(Udp.read());
-        // main fera le dispatch si besoin
+    int packetSize = Udp.parsePacket();
+    if (packetSize > 0) {
+        // read entire packet into the OSCMessage object
+        while (packetSize--) msgIn.fill(Udp.read());
+
+        // print only first numeric argument
+        if (msgIn.size() > 0) {
+            if (msgIn.isFloat(0)) {
+                Serial.println(msgIn.getFloat(0), 6);  // prints exactly what TD sent
+}
+ else if (msgIn.isInt(0)) {
+                Serial.println(msgIn.getInt(0));
+            }
+        }
     }
 }
+
+
+
+
+
+
+
+
+
 
 // -------------------------------------------------------------------
 // Envoi OSC
