@@ -5,6 +5,5 @@
 
 void SetupSerialCommunication(RhizomeStateAndID &rh);
 void checkConnectionStatus();
-void lookForMessages(); // call from your main loop()
 
 #endif
