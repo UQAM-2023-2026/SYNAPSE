@@ -31,13 +31,4 @@ def onValueChange(channel, sampleIndex, val, prev):
             targets.par.value0 = 1
             targets.par.value1 = 1
 
-        elif channel.name == 'k1':  # symbiose
-            targets.par.value2 = 9999
-
-        elif channel.name == 'k2':  # absorption
-            targets.par.value2 = 3161
-
-        elif channel.name == 'k3':  # saturation
-            targets.par.value2 = 3161
-
     return
