@@ -72,5 +72,8 @@ def onValueChange(channel, sampleIndex, val, prev):
             targets.par.value10 = 1
             targets.par.value11 = 0
             targets.par.value12 = 0
+       # elif op('base1').par.Menu.eval() == 'Idle' or 'symbioseM' or 'symbioseMax'
+       # elif op('base1').par.Menu.eval() == 'Idle' or op('base1').par.Menu.eval() == 'symbioseM' or op('base1').par.Menu.eval() == 'symbioseMax'
+       # elif op('base1').par.Menu == 2 or 3 or 4
     return
 	

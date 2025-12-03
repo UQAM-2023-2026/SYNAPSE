@@ -1,4 +1,4 @@
-# me - this DAT
+﻿# me - this DAT
 # 
 # channel - the Channel object which has changed
 # sampleIndex - the index of the changed sample
@@ -22,13 +22,19 @@ def whileOff(channel, sampleIndex, val, prev):
 def onValueChange(channel, sampleIndex, val, prev):
     if val == 1 and prev == 0:
         targets = op('targets')  # ton Constant CHOP
-        if channel.name == 'kx':
+        if channel.name == 'kx': # rhizome false
             targets.par.value0 = 0 # PLAY VISUEL
             targets.par.value1 = 0 # OPACITY LEVEL
             targets.par.value2 = 0 # CUEPULSE
-        elif channel.name == 'kz':
+        elif channel.name == 'kz': # rhizome branché
             targets.par.value0 = 1
             targets.par.value1 = 1
             targets.par.value2 = 1
+        #elif channel.name == 'k1': # symbiose (Idle, symbioseM et symbioseMax)
+        	#targets.par.value3 = 1 # change couleur contour
+        #elif channel.name == 'k2': # absorption (absorptionM et absorptionMax)
+        	#targets.par.value3 = 1 # change couleur contour
+        #elif channel.name == 'k3': # saturation (saturationM et saturationMax)
+        	#targets.par.value3 = 1 # change couleur contour
     return
 	
