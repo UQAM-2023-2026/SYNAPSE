@@ -15,28 +15,25 @@ bool eth_connected = false;
 void WiFiEvent(WiFiEvent_t event) {
     switch (event) {
         case ARDUINO_EVENT_ETH_START:
-            Serial.println("ETH Started");
+            Serial.println("ETH Démarré");
+            ETH.setHostname("esp32-osc-module");
             break;
 
         case ARDUINO_EVENT_ETH_CONNECTED:
-            Serial.println("ETH Connected");
+            Serial.println("Câble ETH connecté");
             break;
 
         case ARDUINO_EVENT_ETH_GOT_IP:
-            Serial.print("ETH IP: ");
-            Serial.println(ETH.localIP());
             eth_connected = true;
             Udp.begin(_listenPort);
+            Serial.print("IP ETH obtenue : ");
+            Serial.println(ETH.localIP());
             break;
 
         case ARDUINO_EVENT_ETH_DISCONNECTED:
-            Serial.println("ETH Disconnected");
-            eth_connected = false;
-            break;
-
         case ARDUINO_EVENT_ETH_STOP:
-            Serial.println("ETH Stopped");
             eth_connected = false;
+            Serial.println("ETH Déconnecté");
             break;
 
         default:
@@ -103,14 +100,27 @@ void updateNetworkOSC() {
 // -------------------------------------------------------------------
 // Envoi OSC
 // -------------------------------------------------------------------
-void sendOSC(int data0, int data1) {
-    OSCMessage msgOut("/data");
-    msgOut.add(data0);
-    msgOut.add(data1);
-    
+void sendOSC(int idValue, int energyValue) {
+    if (!eth_connected) {
+        idValue = 0;
+        energyValue = 0;
+    }
+
+    // /ID channel
+    OSCMessage msgID("/ID");
+    msgID.add(idValue);  // now sending int
     Udp.beginPacket(_targetIP, _targetPort);
-    msgOut.send(Udp);
+    msgID.send(Udp);
     Udp.endPacket();
+    msgID.empty();
+
+    // /energy channel
+    OSCMessage msgEnergy("/energy");
+    msgEnergy.add(energyValue); // sending int
+    Udp.beginPacket(_targetIP, _targetPort);
+    msgEnergy.send(Udp);
+    Udp.endPacket();
+    msgEnergy.empty();
 }
 
 

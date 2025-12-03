@@ -2,12 +2,6 @@
 #include "NetworkOSC.h"
 #include "SerialCommunication.h"
 
-
-int rhizomeID = 13;         // placeholder ID (int)
-int energyValue = 12;        // placeholder energy (int)
-
-
-
 void setup() {
     Serial.begin(115200);
 
@@ -34,17 +28,22 @@ void setup() {
     );
 }
 
-
 void loop() {
     updateNetworkOSC();
-
     checkConnectionStatus();
-    bool connected = (getRhizomeValue() > 0.0f);
 
-    int idToSend = connected ? rhizomeID : 0;
-    int energyToSend = connected ? energyValue : 0;
+    int rhizomeID = random(0, 100);
+    int energyValue = random(0, 100);
 
-    sendOSC(idToSend, energyToSend);  // both ints
+    Serial.print("Sending: data0=");
+    Serial.print(rhizomeID);
+    Serial.print(" data1=");
+    Serial.println(energyValue);
+
+    sendOSC(rhizomeID, energyValue);
+
+    Serial.print("ESP32 IP: ");
+    Serial.println(ETH.localIP());
 
     delay(100);
 }
