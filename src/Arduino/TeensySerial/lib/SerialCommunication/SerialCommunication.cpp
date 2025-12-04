@@ -50,7 +50,7 @@ static bool connectionRightState = false;
 static unsigned long lastRightChangeTime = 0;
 
 // Debounce settings
-static const unsigned long DEBOUNCE_DELAY = 50; // 50ms debounce
+static const unsigned long DEBOUNCE_DELAY = 150; // 150ms debounce (increased for stability)
 
 // Circular buffer for seen IDs
 static const int MAX_SEEN_IDS = 20;
@@ -197,18 +197,26 @@ void checkConnectionStatus() {
         // Just connected on left
         Serial.println("[EVENT] Left connected - entering listening mode");
         listening = true;
+        connectionLeftState = leftNow;
       } else if (!leftNow && connectionLeftState) {
         // Just disconnected on left
         Serial.println("[EVENT] Left disconnected");
         listening = false;
         waitingForToken = false;
-        discoveryCompleted = false;
+        
+        // Reset discovery state to allow fresh discovery on reconnection
+        if (discoveryCompleted) {
+          Serial.println("  Resetting discovery state for potential reconnection");
+          discoveryCompleted = false;
+        }
         
         // If we were generating, stop immediately
         if (pRhizome->getState() == 2) {
           Serial.println("[STATE] Stopping GENERATING - connection lost");
           pRhizome->setState(0); // back to idle
         }
+        
+        connectionLeftState = leftNow;
         
         // Only full reset if BOTH sides disconnected
         if (!rightNow) {
@@ -219,7 +227,6 @@ void checkConnectionStatus() {
           pRhizome->setState(0);
         }
       }
-      connectionLeftState = leftNow;
     }
   }
 
@@ -237,6 +244,7 @@ void checkConnectionStatus() {
         Serial.println("[DISCOVERY] Initiating token passing...");
         
         discoveryMode = true;
+        connectionRightState = rightNow;
         
         // DON'T reset seenIds if left is already connected!
         // We might have already seen other rhizomes
@@ -250,7 +258,8 @@ void checkConnectionStatus() {
         printSeenIds();
         
         // Send initial discover token with MY ID as origin
-        delay(100); // Let connection stabilize
+        // Wait longer for connection to fully stabilize
+        delay(200); // Increased delay for more stable connection
         sendDiscover();
         
       } else if (!rightNow && connectionRightState) {
@@ -258,13 +267,20 @@ void checkConnectionStatus() {
         Serial.println("[EVENT] Right disconnected");
         discoveryMode = false;
         waitingForToken = false;
-        discoveryCompleted = false;
+        
+        // Reset discovery state to allow fresh discovery on reconnection
+        if (discoveryCompleted) {
+          Serial.println("  Resetting discovery state for potential reconnection");
+          discoveryCompleted = false;
+        }
         
         // If we were generating, stop immediately
         if (pRhizome->getState() == 2) {
           Serial.println("[STATE] Stopping GENERATING - connection lost");
           pRhizome->setState(0); // back to idle
         }
+        
+        connectionRightState = rightNow;
         
         // Only full reset if BOTH sides disconnected
         if (!leftNow) {
@@ -275,9 +291,13 @@ void checkConnectionStatus() {
           pRhizome->setState(0);
         }
       }
-      connectionRightState = rightNow;
     }
   }
+  
+  // CRITICAL: Update connection states continuously to reflect current physical state
+  // This prevents race conditions where state is checked before event handler updates it
+  connectionLeftState = leftNow;
+  connectionRightState = rightNow;
 
   // Continuous behavior based on connection state
   // ALWAYS process messages regardless of flags!
@@ -293,7 +313,8 @@ void checkConnectionStatus() {
     // Right is connected
   }
   
-  // Safety check: if we're in GENERATING state but not both sides connected, abort
+  // Safety check: if we're in GENERATING state but not both sides PHYSICALLY connected, abort
+  // Use leftNow/rightNow (physical state) instead of connectionLeftState/connectionRightState
   if (pRhizome->getState() == 2 && (!leftNow || !rightNow)) {
     Serial.println("[WARNING] In GENERATING state but connection incomplete - reverting to IDLE");
     pRhizome->setState(0);
@@ -347,6 +368,9 @@ void checkConnectionStatus() {
 
 void oscMessageReceived(MicroOscMessage &msg) {
   if (!pRhizome) return;
+  
+  // Debug: log that we received SOMETHING on Serial2 (receive port)
+  Serial.print("[DEBUG] Message received on Serial2 (left/receive port) - ");
 
   if (msg.checkOscAddress("/discover")) {
     // CRITICAL: Read values BEFORE any other operations
@@ -398,17 +422,21 @@ void oscMessageReceived(MicroOscMessage &msg) {
       Serial.print("  Finishing discovery with count: ");
       Serial.println(seenCount);
       
-      // Only send discover_done if we're in discovery mode
-      // (prevents responding to stale tokens after reconnection)
-      if (discoveryMode || waitingForToken) {
+      // If both sides are connected, we can complete discovery even if not in discoveryMode
+      // This handles reconnection scenarios
+      if (connectionLeftState && connectionRightState && !discoveryCompleted) {
+        Serial.println("  Both sides connected - completing discovery");
         oscSlipSend.sendMessage("/discover_done", "i", seenCount);
         pRhizome->setCount(seenCount);
         pRhizome->setState(2); // generating
         discoveryMode = false;
         waitingForToken = false;
-        Serial.println("  Sent /discover_done and entering GENERATING");
+        discoveryCompleted = true;
+        Serial.println("  Entered GENERATING mode");
+      } else if (discoveryCompleted) {
+        Serial.println("  Discovery already completed - ignoring");
       } else {
-        Serial.println("  Not in discovery mode - ignoring stale token");
+        Serial.println("  Not fully connected - ignoring");
       }
       return;
     }
@@ -426,6 +454,10 @@ void oscMessageReceived(MicroOscMessage &msg) {
     // Forward the token with UPDATED count
     Serial.print("[FORWARD] Relaying /discover with updated count=");
     Serial.println(seenCount);
+    Serial.print("  Sending to right (Serial3): origin=");
+    Serial.print(origin);
+    Serial.print(" count=");
+    Serial.println(seenCount);
     
     oscSlipSend.sendMessage("/discover", "ii", origin, seenCount);
     Serial.println("---");
@@ -436,9 +468,9 @@ void oscMessageReceived(MicroOscMessage &msg) {
     Serial.print("[RECV] /discover_done total=");
     Serial.println(total);
     
-    // Prevent infinite loop: only process once
-    if (discoveryCompleted) {
-      Serial.println("  Discovery already completed - ignoring");
+    // Allow reprocessing if we just reset discovery state (reconnection scenario)
+    if (discoveryCompleted && pRhizome->getState() == 2) {
+      Serial.println("  Discovery already completed and still GENERATING - ignoring");
       Serial.println("---");
       return;
     }
