@@ -42,8 +42,7 @@ void loop() {
 
     sendOSC(rhizomeID, energyValue);
 
-    Serial.print("ESP32 IP: ");
-    Serial.println(ETH.localIP());
+    
 
     delay(100);
 }
