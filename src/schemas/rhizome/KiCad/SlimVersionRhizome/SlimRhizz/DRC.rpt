@@ -1,0 +1,90 @@
+** Drc report for SlimRhizz.kicad_pcb **
+** Created on 2025-12-04T22:24:06-0500 **
+
+** Found 20 DRC violations **
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(91.1900 mm, 113.7750 mm): Segment of u1 on F.Silkscreen
+    @(90.7500 mm, 131.6323 mm): Reference field of C2
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(160.7500 mm, 115.6323 mm): Reference field of C3
+    @(160.4500 mm, 115.5000 mm): Reference field of J3
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5570 mm, 114.9800 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5540 mm, 115.0200 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5490 mm, 115.0600 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5450 mm, 115.1000 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5400 mm, 115.1400 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5350 mm, 115.1800 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(178.5000 mm, 114.5000 mm): Circle of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5800 mm, 114.5000 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5800 mm, 114.5400 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5790 mm, 114.5800 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5790 mm, 114.6200 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5770 mm, 114.6600 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5760 mm, 114.7000 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5740 mm, 114.7400 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(183.5720 mm, 114.7800 mm): Segment of C1 on F.Silkscreen
+    @(183.4500 mm, 114.7500 mm): Reference field of J4
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(185.3000 mm, 117.7500 mm): Segment of J4 on F.Silkscreen
+    @(184.7500 mm, 114.5000 mm): Reference field of C1
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(184.5400 mm, 108.4400 mm): Segment of J4 on F.Silkscreen
+    @(184.7500 mm, 114.5000 mm): Reference field of C1
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; warning
+    @(184.7500 mm, 114.5000 mm): Reference field of C1
+    @(184.5500 mm, 111.7500 mm): Segment of J4 on F.Silkscreen
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **
