@@ -31,7 +31,7 @@ def onValueChange(channel, sampleIndex, val, prev):
     if val == 1 and prev == 0:
         targets = op('targets')  # ton Constant CHOP
 
-        if channel.name == 'k0':  # idle
+        if channel.name == 'k0' or channel.name == 'idle':
             targets.par.value0  = 0.9
             targets.par.value1  = 0.9
             targets.par.value2  = 0
@@ -46,7 +46,7 @@ def onValueChange(channel, sampleIndex, val, prev):
             targets.par.value11 = 0
             targets.par.value12 = 0
 
-        elif channel.name == 'k1':  # symbiose
+        elif channel.name == 'k1' or channel.name == 'symbiose':
             targets.par.value0  = 1
             targets.par.value1  = 1
             targets.par.value2  = 0
@@ -61,7 +61,7 @@ def onValueChange(channel, sampleIndex, val, prev):
             targets.par.value11 = 0
             targets.par.value12 = 0
 
-        elif channel.name == 'k2':  # absorption
+        elif channel.name == 'k2' or channel.name == 'absorption':
             targets.par.value0  = 1
             targets.par.value1  = 1
             targets.par.value2  = 0
@@ -76,7 +76,7 @@ def onValueChange(channel, sampleIndex, val, prev):
             targets.par.value11 = 210
             targets.par.value12 = 179
 
-        elif channel.name == 'k3':  # saturation
+        elif channel.name == 'k3' or channel.name == 'saturation':
             targets.par.value0  = 1.2
             targets.par.value1  = 1
             targets.par.value2  = 1
