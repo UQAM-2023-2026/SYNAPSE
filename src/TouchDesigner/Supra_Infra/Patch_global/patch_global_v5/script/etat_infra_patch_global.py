@@ -31,19 +31,19 @@ def whileOff(channel, sampleIndex, val, prev):
 def onValueChange(channel, sampleIndex, val, prev):
 	   # States = op('States')  # ton Constant CHOP
 	    if val == absorptionM:
-	       op('select9').par.renameto = 2
+	       op('select8').par.renameto = 2
 	    elif val == absorptionMax: 
-	       op('select9').par.renameto = 1
+	       op('select8').par.renameto = 1
 	    elif val == Idle:
-	       op('select9').par.renameto = 3
+	       op('select8').par.renameto = 3
 	    elif val == symbioseM:
-	       op('select9').par.renameto = 4
+	       op('select8').par.renameto = 4
 	    elif val == symbioseMax:
-	       op('select9').par.renameto = 5
+	       op('select8').par.renameto = 5
 	    elif val == saturationM:
-	       op('select9').par.renameto = 6
+	       op('select8').par.renameto = 6
 	    elif val == saturationMax:
-	       op('select9').par.renameto = 7
+	       op('select8').par.renameto = 7
 	    return
 	
 	
