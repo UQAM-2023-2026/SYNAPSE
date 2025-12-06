@@ -89,7 +89,7 @@ def whileOff(channel, sampleIndex, val, prev):
 
     # write back
     set_chop_channel(rz, 'regen_t', regen_t)
-    set_chop_channel(rz, 'energy', new_energy)
+    #set_chop_channel(rz, 'energy', new_energy)
 
     # si on a atteint la fin de la regen -> on fixe au min et on sort du mode regen
     if progress >= 1.0:
