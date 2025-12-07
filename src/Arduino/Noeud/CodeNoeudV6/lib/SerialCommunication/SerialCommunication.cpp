@@ -8,7 +8,7 @@
 #define SERIAL_PORT Serial2
 #define SERIAL_BAUD 9600
 
-#define NODE_DRAIN_RATE 5.0f  // Énergie/seconde à drainer
+#define NODE_DRAIN_RATE 5.0f  // Ã‰nergie/seconde Ã  drainer
 
 MicroOscSlip<32> oscNode(&Serial2);
 
@@ -88,7 +88,7 @@ void lookForMessages(MicroOscMessage &msg) {
     
     Serial.print("[SEND] /node drainRate=");
     Serial.println(NODE_DRAIN_RATE);
-    Serial.println("  → Chain updated, last rhizome will drain");
+    Serial.println("  â†’ Chain updated, last rhizome will drain");
     Serial.println("---");
     
   } else if (msg.checkOscAddress("/energy")) {
@@ -104,7 +104,7 @@ void lookForMessages(MicroOscMessage &msg) {
     energyValue = static_cast<int>(energy);
 
     if (energy <= 5) {
-      Serial.println("  ⚠️  WARNING: Rhizome nearly depleted!");
+      Serial.println("  âš ï¸  WARNING: Rhizome nearly depleted!");
     }
   }
 }
@@ -122,5 +122,3 @@ void loopSendToTouch() {
 
   sendOSC(idToSend, energyToSend);
 }
-
-
