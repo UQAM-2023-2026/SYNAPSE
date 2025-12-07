@@ -29,7 +29,7 @@ public:
 private:
   uint8_t id;       // 0–19
   uint8_t count;    // Number of rhizome
-  uint8_t state;    // 0–3 (idle, generating, giving, error)
+  uint8_t state;    // 0–4 (idle, generating, giving, error)
   float energy;   // 0–100
 
 };

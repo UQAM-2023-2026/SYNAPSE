@@ -8,7 +8,7 @@
 
 
 /*-----------Rhizome base stats----------------------*/
-RhizomeStateAndID rhizome(2); // Initialize Rhizome with ID 0
+RhizomeStateAndID rhizome(0); // Initialize Rhizome with ID 0
 /*---------------------------------------------------*/
 
 

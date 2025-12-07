@@ -40,17 +40,15 @@ static float currentDrainRate = 0.0f;
 static bool connectedToNode = false;
 static unsigned long lastDrainSent = 0;
 static unsigned long lastDrainReceived = 0;
+static unsigned long lastEnergySent = 0; // NEW: track energy updates to node
 static const unsigned long DRAIN_SEND_INTERVAL = 500; // Send drain every 500ms
+static const unsigned long ENERGY_SEND_INTERVAL = 100; // Send energy every 100ms to node
 static const unsigned long DRAIN_TIMEOUT = 1500; // If no drain received for 1.5s, become giver
 
 // Discovery timing (non-blocking)
-static unsigned long lastGeneratingActivity = 0;
 static unsigned long discoveryInitiatedTime = 0;
 static bool discoverySent = false;
-static const unsigned long DISCOVERY_DELAY = 700; // Wait 500ms before sending discover (was 200)
-static const unsigned long GENERATING_TIMEOUT = 8000; // If no activity for 8s, loop is broken (was 3000)
-static const unsigned long HEARTBEAT_INTERVAL = 500; // ms - send heartbeat while generating
-static unsigned long lastHeartbeatSent = 0;
+static const unsigned long DISCOVERY_DELAY = 100; // Quick discovery
 
 // Status monitoring
 static unsigned long lastStatusPrint = 0;
@@ -67,7 +65,7 @@ static bool connectionRightState = false;
 static unsigned long lastRightChangeTime = 0;
 
 // Debounce settings
-static const unsigned long DEBOUNCE_DELAY = 150; // 150ms debounce (increased for stability)
+static const unsigned long DEBOUNCE_DELAY = 50; // Very short for quick response
 
 // Circular buffer for seen IDs
 static const int MAX_SEEN_IDS = 20;
@@ -339,17 +337,8 @@ void checkConnectionStatus() {
   connectionRightState = rightNow;
   
   // Non-blocking discovery send (replaces delay())
-  if (discoveryMode && !discoverySent && (now - discoveryInitiatedTime >= DISCOVERY_DELAY)) {
+  if (discoveryMode && !discoverySent /*&& (now - discoveryInitiatedTime >= DISCOVERY_DELAY)*/) {
     sendDiscover();
-  }
-
-  // Heartbeat: when generating, send a small keep-alive so all nodes update lastGeneratingActivity
-  if (pRhizome->getState() == 2) {
-    if (now - lastHeartbeatSent >= HEARTBEAT_INTERVAL) {
-      lastHeartbeatSent = now;
-      // send small heartbeat carrying our id
-      oscSlipSend.sendMessage("/hb", "i", pRhizome->getID());
-    }
   }
 
   // Continuous behavior based on connection state
@@ -367,26 +356,11 @@ void checkConnectionStatus() {
   }
   
   // Safety check: if we're in GENERATING state but not both sides PHYSICALLY connected, abort
-  // Use leftNow/rightNow (physical state) instead of connectionLeftState/connectionRightState
   if (pRhizome->getState() == 2 && (!leftNow || !rightNow)) {
     Serial.println("[WARNING] In GENERATING state but connection incomplete - reverting to IDLE");
     pRhizome->setState(0);
     discoveryMode = false;
     discoveryCompleted = false;
-  }
-  
-  // GENERATING heartbeat check: if no messages received for a while, loop is broken
-  if (pRhizome->getState() == 2) {
-    if (now - lastGeneratingActivity > GENERATING_TIMEOUT) {
-      Serial.println("[WARNING] GENERATING timeout - no loop activity detected");
-      Serial.println("[STATE] Loop broken - reverting to IDLE");
-      pRhizome->setState(0);
-      discoveryMode = false;
-      discoveryCompleted = false;
-      clearSeenIds();
-      addSeenId(pRhizome->getID());
-      pRhizome->setCount(1);
-    }
   }
   
   // MIDDLEMAN heartbeat: periodically send drain to previous rhizome
@@ -411,14 +385,26 @@ void checkConnectionStatus() {
   
   // GIVING_TO_NODE: Check if we've depleted energy
   if (pRhizome->getState() == 3) {
+    // Continuously send energy to node
+    if (connectedToNode && now - lastEnergySent >= ENERGY_SEND_INTERVAL) {
+      lastEnergySent = now;
+      float energy = pRhizome->getEnergy();
+      int energyPercent = (int)energy; // Two-step conversion
+      oscSlipSend.sendMessage("/energy", "ii", pRhizome->getID(), energyPercent);
+      
+      // Debug log
+      Serial.print("[ENERGY SEND] ");
+      Serial.print(energy);
+      Serial.print(" -> ");
+      Serial.println(energyPercent);
+    }
+    
     // Check if we've run out of energy
     if (pRhizome->getEnergy() <= 0.1f) {
       Serial.println("[GIVING] Energy depleted!");
-      // Stop giving, disconnect from node chain
       pRhizome->setState(0);
       connectedToNode = false;
       setNodeDrainRate(0.0f);
-      // The middleman before us will timeout and become the new giver
     }
   }
   
@@ -434,8 +420,7 @@ void checkConnectionStatus() {
 
   // Both disconnected - ensure idle state
   if (!leftNow && !rightNow) {
-    // only reset if we were actually active (avoid clearing seenIds repeatedly when already idle)
-    if ((listening || discoveryMode) || pRhizome->getState() != 0) {
+    if (listening || discoveryMode) {
       Serial.println("[RESET] Entering idle state (both disconnected)");
       listening = false;
       discoveryMode = false;
@@ -487,25 +472,9 @@ void checkConnectionStatus() {
 
 void oscMessageReceived(MicroOscMessage &msg) {
   if (!pRhizome) return;
-  
-  // Debug: log that we received SOMETHING on Serial2 (receive port)
-  Serial.print("[DEBUG] Message received on Serial2 (left/receive port) - ");
-  
-  // Mark activity for GENERATING heartbeat (any message = loop is alive)
-  if (pRhizome->getState() == 2) {
-    lastGeneratingActivity = millis();
-  }
-
-  if (msg.checkOscAddress("/hb")) {
-    // simple heartbeat from another rhizome — treat as activity when generating
-    int origin = msg.nextAsInt();
-    if (pRhizome->getState() == 2) lastGeneratingActivity = millis();
-    // nothing else to do for hb
-    return;
-  }
 
   if (msg.checkOscAddress("/discover")) {
-    // CRITICAL: Read values BEFORE any other operations
+    // Read values BEFORE any other operations
     int origin = msg.nextAsInt();
     int incomingCount = msg.nextAsInt();
     
@@ -532,9 +501,9 @@ void oscMessageReceived(MicroOscMessage &msg) {
       Serial.print(incomingCount);
       Serial.println(")");
       
-      // Use the HIGHER value between our local count, incoming count and current stored count
+      // Use the HIGHER value between our local count and incoming count
+      // This handles cases where intermediate rhizomes saw more IDs
       int finalTotal = max(seenCount, incomingCount);
-      finalTotal = max(finalTotal, pRhizome->getCount());
       
       Serial.print("  Final total (using max): ");
       Serial.println(finalTotal);
@@ -547,7 +516,6 @@ void oscMessageReceived(MicroOscMessage &msg) {
       discoveryMode = false;
       waitingForToken = false;
       discoveryCompleted = true;
-      lastGeneratingActivity = millis(); // Mark activity
       
       Serial.println("[STATE] Entering GENERATING mode");
       return;
@@ -563,17 +531,14 @@ void oscMessageReceived(MicroOscMessage &msg) {
       // This handles reconnection scenarios
       if (connectionLeftState && connectionRightState && !discoveryCompleted) {
         Serial.println("  Both sides connected - completing discovery");
-        int chosen = max(seenCount, pRhizome->getCount());
-        oscSlipSend.sendMessage("/discover_done", "i", chosen);
-        pRhizome->setCount(chosen);
+        oscSlipSend.sendMessage("/discover_done", "i", seenCount);
+        pRhizome->setCount(seenCount);
         pRhizome->setState(2); // generating
         discoveryMode = false;
         waitingForToken = false;
         discoveryCompleted = true;
-        lastGeneratingActivity = millis(); // Mark activity
         Serial.println("  Entered GENERATING mode");
-      } 
-      else if (discoveryCompleted) {
+      } else if (discoveryCompleted) {
         Serial.println("  Discovery already completed - ignoring");
       } else {
         Serial.println("  Not fully connected - ignoring");
@@ -645,30 +610,26 @@ void oscMessageReceived(MicroOscMessage &msg) {
       return;
     }
     
-    // Update our count to match the final total, but never decrease it
-    int finalCount = max(total, seenCount);
-    finalCount = max(finalCount, pRhizome->getCount());
-    
-    if (finalCount > pRhizome->getCount()) {
+    // Update our count to match the final total
+    if (total > seenCount) {
       Serial.print("  Updating count from ");
-      Serial.print(pRhizome->getCount());
+      Serial.print(seenCount);
       Serial.print(" to ");
-      Serial.println(finalCount);
+      Serial.println(total);
     }
     
-    pRhizome->setCount(finalCount);
+    pRhizome->setCount(total);
     pRhizome->setState(2); // generating
     discoveryMode = false;
     waitingForToken = false;
     discoveryCompleted = true;
-    lastGeneratingActivity = millis(); // Mark activity
     
     Serial.println("[STATE] Entering GENERATING mode (discovery complete)");
     
-    // Forward to next rhizome ONLY ONCE with the resolved finalCount
+    // Forward to next rhizome ONLY ONCE
     if (connectionRightState) {
       Serial.println("  Forwarding /discover_done (one time only)");
-      oscSlipSend.sendMessage("/discover_done", "i", finalCount);
+      oscSlipSend.sendMessage("/discover_done", "i", total);
     }
     Serial.println("---");
 
@@ -695,15 +656,21 @@ void oscMessageReceived(MicroOscMessage &msg) {
     } else {
       // No rhizome behind us, we are the giver
       Serial.println("[STATE] Becoming GIVING_TO_NODE - starting energy drain");
-      pRhizome->setState(3); // GIVING_TO_NODE state
+      pRhizome->setState(3);
       setNodeDrainRate(drainRate);
       
       // Send our current energy to node
-      oscSlipSend.sendMessage("/energy", "ii", pRhizome->getID(), pRhizome->getEnergy());
+      float energy = pRhizome->getEnergy();
+      int energyPercent = (int)energy;
+      oscSlipSend.sendMessage("/energy", "ii", pRhizome->getID(), energyPercent);
+      lastEnergySent = millis();
+      
       Serial.print("  Drain rate: ");
       Serial.print(drainRate);
       Serial.print(" | Energy: ");
-      Serial.println(pRhizome->getEnergy());
+      Serial.print(energy);
+      Serial.print(" -> sending: ");
+      Serial.println(energyPercent);
     }
     Serial.println("---");
     
@@ -723,8 +690,9 @@ void oscMessageReceived(MicroOscMessage &msg) {
     
     setNodeDrainRate(drainRate);
     
-    // Acknowledge by sending our energy back
-    oscSlipReceive.sendMessage("/energy", "ii", pRhizome->getID(), pRhizome->getEnergy());
+    // Acknowledge by sending our energy back (convert float to int)
+    int energyPercent = (int)(pRhizome->getEnergy());
+    oscSlipReceive.sendMessage("/energy", "ii", pRhizome->getID(), energyPercent);
     Serial.print("  Drain rate: ");
     Serial.print(drainRate);
     Serial.print(" | Energy: ");
@@ -739,17 +707,26 @@ void isThisANodeMessage(MicroOscMessage &msg) {
   if (msg.checkOscAddress("/node")) {
     Serial.println("---");
     Serial.println("[RECV] /node on send port");
-    pRhizome->setState(3);
     
     float drainRate = msg.nextAsFloat();
+    currentDrainRate = drainRate;
+    connectedToNode = true;
+    
+    pRhizome->setState(3);
     setNodeDrainRate(drainRate);
     
-    oscSlipSend.sendMessage("/energy", "ii", pRhizome->getID(), pRhizome->getEnergy());
+    // Send initial energy to node
+    float energy = pRhizome->getEnergy();
+    int energyPercent = (int)energy;
+    oscSlipSend.sendMessage("/energy", "ii", pRhizome->getID(), energyPercent);
+    lastEnergySent = millis();
     
     Serial.print("  Drain rate: ");
     Serial.print(drainRate);
     Serial.print(" | Energy: ");
-    Serial.println(pRhizome->getEnergy());
+    Serial.print(energy);
+    Serial.print(" -> sending: ");
+    Serial.println(energyPercent);
     Serial.println("---");
   }
 }
