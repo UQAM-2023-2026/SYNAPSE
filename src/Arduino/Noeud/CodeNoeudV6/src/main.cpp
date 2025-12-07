@@ -4,10 +4,6 @@
 #include "NodeStateAndID.h"
 
 
-
-
-
-
 void setup() {
     Serial.begin(115200);
 
@@ -17,9 +13,9 @@ void setup() {
 
     initNetworkOSC(
         //local_IP
-        //IPAddress(192,168,0,50),
+        IPAddress(192,168,0,50),
         // ESP 
-        IPAddress(10,0,2,250),
+        //IPAddress(10,0,2,250),
         //gateway
         IPAddress(10,0,2,1),
         //subnet
@@ -31,9 +27,9 @@ void setup() {
         //osc_listen_port
         9699,
         //target_IP
-        //IPAddress(192,168,0,35),
+        IPAddress(192,168,0,35),
         // adresse ordi lah lah 
-        IPAddress(10,0,2,247),
+        //IPAddress(10,0,2,247),
         //target_port
         8000
     );
@@ -45,11 +41,8 @@ void setup() {
 
 void loop() {
     updateNetworkOSC();
-
     checkConnectionStatus();
-
     loopSendToTouch();
-
     delay(100);
 }
 

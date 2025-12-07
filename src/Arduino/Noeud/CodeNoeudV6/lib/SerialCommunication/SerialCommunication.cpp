@@ -14,8 +14,9 @@ MicroOscSlip<32> oscNode(&Serial2);
 
 static NodeStateAndID *pNode = nullptr;
 
-int rhizomeID = 13;         // placeholder ID (int)
-int energyValue = 12;        // placeholder energy (int)
+int rhizomeID = 14;          // Teensy's ID
+int energyValue = 12;        // Teensy's energy level
+
 
 /*--------------------ISR FLAGS---------------------*/
 static volatile bool connectedEvent = false;
@@ -40,20 +41,29 @@ void beginSerialCommunication(NodeStateAndID &node) {
 
 void checkConnectionStatus() {
     bool currentlyConnected = (digitalRead(CONNECT_PIN) == LOW);
-
+    
     if(currentlyConnected != connectionState) {
         connectionState = currentlyConnected;
-
+        
         if(connectionState) {
             digitalWrite(13, HIGH);
             Serial.println("Rhizome Connected!");
-            oscNode.onOscMessageReceived(lookForMessages);
+            
+            // Clear any stale data in serial buffer on new connection
+            while(Serial2.available()) {
+                Serial2.read();
+            }
         } else {
             digitalWrite(13, LOW);
             Serial.println("Rhizome Disconnected!");
-            rhizomeID = 0;  // reset ID on disconnect
+            rhizomeID = 0;
             energyValue = 0;
         }
+    }
+    
+    // Process incoming OSC messages while connected
+    if(connectionState) {
+        oscNode.onOscMessageReceived(lookForMessages);
     }
 }
 
@@ -110,7 +120,7 @@ void loopSendToTouch() {
   int idToSend = connected ? rhizomeID : 0;
   int energyToSend = connected ? energyValue : 0;
 
-    sendOSC(idToSend, energyToSend);  // both ints
+  sendOSC(idToSend, energyToSend);
 }
 
 
