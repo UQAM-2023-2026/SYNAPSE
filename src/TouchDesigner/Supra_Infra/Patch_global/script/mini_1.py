@@ -22,25 +22,23 @@ def whileOff(channel, sampleIndex, val, prev):
 def onValueChange(channel, sampleIndex, val, prev):
     if val == 1 and prev == 0:
         targets = op('targets')  # ton Constant CHOP
-        
         if channel.name == 'kx':
             targets.par.value0 = 0.08
             targets.par.value1 = 1
-            
         elif channel.name == 'kz':
             targets.par.value0 = 1
             targets.par.value1 = 1
             
-            
-    elif channel.name == 'rhizome':
-        targets = op('targets')  # ton Constant CHOP
+	elif channel.name == 'rhizome':
+		targets = op('targets')  # ton Constant CHOP
 
-        if val == 0: # PAS DE rhizome 
-            targets.par.value0 = 0.08
+		if val == 0: # PAS DE rhizome 
+			targets.par.value0 = 0.08
             targets.par.value1 = 1
 
-        elif val == 1: # rhizome connexion
+		elif val == 1: # rhizome connexion
             targets.par.value0 = 1
             targets.par.value1 = 1
-    return
+
+	return
 	

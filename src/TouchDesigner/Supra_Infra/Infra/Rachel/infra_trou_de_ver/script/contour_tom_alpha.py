@@ -1,4 +1,4 @@
-# me - this DAT
+﻿# me - this DAT
 # 
 # channel - the Channel object which has changed
 # sampleIndex - the index of the changed sample
@@ -22,25 +22,25 @@ def whileOff(channel, sampleIndex, val, prev):
 def onValueChange(channel, sampleIndex, val, prev):
     if val == 1 and prev == 0:
         targets = op('targets')  # ton Constant CHOP
-        
-        if channel.name == 'kx':
-            targets.par.value0 = 0.08
-            targets.par.value1 = 1
-            
-        elif channel.name == 'kz':
+        if channel.name == 'kx': # rhizome false
+            targets.par.value0 = 0 # PLAY VISUEL
+            targets.par.value1 = 0 # OPACITY LEVEL
+            targets.par.value2 = 0 # CUEPULSE
+        elif channel.name == 'kz': # rhizome branché
             targets.par.value0 = 1
             targets.par.value1 = 1
-            
-            
+            targets.par.value2 = 1
+    
     elif channel.name == 'rhizome':
         targets = op('targets')  # ton Constant CHOP
-
-        if val == 0: # PAS DE rhizome 
-            targets.par.value0 = 0.08
-            targets.par.value1 = 1
-
-        elif val == 1: # rhizome connexion
+        if val == 0: # rhizome false
+            targets.par.value0 = 0 # PLAY VISUEL
+            targets.par.value1 = 0 # OPACITY LEVEL
+            targets.par.value2 = 0 # CUEPULSE
+        elif val == 1: # rhizome branché
             targets.par.value0 = 1
             targets.par.value1 = 1
+            targets.par.value2 = 1
+            
     return
 	

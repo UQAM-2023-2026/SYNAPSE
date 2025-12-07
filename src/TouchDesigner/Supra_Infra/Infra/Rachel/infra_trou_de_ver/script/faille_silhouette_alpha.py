@@ -22,15 +22,14 @@ def whileOff(channel, sampleIndex, val, prev):
 def onValueChange(channel, sampleIndex, val, prev):
     if val == 1 and prev == 0:
         targets = op('targets')  # ton Constant CHOP
-        
-        if channel.name == 'kx':
+
+        if channel.name == 'kx': # PAS DE rhizome 
             targets.par.value0 = 0.08
             targets.par.value1 = 1
-            
-        elif channel.name == 'kz':
+
+        elif channel.name == 'kz': # rhizome connexion
             targets.par.value0 = 1
             targets.par.value1 = 1
-            
             
     elif channel.name == 'rhizome':
         targets = op('targets')  # ton Constant CHOP
@@ -42,5 +41,5 @@ def onValueChange(channel, sampleIndex, val, prev):
         elif val == 1: # rhizome connexion
             targets.par.value0 = 1
             targets.par.value1 = 1
+
     return
-	
