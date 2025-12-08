@@ -1,6 +1,10 @@
 *.png
 *.mov
+<<<<<<< Updated upstream
 src/TouchDesigner/Routing/.DS_Store
 .DS_Store
 src/TouchDesigner/.DS_Store
 src/TouchDesigner/Routing/.DS_Store
+=======
+*.jpg
+>>>>>>> Stashed changes
