@@ -96,12 +96,11 @@ void updateNetworkOSC() {
         // read entire packet into the OSCMessage object
         while (packetSize--) msgIn.fill(Udp.read());
 
-        // print only first numeric argument
-        if (msgIn.size() > 0) {
+        // Update drain rate silently (no print)
+        if (msgIn.size() > 0 && pNode) {
             if (msgIn.isFloat(0)) {
-                Serial.println(msgIn.getFloat(0), 6);  // prints exactly what TD sent
+                pNode->setDrainRate(msgIn.getFloat(0));
             } else if (msgIn.isInt(0)) {
-                Serial.println(msgIn.getInt(0));
                 pNode->setDrainRate(static_cast<float>(msgIn.getInt(0)));
             }
         }
@@ -114,12 +113,12 @@ void updateNetworkOSC() {
 void sendOSC(int idValue, int energyValue) {
     if (!eth_connected) {
         idValue = 0;
-        energyValue = 0.0f;
+        energyValue = 0;
     }
 
     // /ID channel
     OSCMessage msgID("/ID");
-    msgID.add(idValue);  // now sending int
+    msgID.add(idValue);
     Udp.beginPacket(_targetIP, _targetPort);
     msgID.send(Udp);
     Udp.endPacket();
@@ -127,17 +126,9 @@ void sendOSC(int idValue, int energyValue) {
 
     // /energy channel
     OSCMessage msgEnergy("/energy");
-    msgEnergy.add(energyValue); // sending float
+    msgEnergy.add(energyValue);
     Udp.beginPacket(_targetIP, _targetPort);
     msgEnergy.send(Udp);
     Udp.endPacket();
     msgEnergy.empty();
 }
-
-
-
-
-
-
-
-
