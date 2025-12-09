@@ -61,7 +61,6 @@ def whileOff(channel: Channel, sampleIndex: int, val: float,
 def onValueChange(channel: Channel, sampleIndex: int, val: float, 
 				  prev: float):
 	toggles = op('par1')      # CHOP avec les 0/1
-	
 
 	# --- STATE ---
 	if op('par1')[1] == True:

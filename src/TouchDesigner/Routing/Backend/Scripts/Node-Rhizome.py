@@ -86,15 +86,22 @@ def onValueChange(channel, sampleIndex, val, prev):
 	if rhiz_id > 0:
 		target_op.par.Connected = True
 		
-	if node_id == 1 and node_level == 0:
+	if node_id == 1 and node_level == 1:
 		target_op.par.Targetindex = 0
 	
-	elif node_id == 2 and node_level == 0:
+	elif node_id == 2 and node_level == 1:
 		target_op.par.Targetindex = 1
     
-	elif node_id == 1 and node_level == 1:
+	elif node_id == 1 and node_level == 0:
 		target_op.par.Targetindex = 3
 
-	elif node_id == 2 and node_level == 1:
+	elif node_id == 2 and node_level == 0:
 		target_op.par.Targetindex = 4
+
+	if node_level == 0:
+		op('constant4').par.const0value = op.Dispatcher.op('touchout1')['State_Infra']
+
+	elif node_level == 1:
+		op('constant4').par.const0value = op.Dispatcher.op('touchout1')['State_Supra']
+
 	return
