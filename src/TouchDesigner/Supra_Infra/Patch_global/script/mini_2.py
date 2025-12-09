@@ -1,4 +1,4 @@
-# me - this DAT
+﻿# me - this DAT
 # 
 # channel - the Channel object which has changed
 # sampleIndex - the index of the changed sample
@@ -32,11 +32,11 @@ def onValueChange(channel, sampleIndex, val, prev):
     elif channel.name == 'rhizome':
         targets = op('targets')  # ton Constant CHOP
 
-        if val == 0: # PAS DE rhizome 
+        if (op('Etat_Infra_out')[N1_RZID] == 0 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 0 & op('Etat_Infra_out')[N2_Level] == 0) # rhizome branché 
             targets.par.value0 = 0.08
             targets.par.value1 = 1
 
-        elif val == 1: # rhizome connexion
+        if (op('Etat_Infra_out')[N1_RZID] == 1 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 1 & op('Etat_Infra_out')[N2_Level] == 0) # rhizome branché
             targets.par.value0 = 1
             targets.par.value1 = 1
     return
