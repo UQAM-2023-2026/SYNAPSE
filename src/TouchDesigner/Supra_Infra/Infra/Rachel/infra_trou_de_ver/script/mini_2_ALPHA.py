@@ -29,14 +29,14 @@ def onValueChange(channel, sampleIndex, val, prev):
             targets.par.value0 = 1
             targets.par.value1 = 1
             
-    elif channel.name == 'rhizome':
+    elif channel.name == 'RZ1_Connected' or 'RZ2_Connected':
         targets = op('targets')  # ton Constant CHOP
 
-        if (op('Etat_Infra_out')[N1_RZID] == 0 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 0 & op('Etat_Infra_out')[N2_Level] == 0) # rhizome branché 
+        if (op('Etat_Infra_out')[N1_RZID] == 0 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 0 & op('Etat_Infra_out')[N2_Level] == 0): # rhizome branché 
             targets.par.value0 = 0.08
             targets.par.value1 = 1
 
-        if (op('Etat_Infra_out')[N1_RZID] == 1 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 1 & op('Etat_Infra_out')[N2_Level] == 0) # rhizome branché
+        if (op('Etat_Infra_out')[N1_RZID] == 1 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 1 & op('Etat_Infra_out')[N2_Level] == 0): # rhizome branché
             targets.par.value0 = 1
             targets.par.value1 = 1
     return

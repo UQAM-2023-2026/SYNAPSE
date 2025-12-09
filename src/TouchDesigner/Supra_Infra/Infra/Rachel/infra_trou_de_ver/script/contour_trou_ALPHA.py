@@ -33,13 +33,13 @@ def onValueChange(channel, sampleIndex, val, prev):
             targets.par.value1 = 1
             targets.par.value2 = 1
     
-    elif channel.name == 'rhizome':
+    elif channel.name == 'RZ1_Connected' or 'RZ2_Connected':
         targets = op('targets')  # ton Constant CHOP
-        if (op('Etat_Infra_out')[N1_RZID] == 0 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 0 & op('Etat_Infra_out')[N2_Level] == 0) # rhizome pas connecté
+        if (op('Etat_Infra_out')[N1_RZID] == 0 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 0 & op('Etat_Infra_out')[N2_Level] == 0): # rhizome pas connecté
             targets.par.value0 = 0 # PLAY VISUEL
             targets.par.value1 = 0 # OPACITY LEVEL
             targets.par.value2 = 0 # CUEPULSE
-        elif (op('Etat_Infra_out')[N1_RZID] == 1 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 1 & op('Etat_Infra_out')[N2_Level] == 0) # rhizome connexion
+        elif (op('Etat_Infra_out')[N1_RZID] == 1 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 1 & op('Etat_Infra_out')[N2_Level] == 0): # rhizome connexion
             targets.par.value0 = 1
             targets.par.value1 = 1
             targets.par.value2 = 1

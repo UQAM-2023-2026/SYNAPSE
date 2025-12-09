@@ -22,22 +22,24 @@ def whileOff(channel, sampleIndex, val, prev):
 def onValueChange(channel, sampleIndex, val, prev):
     if val == 1 and prev == 0:
         targets = op('targets')  # ton Constant CHOP
-        if channel.name == 'kx':
+
+        if channel.name == 'kx': # PAS DE rhizome 
             targets.par.value0 = 0.08
             targets.par.value1 = 1
-        elif channel.name == 'kz':
+
+        elif channel.name == 'kz': # rhizome connexion
             targets.par.value0 = 1
             targets.par.value1 = 1
             
-    elif channel.name == 'rhizome':
+    elif channel.name == 'RZ1_Connected' or 'RZ2_Connected':
         targets = op('targets')  # ton Constant CHOP
 
-        if (op('Etat_Infra_out')[N1_RZID] == 0 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 0 & op('Etat_Infra_out')[N2_Level] == 0) # rhizome branché 
+        if (op('Etat_Infra_out')[N1_RZID] == 0 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 0 & op('Etat_Infra_out')[N2_Level] == 0): # rhizome pas connecté 
             targets.par.value0 = 0.08
             targets.par.value1 = 1
 
-        if (op('Etat_Infra_out')[N1_RZID] == 1 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 1 & op('Etat_Infra_out')[N2_Level] == 0) # rhizome branché
+        elif (op('Etat_Infra_out')[N1_RZID] == 1 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 1 & op('Etat_Infra_out')[N2_Level] == 0): # rhizome connexion
             targets.par.value0 = 1
             targets.par.value1 = 1
+
     return
-	
