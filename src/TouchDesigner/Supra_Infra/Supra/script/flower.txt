@@ -1,0 +1,43 @@
+﻿def onCook(scriptOp):
+	scriptOp.clear()
+	
+	# 1. On récupère les données avec les NOMS OFFICIELS
+	# Si les noms n'existent pas encore, on met 0 par sécurité
+	try:
+		s = scriptOp.inputs[0]['in_energie_supra'].eval()
+		i = scriptOp.inputs[0]['in_energie_infra'].eval()
+	except:
+		s = 0
+		i = 0
+	
+	# 2. Calcul de la différence pour la Symbiose
+	diff = abs(s - i)
+	
+	val = 0 # Valeur par défaut (Absorption Max)
+
+	# --- LOGIQUE DES ÉTATS (Selon la charte) ---
+
+	# EST-CE UNE SYMBIOSE ? (Énergies égales à +/- 2%)
+	if diff <= 2:
+		if 46 <= s <= 50:
+			val = 1.2 # Symbiose Maximale (Le plus beau)
+		elif 15 <= s <= 45:
+			val = 1.0 # Symbiose Moyenne
+		elif 10 <= s <= 14:
+			val = 0.8 # Idle (Symbiose de base)
+		# Si < 10% et égal, ça tombe dans Absorption Max (0) par défaut
+	
+	# SINON (Pas égal), ON REGARDE TON ÉNERGIE (Supra)
+	else:
+		if s >= 81:
+			val = 2.0   # Saturation Maximale
+		elif s >= 50:
+			val = 1.5   # Saturation Modérée
+		elif s >= 20:
+			val = 0.5   # Absorption Modérée
+		else:
+			val = 0.0   # Absorption Maximale (0-19%)
+
+	# On envoie le "Code d'État" unique
+	scriptOp.appendChan('state_code')
+	scriptOp[0][0] = val
