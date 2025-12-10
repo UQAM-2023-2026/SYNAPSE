@@ -1,7 +1,7 @@
 ﻿# me - this DAT
 # 
 # channel - the Channel object which has changed
-# sampleIndex - the index of the changed sample
+# sampleInex - the index of the changed sample
 # val - the numeric value of the changed sample
 # prev - the previous sample value
 # 

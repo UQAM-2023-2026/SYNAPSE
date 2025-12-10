@@ -1,4 +1,4 @@
-﻿# me - this DAT
+# me - this DAT
 # 
 # channel - the Channel object which has changed
 # sampleIndex - the index of the changed sample
@@ -20,26 +20,22 @@ def whileOff(channel, sampleIndex, val, prev):
 	return
 
 def onValueChange(channel, sampleIndex, val, prev):
-    if val == 1 and prev == 0:
-        targets = op('targets')  # ton Constant CHOP
-
-        if channel.name == 'kx': # PAS DE rhizome 
-            targets.par.value0 = 0.08
-            targets.par.value1 = 1
-
-        elif channel.name == 'kz': # rhizome connexion
-            targets.par.value0 = 1
-            targets.par.value1 = 1
+#     if val == 1 and prev == 0:
+#         targets = op('targets')  # ton Constant CHOP
+# 
+#         if channel.name == 'kx': # PAS DE rhizome 
+#             targets.par.value1 = 1
+# 
+#        elif channel.name == 'kz': # rhizome connexion
+#            targets.par.value0 = 1
+#            targets.par.value1 = 1
             
-    elif channel.name == 'RZ1_Connected' or 'RZ2_Connected':
-        targets = op('targets')  # ton Constant CHOP
+def onValueChange(channel: Channel, sampleIndex: int, val: float, prev: float):
+	if (op('null_rhizome')['N1_RzID'] == 1 and op('null_rhizome')['N1_I/S'] == 0) or (op('null_rhizome')['N2_RzID'] == 1 and op('null_rhizome')['N2_I/S'] == 0): # rhizome connexion
+	    	op('targets').par.const0value = 1
+            op('targets').par.const1value = 1
+	else:
+			op('targets').par.const0value = 0.08
+            op('targets').par.const1value = 1
+	return
 
-        if (op('Etat_Infra_out')[N1_RZID] == 0 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 0 & op('Etat_Infra_out')[N2_Level] == 0): # rhizome pas connecté 
-            targets.par.value0 = 0.08
-            targets.par.value1 = 1
-
-        elif (op('Etat_Infra_out')[N1_RZID] == 1 & op('Etat_Infra_out')[N1_Level] == 0) or (op('Etat_Infra_out')[N2_RZID] == 1 & op('Etat_Infra_out')[N2_Level] == 0): # rhizome connexion
-            targets.par.value0 = 1
-            targets.par.value1 = 1
-
-    return
