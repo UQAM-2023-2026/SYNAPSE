@@ -8,7 +8,7 @@
 
 
 /*-----------Rhizome base stats----------------------*/
-RhizomeStateAndID rhizome(2); // Initialize Rhizome with ID 0
+RhizomeStateAndID rhizome(1); // Initialize Rhizome with ID 0
 /*---------------------------------------------------*/
 
 
@@ -18,10 +18,9 @@ void setup() {
 
   SetupEnergyManagement(rhizome); // Initialize energy management with rhizome reference
   SetupSerialCommunication(rhizome); // Initialize serial communication with rhizome reference
-  //SetupStrips(rhizome,50); // Setup LED strips with brightness 50
-  //SetupAudio(); // Initialize audio system
+  SetupStrips(rhizome, 125); // Setup LED strips with brightness 50
 
-  //SetupHaptic(); // Initialize haptic feedback system
+  SetupHaptic(); // Initialize haptic feedback system
 
 }
 
@@ -29,12 +28,10 @@ void loop() {
   energyLoop(); // Update energy management
 
   checkConnectionStatus(); // Check for connection changes
-  //lookForMessages(); // Check for incoming messages
 
-  //StripLoop(); // Update LED strips animation
+  StripLoop(); // Update LED strips animation
 
-  //AudioLoop(); // Update audio playback
-
+  
   //HapticLoop(); // Update haptic feedback
 
   // static uint32_t lastPrint = 0;
@@ -53,13 +50,13 @@ void loop() {
 
 }
 
-// Example: Print status when user sends a command via Serial
-void serialEvent() {
-  if (Serial.available()) {
-    char cmd = Serial.read();
-    if (cmd == 's' || cmd == 'S') {
-      // Press 's' in Serial Monitor to print status
-      printRhizomeStatus();
-    }
-  }
-}
+// // Example: Print status when user sends a command via Serial
+// void serialEvent() {
+//   if (Serial.available()) {
+//     char cmd = Serial.read();
+//     if (cmd == 's' || cmd == 'S') {
+//       // Press 's' in Serial Monitor to print status
+//       printRhizomeStatus();
+//     }
+//   }
+// }
