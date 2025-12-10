@@ -32,12 +32,10 @@ def onValueChange(channel, sampleIndex, val, prev):
             
 def onValueChange(channel: Channel, sampleIndex: int, val: float, prev: float):
 	if (op('null_rhizome')['N1_RzID'] == 1 and op('null_rhizome')['N1_I/S'] == 0) or (op('null_rhizome')['N2_RzID'] == 1 and op('null_rhizome')['N2_I/S'] == 0): # rhizome connexion
-	    	targets.par.value0 = 1
-            targets.par.value1 = 1
-            targets.par.value2 = 1
+	    	op('targets').par.const0value = 1
+            op('targets').par.const1value = 1
 	else:
-            targets.par.value0 = 0 # PLAY VISUEL
-            targets.par.value1 = 0 # OPACITY LEVEL
-            targets.par.value2 = 0 # CUEPULSE
+			op('targets').par.const0value = 0.08
+            op('targets').par.const1value = 1
 	return
 
