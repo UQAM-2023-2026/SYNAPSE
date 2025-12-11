@@ -19,7 +19,15 @@ def onOnToOff(channel, sampleIndex, val, prev):
 def whileOff(channel, sampleIndex, val, prev):
 	return
 
-def onValueChange(channel, sampleIndex, val, prev):
+def onValueChange(channel: Channel, sampleIndex: int, val: float, prev: float):
+	if (op('null_rhizome')['N1_RzID'] == 1 and op('null_rhizome')['N1_I/S'] == 0) or (op('null_rhizome')['N2_RzID'] == 1 and op('null_rhizome')['N2_I/S'] == 0): # rhizome connexion
+	    	op('constant3').par.const0value = 1
+	else:
+			op('constant3').par.const0value = 0.1
+	return
+
+
+#def onValueChange(channel, sampleIndex, val, prev):
 #     if val == 1 and prev == 0:
 #         targets = op('targets')  # ton Constant CHOP
 # 
@@ -30,12 +38,4 @@ def onValueChange(channel, sampleIndex, val, prev):
 #            targets.par.value0 = 1
 #            targets.par.value1 = 1
             
-def onValueChange(channel: Channel, sampleIndex: int, val: float, prev: float):
-	if (op('null_rhizome')['N1_RzID'] == 1 and op('null_rhizome')['N1_I/S'] == 0) or (op('null_rhizome')['N2_RzID'] == 1 and op('null_rhizome')['N2_I/S'] == 0): # rhizome connexion
-	    	op('targets').par.const0value = 1
-            op('targets').par.const1value = 1
-	else:
-			op('targets').par.const0value = 0.08
-            op('targets').par.const1value = 1
-	return
 
