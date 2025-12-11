@@ -89,14 +89,13 @@ void initNetworkOSC(
 // Update à appeler dans loop()
 void updateNetworkOSC() {
     if (!eth_connected) return;
-    
+
     OSCMessage msgIn;
-   
     int packetSize = Udp.parsePacket();
     if (packetSize > 0) {
         // read entire packet into the OSCMessage object
         while (packetSize--) msgIn.fill(Udp.read());
-            
+
         // Update drain rate silently (no print)
         if (msgIn.size() > 0 && pNode) {
             if (msgIn.isFloat(0)) {
@@ -105,7 +104,6 @@ void updateNetworkOSC() {
                 pNode->setDrainRate(static_cast<float>(msgIn.getInt(0)));
             }
         }
-        Serial.println(pNode->getDrainRate());
     }
 }
 

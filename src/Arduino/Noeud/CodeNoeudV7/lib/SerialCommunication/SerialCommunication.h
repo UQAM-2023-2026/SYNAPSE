@@ -22,6 +22,5 @@ void checkConnectionStatus();
 void lookForMessages(MicroOscMessage &msg);      // call frequently from loop()
 float getRhizomeValue();     // 1.0 if connected, 0.0 if not
 void loopSendToTouch();
-void SerialLoop();
 
 #endif
