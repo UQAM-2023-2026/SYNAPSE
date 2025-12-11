@@ -105,9 +105,9 @@ def onValueChange(channel, sampleIndex, val, prev):
 		target_op.par.Targetindex = 4
 
 	if node_level == 0:
-		op('constant4').par.const0value = op.Dispatcher.op('touchout1')['State_Infra']
+		op('constant4').par.const0value = op.Dispatcher.op('merge1')['State_Infra']
 
 	elif node_level == 1:
-		op('constant4').par.const0value = op.Dispatcher.op('touchout1')['State_Supra']
+		op('constant4').par.const0value = op.Dispatcher.op('merge1')['State_Supra']
 
 	return
