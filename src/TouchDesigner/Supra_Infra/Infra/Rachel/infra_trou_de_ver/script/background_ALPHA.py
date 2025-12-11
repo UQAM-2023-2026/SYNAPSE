@@ -24,7 +24,7 @@ def onValueChange(channel, sampleIndex, val, prev):
     if channel.name == 'phase':
         targets = op('targets')  # ton Constant CHOP
 
-        if val == 1:  # symbiose
+        if val == 2:  # symbiose
             targets.par.value0  = 1
             targets.par.value1  = 1
             targets.par.value2  = 0
@@ -39,7 +39,7 @@ def onValueChange(channel, sampleIndex, val, prev):
             targets.par.value11 = 0
             targets.par.value12 = 0
 
-        elif val == 2:  # absorption
+        elif val == 1:  # absorption
             targets.par.value0  = 1
             targets.par.value1  = 1
             targets.par.value2  = 0
