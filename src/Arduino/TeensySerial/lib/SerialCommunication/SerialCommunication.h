@@ -7,6 +7,15 @@ void SetupSerialCommunication(RhizomeStateAndID &rh);
 
 // Main loop function - call repeatedly in loop()
 void checkConnectionStatus();
+void updateConnectionStates();
+
+//State machine
+void onLeftConnected();
+void onLeftDisconnected();
+void onRightConnected();
+void onRightDisconnected();
+void checkBothDisconnected();
+void resetToIdle();
 
 // Utility functions for managing seen IDs
 void clearSeenIds();
@@ -16,6 +25,7 @@ int getSeenIdsCount();
 int getSeenIdAt(int index);
 
 // Status monitoring
-void printRhizomeStatus(); // Print current status on demand
+//void printRhizomeStatus(); // Print current status on demand
+void printStatus();
 
 #endif

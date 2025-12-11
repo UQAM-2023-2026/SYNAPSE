@@ -6,12 +6,11 @@
 
 #include <EnergyManagement.h>
 #include <StripsAnimation.h>
-#include <HapticFeedback.h>
+//#include <HapticFeedback.h>
 
 #include <RhizomeStateAndID.h>
-static RhizomeStateAndID *pRhizome = nullptr;
 
-/* Serial configuration */
+/*---------------PIN CONFIG-----------------------*/
 #define SERIAL_BAUD 9600
 
 //Left handle connection (receiving)
@@ -23,6 +22,8 @@ static RhizomeStateAndID *pRhizome = nullptr;
 #define SERIAL_PORT_SEND Serial3
 
 /*------------------Global Variables-----------------*/
+static RhizomeStateAndID *pRhizome = nullptr; // Pointer to RhizomeStateAndID instance
+
 MicroOscSlip<32> oscSlipReceive(&SERIAL_PORT_RECEIVE);
 MicroOscSlip<32> oscSlipSend(&SERIAL_PORT_SEND);
 
@@ -54,6 +55,12 @@ static const unsigned long DISCOVERY_DELAY = 350; // Long delay for stable conne
 static unsigned long lastStatusPrint = 0;
 static const unsigned long STATUS_PRINT_INTERVAL = 2000;
 
+// Circular buffer for seen IDs
+static const int MAX_SEEN_IDS = 20;
+static int seenIds[MAX_SEEN_IDS];
+static int seenStart = 0;
+static int seenCount = 0;
+
 /*--------------------ISR---------------------------*/
 static volatile bool connectedLeftEvent = false;
 static bool connectionLeftState = false;
@@ -66,23 +73,52 @@ static unsigned long lastRightChangeTime = 0;
 // Debounce settings
 static const unsigned long DEBOUNCE_DELAY = 400; // Very long for stability
 
-// Circular buffer for seen IDs
-static const int MAX_SEEN_IDS = 20;
-static int seenIds[MAX_SEEN_IDS];
-static int seenStart = 0;
-static int seenCount = 0;
-
 void connectedLeft() {
   connectedLeftEvent = true;
-  hapticTwo();
+ // hapticOne();
 }
 void connectedRight() {
   connectedRightEvent = true;
-  hapticOne();
+ // hapticTwo();
 }
 
-/*--------------------------------------------------*/
+/*------------------Connection State-----------------*/
+void clearSeenIds() {
+  seenStart = 0;
+  seenCount = 0;
+}
 
+bool isIdSeen(int id) {
+  for (int i = 0; i < seenCount; ++i) {
+    int idx = (seenStart + i) % MAX_SEEN_IDS;
+    if (seenIds[idx] == id) return true;
+  }
+  return false;
+}
+
+void addSeenId(int id) {
+  if (isIdSeen(id)) return; // Don't add duplicates
+  
+  if (seenCount < MAX_SEEN_IDS) {
+    seenIds[seenCount] = id;
+    seenCount++;
+  } else {
+    // Circular buffer: overwrite oldest
+    seenIds[seenStart] = id;
+    seenStart = (seenStart + 1) % MAX_SEEN_IDS;
+  }
+}
+
+int getSeenIdsCount() {
+  return seenCount;
+}
+
+int getSeenIdAt(int index) {
+  if (index < 0 || index >= seenCount) return -1;
+  return seenIds[(seenStart + index) % MAX_SEEN_IDS];
+}
+
+/*------------------------SETUP--------------------------*/
 void SetupSerialCommunication(RhizomeStateAndID &rh) {
   pRhizome = &rh;
 
@@ -94,8 +130,6 @@ void SetupSerialCommunication(RhizomeStateAndID &rh) {
   
   attachInterrupt(digitalPinToInterrupt(CONNECT_PIN1), connectedLeft, CHANGE);
   attachInterrupt(digitalPinToInterrupt(CONNECT_PIN2), connectedRight, CHANGE);
-
-  pinMode(22, OUTPUT);
   
   clearSeenIds();
   addSeenId(pRhizome->getID());
@@ -105,553 +139,442 @@ void SetupSerialCommunication(RhizomeStateAndID &rh) {
 }
 
 /*--------------Discovery Functions-------------------*/
+void completeDiscovery() {
+  if (discoveryCompleted) return;
+  
+  Serial.println("[DISCOVERY] Loop complete!");
+  Serial.print("  Total rhizomes: ");
+  Serial.println(seenCount);
+  
+  discoveryCompleted = true;
+  discoveryMode = false;
+  pRhizome->setState(2); // GENERATING
+  
+  // Send discover_done to RIGHT (propagate around the loop)
+  if (connectionRightState) {
+    oscSlipSend.sendMessage("/discover_done", "i", seenCount);
+    Serial.println("[SEND] /discover_done");
+  }
+}
 
 void sendDiscover() {
-  if (!pRhizome || !discoveryMode) return;
+  if (!pRhizome || !discoveryMode || discoverySent) return;
+
+  // Build CSV of all seen IDs
+  String csv;
+  for (int i = 0; i < seenCount; ++i) {
+    if (i > 0) csv += ',';
+    csv += String(getSeenIdAt(i));
+  }
   
-  int myId = pRhizome->getID();
-  int count = seenCount;
-  
-  oscSlipSend.sendMessage("/discover", "ii", myId, count);
-  Serial.print("[SEND] /discover origin="); 
-  Serial.print(myId); 
-  Serial.print(" count="); 
-  Serial.println(count);
-  
-  waitingForToken = true;
+  oscSlipSend.sendMessage("/discover_list", "s", csv.c_str());
+  Serial.print("[SEND] /discover_list: ");
+  Serial.println(csv);
+
   discoverySent = true;
 }
 
-/*--------------------------------------------------*/
-
-static void printSeenIds() {
-  Serial.print("  Seen IDs (count=");
-  Serial.print(seenCount);
-  Serial.print("): ");
-  for (int i = 0; i < seenCount; ++i) {
-    int idx = (seenStart + i) % MAX_SEEN_IDS;
-    Serial.print(seenIds[idx]);
-    if (i < seenCount - 1) Serial.print(", ");
-  }
-  Serial.println();
-}
-
-void printRhizomeStatus() {
-  if (!pRhizome) return;
-  
-  Serial.println("┌────────────────────────────────┐");
-  Serial.print("│ Rhizome ID: ");
-  Serial.print(pRhizome->getID());
-  Serial.println("                  │");
-  
-  Serial.print("│ Connected Rhizomes: ");
-  Serial.print(pRhizome->getCount());
-  Serial.println("           │");
-  
-  Serial.print("│ Energy: ");
-  Serial.print(pRhizome->getEnergy(), 2);
-  Serial.println("                │");
-  
-  Serial.print("│ State: ");
-
-  switch(pRhizome->getState()) {
-    case 0: Serial.print("IDLE          "); break;
-    case 1: Serial.print("CONNECTED     "); break;
-    case 2: Serial.print("GENERATING    "); break;
-    case 3: Serial.print("GIVING_TO_NODE"); break;
-    case 4: Serial.print("MIDDLEMAN     "); break;
-    default: Serial.print("UNKNOWN       "); break;
-  }
-
-  Serial.println("         │");
-  
-  if (pRhizome->getState() == 3 || pRhizome->getState() == 4) {
-    Serial.print("│ DrainRate: ");
-    Serial.print(currentDrainRate, 2);
-    Serial.println("            │");
+void handleDiscoverList(const char* csv) {
+  if (!csv || csv[0] == '\0') {
+    Serial.println("[RECV] /discover_list empty");
+    return;
   }
   
-  Serial.print("│ Left: ");
-  Serial.print(connectionLeftState ? "CONNECTED" : "DISCONN  ");
-  Serial.println("            │");
+  Serial.print("[RECV] /discover_list: ");
+  Serial.println(csv);
   
-  Serial.print("│ Right: ");
-  Serial.print(connectionRightState ? "CONNECTED" : "DISCONN  ");
-  Serial.println("           │");
+  bool foundMyId = false;
+  int newCount = 0;
   
-  Serial.println("└────────────────────────────────┘");
-}
-
-/*--------------------------------------------------*/
-
-void checkConnectionStatus() {
-  bool leftNow = digitalRead(CONNECT_PIN1) == LOW;
-  bool rightNow = digitalRead(CONNECT_PIN2) == LOW;
+  // Parse and merge IDs
+  char buf[256];
+  strncpy(buf, csv, sizeof(buf) - 1);
+  buf[sizeof(buf) - 1] = '\0';
   
-  unsigned long now = millis();
-
-  // Handle LEFT connection event
-  if (connectedLeftEvent) {
-    connectedLeftEvent = false;
-    
-    if (now - lastLeftChangeTime >= DEBOUNCE_DELAY) {
-      lastLeftChangeTime = now;
-      
-      if (leftNow && !connectionLeftState) {
-        Serial.println("[EVENT] Left connected - entering listening mode");
-        listening = true;
-        connectionLeftState = leftNow;
-        
-      } else if (!leftNow && connectionLeftState) {
-        Serial.println("[EVENT] Left disconnected");
-        listening = false;
-        waitingForToken = false;
-        
-        if (discoveryCompleted) {
-          Serial.println("  Resetting discovery state for potential reconnection");
-          discoveryCompleted = false;
-        }
-        
-        // DON'T stop GENERATING - might be transitioning to node mode
-        // Only stop if BOTH sides disconnect
-        
-        connectionLeftState = leftNow;
-        
-        if (!rightNow) {
-          Serial.println("[RESET] Both sides disconnected - resetting to idle");
-          clearSeenIds();
-          addSeenId(pRhizome->getID());
-          pRhizome->setCount(1);
-          pRhizome->setState(0);
-        }
+  char* tok = strtok(buf, ",");
+  while (tok) {
+    int id = atoi(tok);
+    if (id >= 0) {
+      if (id == pRhizome->getID()) {
+        foundMyId = true;
+        Serial.println("[LOOP] Found my ID - loop complete!");
+      }
+      if (!isIdSeen(id)) {
+        addSeenId(id);
+        newCount++;
       }
     }
-  }
-
-  // Handle RIGHT connection event
-  if (connectedRightEvent) {
-    connectedRightEvent = false;
-    
-    if (now - lastRightChangeTime >= DEBOUNCE_DELAY) {
-      lastRightChangeTime = now;
-      
-      if (rightNow && !connectionRightState) {
-        Serial.println("[EVENT] Right connected - starting discovery");
-        Serial.println("[DISCOVERY] Initiating token passing...");
-        
-        discoveryMode = true;
-        connectionRightState = rightNow;
-        
-        if (!leftNow) {
-          clearSeenIds();
-          addSeenId(pRhizome->getID());
-          pRhizome->setCount(1);
-        }
-        
-        printSeenIds();
-        discoveryInitiatedTime = millis();
-        discoverySent = false;
-        Serial.println("  Waiting for connection to stabilize...");
-        
-      } else if (!rightNow && connectionRightState) {
-        Serial.println("[EVENT] Right disconnected");
-        discoveryMode = false;
-        waitingForToken = false;
-        
-        if (discoveryCompleted) {
-          Serial.println("  Resetting discovery state for potential reconnection");
-          discoveryCompleted = false;
-        }
-        
-        if (connectedToNode || pRhizome->getState() == 3 || pRhizome->getState() == 4) {
-          Serial.println("[NODE] Disconnected from node");
-          connectedToNode = false;
-          currentDrainRate = 0.0f;
-          setNodeDrainRate(0.0f);
-        }
-        
-        // DON'T stop GENERATING - might be transitioning
-        
-        connectionRightState = rightNow;
-        
-        if (!leftNow) {
-          Serial.println("[RESET] Both sides disconnected - resetting to idle");
-          clearSeenIds();
-          addSeenId(pRhizome->getID());
-          pRhizome->setCount(1);
-          pRhizome->setState(0);
-        }
-      }
-    }
+    tok = strtok(NULL, ",");
   }
   
-  connectionLeftState = leftNow;
-  connectionRightState = rightNow;
+  pRhizome->setCount(seenCount);
+  Serial.print("[MERGE] seenCount now: ");
+  Serial.println(seenCount);
   
-  if (discoveryMode && !discoverySent && (now - discoveryInitiatedTime >= DISCOVERY_DELAY)) {
+  // If we found our ID, loop is complete
+  if (foundMyId) {
+    completeDiscovery();
+  } else if (connectionRightState) {
+    // Forward updated list to right (add our ID if not already there)
+    discoverySent = false;
     sendDiscover();
   }
-
-  oscSlipReceive.onOscMessageReceived(oscMessageReceived);
-  oscSlipSend.onOscMessageReceived(isThisANodeMessage);
-  
-  if (leftNow) {
-    listening = true;
-  }
-  
-  // Safety check: ONLY if BOTH sides disconnected
-  if (pRhizome->getState() == 2 && !leftNow && !rightNow) {
-    Serial.println("[WARNING] Both sides disconnected - reverting to IDLE");
-    pRhizome->setState(0);
-    discoveryMode = false;
-    discoveryCompleted = false;
-  }
-  
-  // MIDDLEMAN: send drain periodically
-  if (pRhizome->getState() == 4 && connectedToNode) {
-    if (now - lastDrainSent >= DRAIN_SEND_INTERVAL) {
-      lastDrainSent = now;
-      if (connectionLeftState) {
-        oscSlipReceive.sendMessage("/drain", "f", currentDrainRate);
-      } else {
-        Serial.println("[MIDDLEMAN] No rhizome behind - becoming GIVING");
-        pRhizome->setState(2);
-        setNodeDrainRate(currentDrainRate);
-      }
-    }
-    
-    if (now - lastDrainReceived > DRAIN_TIMEOUT) {
-      Serial.println("[MIDDLEMAN] Timeout - becoming GIVING");
-      pRhizome->setState(2);
-      setNodeDrainRate(currentDrainRate);
-    }
-  }
-  
-  // GIVING_TO_NODE: send energy continuously
-  if (pRhizome->getState() == 3 && connectedToNode) {
-    if (now - lastEnergySent >= ENERGY_SEND_INTERVAL) {
-      lastEnergySent = now;
-      float energy = pRhizome->getEnergy();
-      int energyInt = (int)energy;
-      oscSlipSend.sendMessage("/energy", "ii", pRhizome->getID(), energyInt);
-    }
-    
-    if (pRhizome->getEnergy() <= 0.1f) {
-      Serial.println("[GIVING] Energy depleted!");
-      pRhizome->setState(0);
-      connectedToNode = false;
-      setNodeDrainRate(0.0f);
-    }
-  }
-
-  if (!leftNow && !rightNow) {
-    if (listening || discoveryMode) {
-      Serial.println("[RESET] Entering idle state (both disconnected)");
-      listening = false;
-      discoveryMode = false;
-      waitingForToken = false;
-      discoveryCompleted = false;
-      clearSeenIds();
-      addSeenId(pRhizome->getID());
-      pRhizome->setCount(1);
-      pRhizome->setState(0);
-    }
-  }
-  
-  if (now - lastStatusPrint >= STATUS_PRINT_INTERVAL) {
-    lastStatusPrint = now;
-    
-    if (pRhizome->getState() >= 2) {
-      Serial.println("====================");
-      Serial.print("Rhizome ID: ");
-      Serial.print(pRhizome->getID());
-      Serial.print(" | Count: ");
-      Serial.print(pRhizome->getCount());
-      Serial.print(" | Energy: ");
-      Serial.print(pRhizome->getEnergy(), 2);
-      Serial.print(" | State: ");
-      
-      switch(pRhizome->getState()) {
-        case 0: Serial.print("IDLE"); break;
-        case 1: Serial.print("CONNECTED"); break;
-        case 2: Serial.print("GENERATING"); break;
-        case 3: Serial.print("GIVING_TO_NODE"); break;
-        case 4: Serial.print("MIDDLEMAN"); break;
-        default: Serial.print("UNKNOWN"); break;
-      }
-      
-      if (pRhizome->getState() == 3 || pRhizome->getState() == 4) {
-        Serial.print(" | DrainRate: ");
-        Serial.print(currentDrainRate, 2);
-      }
-      
-      Serial.println();
-      Serial.println("====================");
-    }
-  }
 }
-
-/*---------------Handle OSC Messages-------------------*/
 
 void oscMessageReceived(MicroOscMessage &msg) {
   if (!pRhizome) return;
+  Serial.println("[OSC MSG] Received: ");
+  
 
-  if (msg.checkOscAddress("/discover")) {
-    int origin = msg.nextAsInt();
-    int incomingCount = msg.nextAsInt();
-    
-    Serial.println("---");
-    Serial.print("[RECV] /discover origin=");
-    Serial.print(origin);
-    Serial.print(" count=");
-    Serial.println(incomingCount);
-    
-    printSeenIds();
-
-    if (origin < 0 || origin > 1000) {
-      Serial.println("[ERROR] Invalid origin ID - ignoring");
-      return;
-    }
-
-    if (origin == pRhizome->getID()) {
-      Serial.println("[LOOP DETECTED] My token returned!");
-      Serial.print("  Total rhizomes in loop: ");
-      Serial.println(seenCount);
-      Serial.print("  (incomingCount was: ");
-      Serial.print(incomingCount);
-      Serial.println(")");
-      
-      int finalTotal = max(seenCount, incomingCount);
-      
-      Serial.print("  Final total (using max): ");
-      Serial.println(finalTotal);
-      
-      oscSlipSend.sendMessage("/discover_done", "i", finalTotal);
-      
-      pRhizome->setCount(finalTotal);
-      pRhizome->setState(1);
-      discoveryMode = false;
-      waitingForToken = false;
-      discoveryCompleted = true;
-      
-      Serial.println("[STATE] Entering GENERATING mode");
-      return;
-    }
-
-    if (isIdSeen(origin)) {
-      Serial.println("[DUPLICATE] Origin already seen - loop detected");
-      Serial.print("  Finishing discovery with count: ");
-      Serial.println(seenCount);
-      
-      if (connectionLeftState && connectionRightState && !discoveryCompleted) {
-        Serial.println("  Both sides connected - completing discovery");
-        oscSlipSend.sendMessage("/discover_done", "i", seenCount);
-        pRhizome->setCount(seenCount);
-        pRhizome->setState(1);
-        discoveryMode = false;
-        waitingForToken = false;
-        discoveryCompleted = true;
-        Serial.println("  Entered GENERATING mode");
-      } else if (discoveryCompleted) {
-        Serial.println("  Discovery already completed - ignoring");
-      } else {
-        Serial.println("  Not fully connected - ignoring");
-      }
-      return;
-    }
-
-    Serial.print("[NEW] Adding origin ID ");
-    Serial.print(origin);
-    Serial.println(" to seen list");
-    
-    addSeenId(origin);
-    pRhizome->setCount(seenCount);
-    
-    printSeenIds();
-
-    Serial.print("[FORWARD] Relaying /discover with updated count=");
-    Serial.println(seenCount);
-    Serial.print("  Sending to right (Serial3): origin=");
-    Serial.print(origin);
-    Serial.print(" count=");
-    Serial.println(seenCount);
-    
-    oscSlipSend.sendMessage("/discover", "ii", origin, seenCount);
-    Serial.println("---");
-
-  } else if (msg.checkOscAddress("/discover_done")) {
+  if (msg.checkOscAddress("/discover_list")) {
+    handleDiscoverList(msg.nextAsString());
+    return;
+  }
+  
+  if (msg.checkOscAddress("/discover_done")) {
     int total = msg.nextAsInt();
-    Serial.println("---");
     Serial.print("[RECV] /discover_done total=");
     Serial.println(total);
     
-    if (discoveryCompleted && pRhizome->getState() == 2) {
-      Serial.println("  Discovery already completed and still GENERATING - ignoring");
-      Serial.println("---");
-      return;
-    }
-    
-    if (!connectionLeftState || !connectionRightState) {
-      Serial.println("  WARNING: Received /discover_done but not fully connected");
-      Serial.println("  Ignoring to prevent incomplete GENERATING state");
-      Serial.println("---");
-      return;
-    }
-    
-    if (total > seenCount) {
-      Serial.print("  Updating count from ");
-      Serial.print(seenCount);
-      Serial.print(" to ");
-      Serial.println(total);
-    }
-    
-    pRhizome->setCount(total);
-    pRhizome->setState(1);
-    discoveryMode = false;
-    waitingForToken = false;
-    discoveryCompleted = true;
-    
-    Serial.println("[STATE] Entering GENERATING mode (discovery complete)");
-    
-    if (connectionRightState) {
-      Serial.println("  Forwarding /discover_done (one time only)");
-      oscSlipSend.sendMessage("/discover_done", "i", total);
-    }
-    Serial.println("---");
-
-  } else if (msg.checkOscAddress("/node")) {
-    float drainRate = msg.nextAsFloat();
-    
-    Serial.println("---");
-    Serial.print("[RECV] /node drainRate=");
-    Serial.println(drainRate);
-    
-    currentDrainRate = drainRate;
-    connectedToNode = true;
-    
-    // KEY FIX: Check if rhizome is behind us NOW
-    if (connectionLeftState) {
-      Serial.println("[STATE] MIDDLEMAN - rhizome behind us");
-      pRhizome->setState(3);
-      setNodeDrainRate(0.0f);
-      lastDrainSent = millis();
-      oscSlipReceive.sendMessage("/drain", "f", drainRate);
-    } else {
-      Serial.println("[STATE] GIVING_TO_NODE - no rhizome behind");
+    // Only process and forward if we haven't completed yet
+    if (!discoveryCompleted) {
+      pRhizome->setCount(total);
       pRhizome->setState(2);
-      setNodeDrainRate(drainRate);
-      float energy = pRhizome->getEnergy();
-      int energyInt = (int)energy;
-      oscSlipSend.sendMessage("/energy", "ii", pRhizome->getID(), energyInt);
-      lastEnergySent = millis();
+      discoveryCompleted = true;
+      discoveryMode = false;
+      
+      // Forward to right ONLY if we just completed (one-time propagation)
+      if (connectionRightState) {
+        oscSlipSend.sendMessage("/discover_done", "i", total);
+        Serial.println("[SEND] /discover_done (forwarded)");
+      }
     }
-    Serial.println("---");
-    
-  } else if (msg.checkOscAddress("/drain")) {
+    // If already completed, just ignore - don't forward again
+    return;
+  }
+  
+  // CRITICAL: Always accept /drain messages regardless of current state
+  // This fixes the R2 not responding issue
+  if (msg.checkOscAddress("/drain")) {
     float drainRate = msg.nextAsFloat();
-    
-    Serial.println("---");
     Serial.print("[RECV] /drain rate=");
     Serial.println(drainRate);
     
     currentDrainRate = drainRate;
     lastDrainReceived = millis();
+    connectedToNode = true; // Treat sender as node
     
-    // ALWAYS accept drain and become GIVING (even if was in GENERATING)
-    Serial.println("[STATE] GIVING_TO_NODE (from /drain)");
+    // Become GIVING_TO_NODE
     pRhizome->setState(3);
     setNodeDrainRate(drainRate);
     
+    // Send energy back via LEFT (where drain came from)
     float energy = pRhizome->getEnergy();
-    int energyInt = (int)energy;
-    oscSlipReceive.sendMessage("/energy", "ii", pRhizome->getID(), energyInt);
-    Serial.println("---");
+    oscSlipReceive.sendMessage("/energy", "ii", pRhizome->getID(), (int)energy);
+    lastEnergySent = millis();
+    return;
   }
 }
 
+// Handle /node from right side (actual node)
 void isThisANodeMessage(MicroOscMessage &msg) {
   if (!pRhizome) return;
+  Serial.println("[OSC MSG] isThisANodeMessage Received: ");
   
   if (msg.checkOscAddress("/node")) {
     float drainRate = msg.nextAsFloat();
-    
-    Serial.println("---");
     Serial.print("[RECV] /node drainRate=");
     Serial.println(drainRate);
     
     currentDrainRate = drainRate;
     connectedToNode = true;
+    lastDrainReceived = millis();
     
-    // Check if rhizome behind us
+    // Check if there's a rhizome behind us (left connected)
     if (connectionLeftState) {
-      Serial.println("[STATE] MIDDLEMAN - rhizome behind us");
-      pRhizome->setState(3);
-      setNodeDrainRate(0.0f);
-      lastDrainSent = millis();
+      Serial.println("[STATE] -> MIDDLEMAN");
+      pRhizome->setState(4);
+      setNodeDrainRate(0.0f); // Don't drain ourselves
+      
+      // Forward drain to left
       oscSlipReceive.sendMessage("/drain", "f", drainRate);
+      lastDrainSent = millis();
     } else {
-      Serial.println("[STATE] GIVING_TO_NODE - no rhizome behind");
-      pRhizome->setState(2);
+      Serial.println("[STATE] -> GIVING_TO_NODE");
+      pRhizome->setState(3);
       setNodeDrainRate(drainRate);
-      float energy = pRhizome->getEnergy();
-      int energyInt = (int)energy;
-      oscSlipSend.sendMessage("/energy", "ii", pRhizome->getID(), energyInt);
-      lastEnergySent = millis();
     }
-    Serial.println("---");
-  }
-}
-
-/*---------------Seen IDs Management-------------------*/
-
-void clearSeenIds() {
-  noInterrupts();
-  seenStart = 0;
-  seenCount = 0;
-  for (int i = 0; i < MAX_SEEN_IDS; ++i) {
-    seenIds[i] = -1;
-  }
-  interrupts();
-}
-
-bool isIdSeen(int id) {
-  if (seenCount == 0) return false;
-  for (int i = 0; i < seenCount; ++i) {
-    int idx = (seenStart + i) % MAX_SEEN_IDS;
-    if (seenIds[idx] == id) return true;
-  }
-  return false;
-}
-
-void addSeenId(int id) {
-  if (id < 0) {
-    Serial.println("[ERROR] Attempted to add negative ID");
-    return;
   }
   
-  if (isIdSeen(id)) {
-    return;
+  // Relay energy messages from left to node
+  if (msg.checkOscAddress("/energy")) {
+    // This shouldn't happen on right port, but handle it
+  }
+}
+
+void LookForSerialMessages() {
+  oscSlipReceive.onOscMessageReceived(oscMessageReceived);
+  oscSlipSend.onOscMessageReceived(isThisANodeMessage);
+}
+
+/*-------------------CHECK CONNECTIONS-------------------------------*/
+void checkConnectionStatus() {
+  
+  unsigned long now = millis();
+  
+  // Update connection state machines (handles debouncing)
+  updateConnectionStates();
+  
+  // Process incoming OSC messages
+  oscSlipReceive.onOscMessageReceived(oscMessageReceived);
+  oscSlipSend.onOscMessageReceived(isThisANodeMessage);
+  
+  // MIDDLEMAN: periodically send drain and relay energy
+  if (pRhizome->getState() == 4 && connectedToNode) {
+    // Resend drain periodically
+    if (now - lastDrainSent >= DRAIN_SEND_INTERVAL) {
+      if (connectionLeftState) {
+        oscSlipReceive.sendMessage("/drain", "f", currentDrainRate);
+        lastDrainSent = now;
+      } else {
+        // No one behind us anymore
+        Serial.println("[MIDDLEMAN] Left gone -> GIVING_TO_NODE");
+        pRhizome->setState(3);
+        setNodeDrainRate(currentDrainRate);
+      }
+    }
   }
   
-  noInterrupts();
-  if (seenCount < MAX_SEEN_IDS) {
-    int idx = (seenStart + seenCount) % MAX_SEEN_IDS;
-    seenIds[idx] = id;
-    ++seenCount;
-  } else {
-    Serial.println("[WARNING] seenIds buffer full - overwriting oldest");
-    seenIds[seenStart] = id;
-    seenStart = (seenStart + 1) % MAX_SEEN_IDS;
+  // GIVING_TO_NODE: send energy to whoever is draining us
+  if (pRhizome->getState() == 3) {
+    if (now - lastEnergySent >= ENERGY_SEND_INTERVAL) {
+      float energy = pRhizome->getEnergy();
+      
+      // Send energy back the way drain came from
+      if (connectedToNode && connectionRightState) {
+        // Direct to node
+        oscSlipSend.sendMessage("/energy", "ii", pRhizome->getID(), (int)energy);
+      } else if (connectionLeftState) {
+        // To rhizome acting as middleman (drain came from left)
+        oscSlipReceive.sendMessage("/energy", "ii", pRhizome->getID(), (int)energy);
+      }
+      lastEnergySent = now;
+    }
   }
-  interrupts();
+  
+  // Status print (only when active)
+  if (now - lastStatusPrint >= STATUS_PRINT_INTERVAL && pRhizome->getState() >= 2) {
+    printStatus();
+    lastStatusPrint = now;
+  }
 }
 
-int getSeenIdsCount() {
-  return seenCount;
+void printStatus() {
+  const char* stateNames[] = {"IDLE", "CONNECTED", "GENERATING", "GIVING_TO_NODE", "MIDDLEMAN"};
+  int state = pRhizome->getState();
+  
+  Serial.print("ID:");
+  Serial.print(pRhizome->getID());
+  Serial.print(" Count:");
+  Serial.print(pRhizome->getCount());
+  Serial.print(" E:");
+  Serial.print(pRhizome->getEnergy(), 1);
+  Serial.print(" S:");
+  Serial.print(state < 5 ? stateNames[state] : "?");
+  Serial.print(" L:");
+  Serial.print(connectionLeftState ? "1" : "0");
+  Serial.print(" R:");
+  Serial.println(connectionRightState ? "1" : "0");
 }
 
-int getSeenIdAt(int index) {
-  if (index < 0 || index >= seenCount) return -1;
-  int idx = (seenStart + index) % MAX_SEEN_IDS;
-  return seenIds[idx];
+/*--------------------Connection State Machine---------------------------*/
+// Replace the simple boolean states with a state machine
+enum ConnectionState {
+  CONN_DISCONNECTED,
+  CONN_DEBOUNCING_CONNECT,
+  CONN_CONNECTED,
+  CONN_DEBOUNCING_DISCONNECT
+};
+
+static ConnectionState leftConnState = CONN_DISCONNECTED;
+static ConnectionState rightConnState = CONN_DISCONNECTED;
+static unsigned long leftDebounceStart = 0;
+static unsigned long rightDebounceStart = 0;
+
+static const unsigned long CONNECT_DEBOUNCE = 150;    // Fast connect detection
+static const unsigned long DISCONNECT_DEBOUNCE = 600; // Slow disconnect (pogo bounce)
+
+// Call this instead of checking events directly
+void updateConnectionStates() {
+  unsigned long now = millis();
+  bool leftPin = digitalRead(CONNECT_PIN1) == LOW;
+  bool rightPin = digitalRead(CONNECT_PIN2) == LOW;
+
+  
+  // LEFT connection state machine
+  switch (leftConnState) {
+    case CONN_DISCONNECTED:
+      if (leftPin) {
+        leftConnState = CONN_DEBOUNCING_CONNECT;
+        leftDebounceStart = now;
+      }
+      break;
+      
+    case CONN_DEBOUNCING_CONNECT:
+      if (!leftPin) {
+        leftConnState = CONN_DISCONNECTED; // False trigger
+        Serial.println("[DEBOUNCE] Left connect bounce ignored");
+      } else if (now - leftDebounceStart >= CONNECT_DEBOUNCE) {
+        leftConnState = CONN_CONNECTED;
+        connectionLeftState = true;
+        onLeftConnected(); // Callback
+      }
+      break;
+      
+    case CONN_CONNECTED:
+      if (!leftPin) {
+        leftConnState = CONN_DEBOUNCING_DISCONNECT;
+        leftDebounceStart = now;
+      }
+      break;
+      
+    case CONN_DEBOUNCING_DISCONNECT:
+      if (leftPin) {
+        leftConnState = CONN_CONNECTED; // Was just a bounce
+      } else if (now - leftDebounceStart >= DISCONNECT_DEBOUNCE) {
+        leftConnState = CONN_DISCONNECTED;
+        connectionLeftState = false;
+        onLeftDisconnected(); // Callback
+      }
+      break;
+  }
+  
+  // RIGHT connection state machine (same logic)
+  switch (rightConnState) {
+    case CONN_DISCONNECTED:
+      if (rightPin) {
+        rightConnState = CONN_DEBOUNCING_CONNECT;
+        rightDebounceStart = now;
+      }
+      break;
+      
+    case CONN_DEBOUNCING_CONNECT:
+      if (!rightPin) {
+        rightConnState = CONN_DISCONNECTED;
+      } else if (now - rightDebounceStart >= CONNECT_DEBOUNCE) {
+        rightConnState = CONN_CONNECTED;
+        connectionRightState = true;
+        onRightConnected();
+      }
+      break;
+      
+    case CONN_CONNECTED:
+      if (!rightPin) {
+        rightConnState = CONN_DEBOUNCING_DISCONNECT;
+        rightDebounceStart = now;
+      }
+      break;
+      
+    case CONN_DEBOUNCING_DISCONNECT:
+      if (rightPin) {
+        rightConnState = CONN_CONNECTED;
+      } else if (now - rightDebounceStart >= DISCONNECT_DEBOUNCE) {
+        rightConnState = CONN_DISCONNECTED;
+        connectionRightState = false;
+        onRightDisconnected();
+      }
+      break;
+  }
+}
+
+/*-------------------Simplified State Machine---------------------------*/
+
+// Clean callbacks for connection events
+void onLeftConnected() {
+  Serial.println("[CONN] Left connected");
+  listening = true;
+  
+  // If we're already connected right and generating, stay generating
+  // Just start listening for messages from left
+}
+
+void onLeftDisconnected() {
+  Serial.println("[CONN] Left disconnected");
+  listening = false;
+  
+  // If we were MIDDLEMAN, become GIVING_TO_NODE
+  if (pRhizome->getState() == 4 && connectedToNode) {
+    Serial.println("[STATE] MIDDLEMAN -> GIVING_TO_NODE (left disconnected)");
+    pRhizome->setState(3);
+    setNodeDrainRate(currentDrainRate);
+  }
+  
+  // If we were GENERATING, the loop is broken - go back to IDLE
+  if (pRhizome->getState() == 2) {
+    Serial.println("[STATE] GENERATING -> IDLE (loop broken)");
+    discoveryCompleted = false;
+    pRhizome->setState(0);
+  }
+  
+  checkBothDisconnected();
+}
+
+void onRightConnected() {
+  Serial.println("[CONN] Right connected");
+  
+  // Always send discover_list when right connects
+  discoveryMode = true;
+  discoverySent = false;
+  
+  // If left not connected, we're starting fresh
+  if (!connectionLeftState) {
+    clearSeenIds();
+    addSeenId(pRhizome->getID());
+  }
+  
+  sendDiscover();
+}
+
+void onRightDisconnected() {
+  Serial.println("[CONN] Right disconnected");
+  discoveryMode = false;
+  discoverySent = false;
+  
+  // Lost connection to node
+  if (connectedToNode) {
+    Serial.println("[NODE] Connection lost");
+    connectedToNode = false;
+    currentDrainRate = 0.0f;
+    setNodeDrainRate(0.0f);
+  }
+  
+  // If was GENERATING, the loop is broken - go back to IDLE
+  if (pRhizome->getState() == 2) {
+    Serial.println("[STATE] GENERATING -> IDLE (loop broken)");
+    discoveryCompleted = false;
+    pRhizome->setState(0);
+  }
+  
+  checkBothDisconnected();
+}
+
+void checkBothDisconnected() {
+  if (!connectionLeftState && !connectionRightState) {
+    Serial.println("[RESET] Both disconnected -> IDLE");
+    resetToIdle();
+  }
+}
+
+void resetToIdle() {
+  listening = false;
+  discoveryMode = false;
+  waitingForToken = false;
+  discoveryCompleted = false;
+  connectedToNode = false;
+  currentDrainRate = 0.0f;
+  setNodeDrainRate(0.0f);
+  clearSeenIds();
+  addSeenId(pRhizome->getID());
+  pRhizome->setCount(1);
+  pRhizome->setState(0);
 }

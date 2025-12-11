@@ -18,9 +18,9 @@ void setup() {
 
   SetupEnergyManagement(rhizome); // Initialize energy management with rhizome reference
   SetupSerialCommunication(rhizome); // Initialize serial communication with rhizome reference
-  SetupStrips(rhizome, 125); // Setup LED strips with brightness 50
+  //SetupStrips(rhizome, 125); // Setup LED strips with brightness 50
 
-  SetupHaptic(); // Initialize haptic feedback system
+  //SetupHaptic(); // Initialize haptic feedback system
 
 }
 
@@ -29,7 +29,7 @@ void loop() {
 
   checkConnectionStatus(); // Check for connection changes
 
-  StripLoop(); // Update LED strips animation
+  //StripLoop(); // Update LED strips animation
 
   
   //HapticLoop(); // Update haptic feedback

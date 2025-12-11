@@ -73,19 +73,25 @@ void setGenerationRate(int count) {
 
 /*----------------MAIN ENERGY UPDATE------------------*/
 void updateEnergy() {
-  if (pRhizome->getState() == 2) {
+  if (pRhizome->getState() == 1) {
     // Génération d’énergie entre rhizomes connectés
     energy += generationRate;
+    Serial.print("GENERATING energy: ");
+    Serial.println(generationRate);
     if (energy > maxEnergy) energy = maxEnergy;
 
-  } else if (pRhizome->getState() == 3 && nodeDrainRate > 0) {
+  } else if (pRhizome->getState() == 2 && nodeDrainRate > 0) {
     // Si connecté au nœud, celui-ci peut drainer l’énergie sous 10%
     energy -= nodeDrainRate;
+    Serial.print("IM GETTING SUCKED by node: ");
+    Serial.println(nodeDrainRate);
     if (energy < minEnergy) energy = minEnergy;
 
   } else {
     // Gestion autonome du rhizome
     if (energy <= energyThreshold) {
+      Serial.print("LOW ENERGY regen: ");
+      Serial.println(baseRegenRate);
       // Recharge lente jusqu’à 10%
       energy += baseRegenRate;
       if (energy > energyThreshold) energy = energyThreshold;

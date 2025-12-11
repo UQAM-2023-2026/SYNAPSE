@@ -2,7 +2,7 @@
 #include "RhizomeStateAndID.h"
 
 RhizomeStateAndID::RhizomeStateAndID(uint8_t id)
-  : id(id), count(0), energy(100), state(0) {}
+  : id(id), count(0), state(0), energy(100) {}  // fixed order: id, count, state, energy
 
   // Getters
 uint8_t RhizomeStateAndID::getID() const { return id; }
