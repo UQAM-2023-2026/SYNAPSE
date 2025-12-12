@@ -2,18 +2,18 @@
 #include "RhizomeStateAndID.h"
 
 RhizomeStateAndID::RhizomeStateAndID(uint8_t id)
-  : id(id), count(0), state(0), energy(100) {}  // fixed order: id, count, state, energy
+  : id(id), count(0), state(IDLE), energy(100) {}  // fixed order: id, count, state, energy
 
   // Getters
 uint8_t RhizomeStateAndID::getID() const { return id; }
 uint8_t RhizomeStateAndID::getCount() const { return count; }
 float RhizomeStateAndID::getEnergy() const { return energy; }
-uint8_t RhizomeStateAndID::getState() const { return state; }
+RhizomeState RhizomeStateAndID::getState() const { return state; }
 
   // Setters
 void RhizomeStateAndID::setID(uint8_t newID) { id = newID % 20; }
 void RhizomeStateAndID::setCount(uint8_t newCount) { count = newCount; }
-void RhizomeStateAndID::setState(uint8_t newState) { state = newState % 5; }
+void RhizomeStateAndID::setState(RhizomeState newState) { state = newState; }
 void RhizomeStateAndID::setEnergy(float newEnergy) { energy = constrain(newEnergy, 0.0f, 100.0f); }
 
 void RhizomeStateAndID::incrementCount() {

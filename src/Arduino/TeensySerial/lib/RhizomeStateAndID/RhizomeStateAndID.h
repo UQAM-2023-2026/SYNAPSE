@@ -3,6 +3,15 @@
 
 #include <Arduino.h>
 
+// États du rhizome
+enum RhizomeState {
+  IDLE = 0,           // Aucune connexion ou connexion incomplète
+  GENERATING = 1,     // Boucle fermée - génère de l'énergie
+  GIVING_TO_NODE = 2, // Connecté à un nœud, se vide selon drainRate
+  MIDDLEMAN = 3,      // Relais entre rhizome et nœud, ne se vide pas
+  DEAD = 4            // Énergie épuisée, LEDs éteintes, pas d'envoi
+};
+
 class RhizomeStateAndID {
 public:
   RhizomeStateAndID(uint8_t id = 0);
@@ -11,14 +20,14 @@ public:
   uint8_t getID() const;
   uint8_t getCount() const;
   float getEnergy() const;
-  uint8_t getState() const;
+  RhizomeState getState() const;
 
 
   // Setters
   void setID(uint8_t newID);
   void setCount(uint8_t newCount);
   void setEnergy(float newEnergy);
-  void setState(uint8_t newState);
+  void setState(RhizomeState newState);
 
   void incrementCount();
  
@@ -27,10 +36,10 @@ public:
   void printDebug(Stream &output = Serial) const;
 
 private:
-  uint8_t id;       // 0–19
-  uint8_t count;    // Number of rhizome
-  uint8_t state;    // 0–3 (idle, generating, giving, middleman)
-  float energy;   // 0–100
+  uint8_t id;          // 0–19
+  uint8_t count;       // Number of rhizome
+  RhizomeState state;  // IDLE, GENERATING, GIVING_TO_NODE, MIDDLEMAN
+  float energy;        // 0–100
 
 };
 

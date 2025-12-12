@@ -60,43 +60,50 @@ void setNodeDrainRate(float rate) {
 void setGenerationRate(int count) {
   // This function can be used to adjust energy management based on the number of connected rhizomes
   if( count <= 1) {
-    generationRate = 0.5;
+    generationRate = 0.25;
   } else if( count == 2) {
-    generationRate = 0.6;
+    generationRate = 0.35;
   } else if( count == 3) {
-    generationRate = 0.75;
+    generationRate = 0.5;
   } else if ( count >= 4) {
-    generationRate = 1.0;
+    generationRate = 0.75;
   }
 }
 /*--------------------------------------------------*/
 
 /*----------------MAIN ENERGY UPDATE------------------*/
 void updateEnergy() {
-  if (pRhizome->getState() == 1) {
+  // Don't update energy when DEAD - stay at 0
+  if (pRhizome->getState() == DEAD) {
+    energy = 0.0f;
+    pRhizome->setEnergy(energy);
+    return;
+  }
+  
+  if (pRhizome->getState() == GENERATING) {
     // Génération d’énergie entre rhizomes connectés
     energy += generationRate;
-    Serial.print("GENERATING energy: ");
-    Serial.println(generationRate);
+    // Serial.print("GENERATING energy: ");
+    // Serial.println(generationRate);
     if (energy > maxEnergy) energy = maxEnergy;
 
-  } else if (pRhizome->getState() == 2 && nodeDrainRate > 0) {
+  } else if (pRhizome->getState() == GIVING_TO_NODE && nodeDrainRate > 0) {
     // Si connecté au nœud, celui-ci peut drainer l’énergie sous 10%
     energy -= nodeDrainRate;
-    Serial.print("IM GETTING SUCKED by node: ");
-    Serial.println(nodeDrainRate);
+    // Serial.print("IM GETTING SUCKED by node: ");
+    // Serial.println(nodeDrainRate);
     if (energy < minEnergy) energy = minEnergy;
 
   } else {
     // Gestion autonome du rhizome
     if (energy <= energyThreshold) {
-      Serial.print("LOW ENERGY regen: ");
-      Serial.println(baseRegenRate);
+      // Serial.print("LOW ENERGY regen: ");
+      // Serial.println(baseRegenRate);
       // Recharge lente jusqu’à 10%
       energy += baseRegenRate;
       if (energy > energyThreshold) energy = energyThreshold;
 
-    } else if (energy > energyThreshold && pRhizome->getState() != 2) {
+    } else if (energy > energyThreshold && pRhizome->getState() != GIVING_TO_NODE) {
       // Descente lente vers 10%
       energy -= decayRate;
       if (energy < energyThreshold) energy = energyThreshold;

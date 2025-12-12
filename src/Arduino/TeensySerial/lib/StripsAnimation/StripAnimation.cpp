@@ -101,13 +101,13 @@ unsigned long genComp5LastMove = 0;
 const unsigned long genComp5Speed = 50; // milliseconds between moves
 unsigned long genComp5LastRestart = 0; // Track when animation last restarted
 const unsigned long genComp5RestartDelay = 2000; // milliseconds before restart (2 seconds)
-int genComp5NumLeds = 3; // number of leds, starts at 3 and grows
-bool genComp5Complete = false; // track if animation reached 15 LED
-uint8_t genComp5Brightness = 0; // brightness for breathing when complete
-int8_t genComp5FadeAmount = 5; //Fade amount for breathing
 // Trail settings for generation_comp5
 int genComp5TrailLength = 5;           // Number of fading LEDs behind
 float genComp5TrailFade = 0.5;         // How much each trail LED dims
+// Breathing animation variables (when energy is full)
+uint8_t genComp5BreathPhase = 0;        // Phase for sine wave (0-255)
+unsigned long genComp5BreathLastUpdate = 0;
+const unsigned long genComp5BreathSpeed = 20;  // ms between updates
 
 // Async breathing animation variables
 uint8_t asyncPhase[NUM_LEDS]; // Individual phase for each LED
@@ -431,24 +431,29 @@ void addOrangeTrail(int headPosition, int headSize, bool direction) {
 }
 
 void generation_comp5() {
-  // Animation that starts with 3 LEDs and grows each restart until strip is full
-  // Then breathes like idle animation
+  // Animation where trail length is proportional to rhizome energy
+  // At 100% energy, strip is full and breathes
   
-  // If animation is complete (reached 15 LEDs), do breathing animation
-  if (genComp5Complete) {
-    // Breathing animation - fade in and out
-    genComp5Brightness = genComp5Brightness + genComp5FadeAmount;
-    
-    // Reverse direction at the ends
-    if (genComp5Brightness <= 0 || genComp5Brightness >= 255) {
-      genComp5FadeAmount = -genComp5FadeAmount;
+  // Calculate number of LEDs based on energy (0-100% maps to 1-15 LEDs)
+  float energy = pRhizome->getEnergy();
+  int numLeds = map(constrain((int)energy, 0, 100), 0, 100, 1, NUM_LEDS);
+  
+  // If energy is at 100%, do breathing animation
+  if (energy >= 100.0f) {
+    // Only update phase at specified interval (non-blocking)
+    if (millis() - genComp5BreathLastUpdate >= genComp5BreathSpeed) {
+      genComp5BreathLastUpdate = millis();
+      genComp5BreathPhase += 1;  // Slow increment for smooth breathing
     }
     
+    // Use sine wave for smooth breathing (range 50-255 for visible effect)
+    uint8_t sineValue = sin8(genComp5BreathPhase);  // 0-255 sine wave
+    uint8_t brightness = map(sineValue, 0, 255, 50, 255);  // Map to 50-255 range
+    
     // Set all LEDs to orange with breathing brightness
-    fill_solid(leds, NUM_LEDS, CRGB(genComp5Brightness, genComp5Brightness / 5, 0));
+    fill_solid(leds, NUM_LEDS, CRGB(brightness, brightness / 5, 0));
     
     FastLED.show();
-    delay(30);
     return;
   }
   
@@ -456,22 +461,16 @@ void generation_comp5() {
   if (millis() - genComp5LastRestart >= genComp5RestartDelay) {
     genComp5Position = 0;
     genComp5LastRestart = millis();
-    
-    if (genComp5NumLeds < NUM_LEDS) {
-      genComp5NumLeds++;
-    } else {
-      genComp5Complete = true;
-    }
   }
   
   // Clear all LEDs
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   
   // Add the orange trail FIRST (so head draws on top)
-  addOrangeTrail(genComp5Position, genComp5NumLeds, genComp5Direction);
+  addOrangeTrail(genComp5Position, numLeds, genComp5Direction);
   
-  // Draw the growing LED group at current position
-  for (int i = 0; i < genComp5NumLeds; i++) {
+  // Draw the LED group at current position (size based on energy)
+  for (int i = 0; i < numLeds; i++) {
     int ledIndex = genComp5Position + i;
     if (ledIndex >= 0 && ledIndex < NUM_LEDS) {
       leds[ledIndex] = CRGB(255, 35, 0);
@@ -579,14 +578,21 @@ void generation_trail() {
 
 /*------------------Main Loop--------------------*/
 void StripLoop() {
-  if(pRhizome->getState() == 0) {
+  RhizomeState state = pRhizome->getState();
+  
+  if(state == IDLE) {
     generation_inc(); // Call the idle animation
-  } else if(pRhizome->getState() == 1) {
-    generation_comp5(); // Call the generation incomplete animation
-  } else if(pRhizome->getState() == 2) {
-    generation_trail(); // Call the generation complete 1 animation
-  } else if(pRhizome->getState() == 3) {
-    fill_solid(leds, NUM_LEDS, CRGB::Orange);
+  } else if(state == GENERATING) {
+    generation_comp5(); // Call the generation animation
+  } else if(state == GIVING_TO_NODE) {
+    generation_trail(); // Call the animation for giving to node
+  } else if(state == MIDDLEMAN) {
+    fill_solid(leds, NUM_LEDS, CRGB(255, 35, 0)); // Solid orange for middleman
+    FastLED.show();
+  } else if(state == DEAD) {
+    // Turn off all LEDs when dead
+    FastLED.clear();
+    FastLED.show();
   } else {
     generation_inc(); // Default to idle if state is unknown
   }
