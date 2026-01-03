@@ -1,0 +1,12 @@
+back and forth fonctional 
+osc in
+local adress
+192.168.0.35
+port 8000
+
+osc out
+network adress
+192.168.0.50
+port 9699
+local adress 
+192.168.0.35
