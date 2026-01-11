@@ -500,7 +500,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "C:/Users/lepit/Downloads/",
+      "plot": "./",
       "pos_files": "C:/Users/lepit/Downloads/",
       "specctra_dsn": "",
       "step": "",
