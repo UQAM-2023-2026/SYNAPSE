@@ -13,13 +13,13 @@ static RhizomeStateAndID *pRhizome = nullptr; // pointer to external rhizome obj
 /*----------------Energy variables-------------------- */
 static float energy = 0.0f;
 
-float baseRegenRate = 0.05;      // Recharge lente (quand < energyThreshold)
+float baseRegenRate = 0.3;      // Recharge lente (quand < energyThreshold)
 float decayRate = 0.1;         // Perte d’énergie lente (quand > energyThreshold)
 float nodeDrainRate = 0.0;       // Taux de vidange imposé par le nœud
 float generationRate = 0.5;      // Taux de génération quand connecté
 float maxEnergy = 100.0;
 float minEnergy = 0.0;
-float energyThreshold = 10.0; // Seuil de 10%
+float energyThreshold = 100.0; // Seuil de 10%
 
 // Intervalle de mise à jour
 unsigned long lastUpdate = 0;
@@ -102,12 +102,12 @@ void updateEnergy() {
       // Recharge lente jusqu’à 10%
       energy += baseRegenRate;
       if (energy > energyThreshold) energy = energyThreshold;
-
-    } else if (energy > energyThreshold && pRhizome->getState() != GIVING_TO_NODE) {
-      // Descente lente vers 10%
-      energy -= decayRate;
-      if (energy < energyThreshold) energy = energyThreshold;
     }
+    // } else if (energy > energyThreshold && pRhizome->getState() != GIVING_TO_NODE) {
+    //   // Descente lente vers 10%
+    //   energy -= decayRate;
+    //   if (energy < energyThreshold) energy = energyThreshold;
+    // }
   }
   pRhizome->setEnergy(energy);
   //Serial.println(generationRate);
