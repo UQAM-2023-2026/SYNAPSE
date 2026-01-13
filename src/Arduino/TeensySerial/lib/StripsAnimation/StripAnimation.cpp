@@ -581,9 +581,9 @@ void StripLoop() {
   RhizomeState state = pRhizome->getState();
   
   if(state == IDLE) {
-    generation_inc(); // Call the idle animation
+     generation_comp5(); // Call the idle animation
   } else if(state == GENERATING) {
-    generation_comp5(); // Call the generation animation
+    generation_inc(); // Call the generation animation
   } else if(state == GIVING_TO_NODE) {
     generation_trail(); // Call the animation for giving to node
   } else if(state == MIDDLEMAN) {
