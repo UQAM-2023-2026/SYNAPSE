@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résidences EDM3003 - Accueil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .emoji {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.3em;
+            margin-bottom: 40px;
+        }
+
+        .steps {
+            text-align: left;
+            margin: 40px 0;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        .step {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: start;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            color: #764ba2;
+            margin-bottom: 8px;
+        }
+
+        .step-content p {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.secondary {
+            background: white;
+            color: #667eea;
+            border: 3px solid #667eea;
+            box-shadow: none;
+        }
+
+        .btn.secondary:hover {
+            background: #f8f9fa;
+        }
+
+        .status {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+
+        .status strong {
+            color: #856404;
+        }
+
+        .check {
+            color: #28a745;
+            font-size: 1.5em;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">🎭</div>
+        <h1>Résidences EDM3003</h1>
+        <div class="subtitle">Gestion des disponibilités et organisation</div>
+
+        <div id="status-check"></div>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Importer l'horaire</h3>
+                    <p>Commencez par importer toutes les sessions PM/SOIR du cours EDM3003. Cela créera automatiquement toutes les résidences planifiées.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Marquer les disponibilités</h3>
+                    <p>Chaque personne marque ses périodes de disponibilité dans l'application principale.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Assigner les personnes</h3>
+                    <p>L'organisateur assigne les personnes aux résidences selon leurs disponibilités et définit les priorités.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <a href="import-horaire.html" class="btn">
+                📥 Importer l'horaire
+            </a>
+            <a href="residences.html" class="btn secondary">
+                🏠 Ouvrir l'application
+            </a>
+        </div>
+
+        <div style="margin-top: 40px; color: #666;">
+            <p style="margin-bottom: 10px;">📚 <a href="DEMARRAGE-RAPIDE.md" style="color: #667eea; text-decoration: none; font-weight: 600;">Guide de démarrage rapide</a></p>
+            <p>📖 <a href="README.md" style="color: #667eea; text-decoration: none; font-weight: 600;">Documentation complète</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Check if data already exists
+        window.onload = function() {
+            const data = localStorage.getItem('residences-data');
+            const statusDiv = document.getElementById('status-check');
+
+            if (data) {
+                const parsed = JSON.parse(data);
+                const hasImported = parsed.residencies.some(r => r.imported);
+
+                if (hasImported) {
+                    statusDiv.innerHTML = `
+                        <div class="status">
+                            <strong><span class="check">✓</span> Horaire déjà importé!</strong><br>
+                            Vous avez ${parsed.residencies.length} résidences planifiées.
+                            Vous pouvez directement ouvrir l'application.
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="status">
+                            <strong>⚠️ Horaire non importé</strong><br>
+                            Cliquez sur "Importer l'horaire" pour commencer.
+                        </div>
+                    `;
+                }
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="status">
+                        <strong>🆕 Première utilisation</strong><br>
+                        Bienvenue! Commencez par importer l'horaire EDM3003.
+                    </div>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résidences de Création</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, sans-serif;
+            background: #fff;
+            color: #3c4043;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header Google Style */
+        .gcal-header {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-bottom: 1px solid #dadce0;
+            height: 64px;
+            background: #fff;
+        }
+
+        .gcal-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 240px;
+        }
+
+        .gcal-logo svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .gcal-logo-text {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 22px;
+            color: #5f6368;
+        }
+
+        .gcal-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gcal-btn {
+            background: #fff;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #3c4043;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .gcal-btn:hover {
+            background: #f1f3f4;
+        }
+
+        .gcal-btn-primary {
+            background: #1a73e8;
+            color: #fff;
+            border: none;
+        }
+
+        .gcal-btn-primary:hover {
+            background: #1557b0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .gcal-btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+        }
+
+        .gcal-btn-icon:hover {
+            background: #f1f3f4;
+        }
+
+        .gcal-current-date {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 22px;
+            color: #3c4043;
+            margin: 0 24px;
+            min-width: 180px;
+        }
+
+        /* Main Layout */
+        .gcal-main {
+            display: flex;
+            height: calc(100vh - 64px);
+        }
+
+        /* Sidebar */
+        .gcal-sidebar {
+            width: 256px;
+            border-right: 1px solid #dadce0;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .gcal-create-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            border: 1px solid #dadce0;
+            border-radius: 24px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #3c4043;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+            transition: box-shadow 0.2s;
+        }
+
+        .gcal-create-btn:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Mini Calendar */
+        .mini-calendar {
+            margin-bottom: 24px;
+        }
+
+        .mini-calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .mini-calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .mini-calendar-day {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .mini-calendar-day:hover {
+            background: #f1f3f4;
+        }
+
+        .mini-calendar-day.today {
+            background: #1a73e8;
+            color: #fff;
+        }
+
+        .mini-calendar-day.selected {
+            background: #e8f0fe;
+            color: #1a73e8;
+        }
+
+        .mini-calendar-day.other-month {
+            color: #80868b;
+        }
+
+        /* Legend */
+        .gcal-legend {
+            margin-top: 16px;
+        }
+
+        .gcal-legend-title {
+            font-size: 11px;
+            font-weight: 500;
+            color: #5f6368;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .gcal-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 0;
+            font-size: 13px;
+        }
+
+        .gcal-legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* Calendar Grid */
+        .gcal-content {
+            flex: 1;
+            overflow: auto;
+            background: #fff;
+        }
+
+        .gcal-day-view {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Day Header */
+        .gcal-day-header {
+            display: flex;
+            border-bottom: 1px solid #dadce0;
+            padding-left: 56px;
+        }
+
+        .gcal-day-column-header {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            font-size: 11px;
+            color: #70757a;
+            text-transform: uppercase;
+        }
+
+        .gcal-day-number {
+            font-size: 26px;
+            color: #3c4043;
+            font-weight: 400;
+        }
+
+        .gcal-day-number.today {
+            background: #1a73e8;
+            color: #fff;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        /* Time Grid */
+        .gcal-time-grid {
+            display: flex;
+            flex: 1;
+        }
+
+        .gcal-time-labels {
+            width: 56px;
+            flex-shrink: 0;
+        }
+
+        .gcal-time-label {
+            height: 60px;
+            font-size: 10px;
+            color: #70757a;
+            text-align: right;
+            padding-right: 8px;
+            position: relative;
+            top: -6px;
+        }
+
+        .gcal-day-column {
+            flex: 1;
+            border-left: 1px solid #dadce0;
+            position: relative;
+        }
+
+        .gcal-hour-slot {
+            height: 60px;
+            border-bottom: 1px solid #e8eaed;
+            position: relative;
+        }
+
+        .gcal-hour-slot:hover {
+            background: #f8f9fa;
+        }
+
+        /* Events */
+        .gcal-event {
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+            z-index: 1;
+        }
+
+        .gcal-event:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+        }
+
+        .gcal-event-time {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+
+        .gcal-event-title {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .gcal-event-session {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        /* Event Colors */
+        .event-setup {
+            background: #6c757d;
+            color: #fff;
+        }
+
+        .event-presentation {
+            background: #17a2b8;
+            color: #fff;
+        }
+
+        .event-planification {
+            background: #1a73e8;
+            color: #fff;
+        }
+
+        .event-residence {
+            background: #0f9d58;
+            color: #fff;
+        }
+
+        .event-test {
+            background: #f9ab00;
+            color: #000;
+        }
+
+        .event-revue {
+            background: #d93025;
+            color: #fff;
+        }
+
+        .event-montage {
+            background: #a142f4;
+            color: #fff;
+        }
+
+        .event-generale {
+            background: #fa7b17;
+            color: #fff;
+        }
+
+        .event-lancement {
+            background: #e91e63;
+            color: #fff;
+        }
+
+        .event-demontage {
+            background: #6c757d;
+            color: #fff;
+        }
+
+        .event-postmortem {
+            background: #00bfa5;
+            color: #fff;
+        }
+
+        /* Now indicator */
+        .gcal-now-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ea4335;
+            z-index: 3;
+        }
+
+        .gcal-now-dot {
+            position: absolute;
+            left: -5px;
+            top: -4px;
+            width: 10px;
+            height: 10px;
+            background: #ea4335;
+            border-radius: 50%;
+        }
+
+        /* Modal */
+        .gcal-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gcal-modal-overlay.active {
+            display: flex;
+        }
+
+        .gcal-modal {
+            background: #fff;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow: auto;
+            box-shadow: 0 24px 38px rgba(0, 0, 0, 0.14);
+        }
+
+        .gcal-modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #dadce0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .gcal-modal-title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 18px;
+        }
+
+        .gcal-modal-body {
+            padding: 24px;
+        }
+
+        .gcal-modal-body p {
+            margin-bottom: 12px;
+        }
+
+        .gcal-people-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .gcal-person-chip {
+            background: #e8f0fe;
+            color: #1a73e8;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+        }
+
+        /* Tabs */
+        .gcal-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 0 16px;
+            border-bottom: 1px solid #dadce0;
+            background: #f8f9fa;
+        }
+
+        .gcal-tab {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #5f6368;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .gcal-tab:hover {
+            background: #e8eaed;
+        }
+
+        .gcal-tab.active {
+            color: #1a73e8;
+            border-bottom-color: #1a73e8;
+        }
+
+        /* When2Meet Availability Grid */
+        .w2m-container {
+            padding: 24px;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .w2m-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .w2m-person-select {
+            padding: 10px 16px;
+            font-size: 14px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            min-width: 200px;
+        }
+
+        .w2m-toggle {
+            display: flex;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .w2m-toggle button {
+            padding: 10px 20px;
+            border: none;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .w2m-toggle button.active {
+            background: #1a73e8;
+            color: #fff;
+        }
+
+        .w2m-grid {
+            display: grid;
+            gap: 1px;
+            background: #dadce0;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .w2m-header-cell {
+            background: #f8f9fa;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 500;
+            color: #5f6368;
+        }
+
+        .w2m-header-cell.today {
+            background: #e8f0fe;
+            color: #1a73e8;
+        }
+
+        .w2m-time-cell {
+            background: #f8f9fa;
+            padding: 8px;
+            text-align: right;
+            font-size: 11px;
+            color: #5f6368;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .w2m-cell {
+            background: #fff;
+            min-height: 32px;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+        }
+
+        .w2m-cell:hover {
+            background: #f1f3f4;
+        }
+
+        .w2m-cell.selected {
+            background: #0f9d58 !important;
+        }
+
+        .w2m-cell.selecting {
+            background: #81c995;
+        }
+
+        /* Heatmap colors */
+        .w2m-cell.heat-0 {
+            background: #fff;
+        }
+
+        .w2m-cell.heat-1 {
+            background: #e8f5e9;
+        }
+
+        .w2m-cell.heat-2 {
+            background: #c8e6c9;
+        }
+
+        .w2m-cell.heat-3 {
+            background: #a5d6a7;
+        }
+
+        .w2m-cell.heat-4 {
+            background: #81c784;
+        }
+
+        .w2m-cell.heat-5 {
+            background: #66bb6a;
+        }
+
+        .w2m-cell.heat-6 {
+            background: #4caf50;
+        }
+
+        .w2m-cell.heat-7 {
+            background: #43a047;
+        }
+
+        .w2m-cell.heat-8 {
+            background: #388e3c;
+        }
+
+        .w2m-cell.heat-9 {
+            background: #2e7d32;
+        }
+
+        .w2m-cell.heat-10 {
+            background: #1b5e20;
+            color: #fff;
+        }
+
+        .w2m-tooltip {
+            position: absolute;
+            background: #3c4043;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 100;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .w2m-legend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        .w2m-legend-gradient {
+            display: flex;
+            height: 20px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .w2m-legend-gradient div {
+            width: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .gcal-sidebar {
+                display: none;
+            }
+
+            .gcal-logo-text {
+                display: none;
+            }
+
+            .gcal-current-date {
+                font-size: 16px;
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="gcal-header">
+        <div class="gcal-logo">
+            <svg viewBox="0 0 200 200">
+                <rect x="20" y="20" width="160" height="160" rx="20" fill="#fff" stroke="#4285f4" stroke-width="8" />
+                <rect x="50" y="60" width="40" height="40" rx="4" fill="#ea4335" />
+                <rect x="110" y="60" width="40" height="40" rx="4" fill="#34a853" />
+                <rect x="50" y="120" width="40" height="40" rx="4" fill="#fbbc04" />
+                <rect x="110" y="120" width="40" height="40" rx="4" fill="#4285f4" />
+            </svg>
+            <span class="gcal-logo-text">Résidences</span>
+        </div>
+
+        <div class="gcal-nav">
+            <button class="gcal-btn" onclick="goToToday()">Aujourd'hui</button>
+            <button class="gcal-btn-icon" onclick="navigateDate(-1)">
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="#5f6368" />
+                </svg>
+            </button>
+            <button class="gcal-btn-icon" onclick="navigateDate(1)">
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="#5f6368" />
+                </svg>
+            </button>
+            <span class="gcal-current-date" id="current-date-display">Janvier 2026</span>
+        </div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="gcal-tabs">
+        <button class="gcal-tab active" onclick="switchView('day')">Jour</button>
+        <button class="gcal-tab" onclick="switchView('week')">Semaine</button>
+        <button class="gcal-tab" onclick="switchView('month')">Mois</button>
+        <button class="gcal-tab" onclick="switchView('availability')">Disponibilités</button>
+        <button class="gcal-tab" onclick="switchView('teams')">Équipes</button>
+        <button class="gcal-tab" onclick="switchView('people')">Personnes</button>
+        <button class="gcal-tab" onclick="switchView('settings')">Paramètres</button>
+    </div>
+
+    <!-- Main -->
+    <div class="gcal-main">
+        <!-- Sidebar -->
+        <aside class="gcal-sidebar">
+            <button class="gcal-create-btn" onclick="showImportModal()">
+                <svg width="36" height="36" viewBox="0 0 36 36">
+                    <path d="M28.5 16.5h-9v-9h-3v9h-9v3h9v9h3v-9h9z" fill="#1a73e8" />
+                </svg>
+                Créer
+            </button>
+
+            <!-- Mini Calendar -->
+            <div class="mini-calendar">
+                <div class="mini-calendar-header">
+                    <span id="mini-cal-month">Janvier 2026</span>
+                    <div>
+                        <button class="gcal-btn-icon" onclick="navigateMiniCal(-1)">‹</button>
+                        <button class="gcal-btn-icon" onclick="navigateMiniCal(1)">›</button>
+                    </div>
+                </div>
+                <div class="mini-calendar-grid" id="mini-cal-grid"></div>
+            </div>
+
+            <!-- Legend -->
+            <div class="gcal-legend">
+                <div class="gcal-legend-title">Types d'activités</div>
+                <div id="legend-items"></div>
+            </div>
+        </aside>
+
+        <!-- Calendar Content -->
+        <main class="gcal-content" id="calendar-content">
+            <!-- Populated by JS -->
+        </main>
+    </div>
+
+    <!-- Event Modal -->
+    <div class="gcal-modal-overlay" id="event-modal">
+        <div class="gcal-modal">
+            <div class="gcal-modal-header">
+                <span class="gcal-modal-title" id="modal-title">Détails</span>
+                <button class="gcal-btn-icon" onclick="closeModal()">✕</button>
+            </div>
+            <div class="gcal-modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        let data = {
+            people: ["Sasha", "Dom", "Rachel", "Florence", "Tom", "Aldric", "Émilie", "Maria",
+                "Maude", "Noum", "Med", "Thierry", "No", "JC", "Justin", "Raton",
+                "Anthonny", "Sarah", "Ugo", "Clément", "Max", "Mery", "Laura", "Emmanuel",
+                "Alexandre", "Katianna", "Louis-David", "Léa"],
+            availabilities: {},
+            residencies: [],
+            projects: {},
+            teamMembers: {} // { "racines": ["Sasha", "Dom"], "noeud": [...], ... }
+        };
+
+        const activityTypes = {
+            "setup": { nom: "Mise en place", couleur: "#6c757d" },
+            "presentation": { nom: "Présentation", couleur: "#17a2b8" },
+            "planification": { nom: "Planification", couleur: "#1a73e8" },
+            "residence": { nom: "Résidence", couleur: "#0f9d58" },
+            "test": { nom: "Test", couleur: "#f9ab00" },
+            "revue": { nom: "Revue", couleur: "#d93025" },
+            "montage": { nom: "Montage", couleur: "#a142f4" },
+            "generale": { nom: "Générale", couleur: "#fa7b17" },
+            "lancement": { nom: "Lancement", couleur: "#e91e63" },
+            "demontage": { nom: "Démontage", couleur: "#6c757d" },
+            "postmortem": { nom: "Post-mortem", couleur: "#00bfa5" }
+        };
+
+        const teams = {
+            "racines": { nom: "Racines", couleur: "#8e24aa" },
+            "noeud": { nom: "Noeud", couleur: "#43a047" },
+            "rhizome": { nom: "Rhizome", couleur: "#fb8c00" },
+            "sceno": { nom: "Scéno", couleur: "#1e88e5" },
+            "visuels": { nom: "Visuels", couleur: "#e53935" },
+            "son": { nom: "Son", couleur: "#00acc1" },
+            "dt": { nom: "DT", couleur: "#6d4c41" },
+            "prod": { nom: "Prod", couleur: "#546e7a" }
+        };
+
+        let currentDate = new Date();
+        let currentView = 'day';
+
+        // Init
+        function init() {
+            loadData();
+            renderLegend();
+            renderMiniCalendar();
+            renderDayView();
+            updateDateDisplay();
+            checkImport();
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('residences-data');
+            if (saved) data = JSON.parse(saved);
+            data.people.forEach(p => {
+                if (!data.availabilities[p]) data.availabilities[p] = [];
+                if (!data.projects[p]) data.projects[p] = "";
+            });
+        }
+
+        function saveData() {
+            localStorage.setItem('residences-data', JSON.stringify(data));
+        }
+
+        function parseLocalDate(dateString) {
+            const [year, month, day] = dateString.split('-').map(Number);
+            return new Date(year, month - 1, day);
+        }
+
+        function formatDateISO(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        // Navigation
+        function goToToday() {
+            currentDate = new Date();
+            renderCurrentView();
+            renderMiniCalendar();
+            updateDateDisplay();
+        }
+
+        function navigateDate(delta) {
+            currentDate.setDate(currentDate.getDate() + delta);
+            renderCurrentView();
+            renderMiniCalendar();
+            updateDateDisplay();
+        }
+
+        function navigateMiniCal(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderMiniCalendar();
+            updateDateDisplay();
+        }
+
+        function updateDateDisplay() {
+            const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+            const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+
+            document.getElementById('current-date-display').textContent =
+                `${days[currentDate.getDay()]} ${currentDate.getDate()} ${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+
+            document.getElementById('mini-cal-month').textContent =
+                `${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+        }
+
+        // Views
+        function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.gcal-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderCurrentView();
+        }
+
+        function renderCurrentView() {
+            if (currentView === 'day') renderDayView();
+            else if (currentView === 'week') renderWeekView();
+            else if (currentView === 'month') renderMonthView();
+            else if (currentView === 'availability') renderAvailabilityView();
+            else if (currentView === 'teams') renderTeamsView();
+            else if (currentView === 'people') renderPeopleView();
+            else if (currentView === 'settings') renderSettingsView();
+        }
+
+        // Day View
+        function renderDayView() {
+            const container = document.getElementById('calendar-content');
+            const dateStr = formatDateISO(currentDate);
+            const events = data.residencies.filter(r => r.date === dateStr);
+            const today = new Date();
+            const isToday = dateStr === formatDateISO(today);
+
+            let html = `<div class="gcal-day-view">
+                <div class="gcal-day-header">
+                    <div class="gcal-day-column-header">
+                        <div>${['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'][currentDate.getDay()]}</div>
+                        <div class="gcal-day-number ${isToday ? 'today' : ''}">${currentDate.getDate()}</div>
+                    </div>
+                </div>
+                <div class="gcal-time-grid">
+                    <div class="gcal-time-labels">`;
+
+            for (let h = 0; h <= 23; h++) {
+                html += `<div class="gcal-time-label">${h}:00</div>`;
+            }
+
+            html += `</div><div class="gcal-day-column">`;
+
+            for (let h = 0; h <= 23; h++) {
+                html += `<div class="gcal-hour-slot" data-hour="${h}"></div>`;
+            }
+
+            // Events
+            events.forEach((evt, i) => {
+                const startH = parseInt(evt.startTime.split(':')[0]);
+                const endH = parseInt(evt.endTime.split(':')[0]);
+                const top = startH * 60;
+                const height = (endH - startH) * 60;
+                const typeClass = evt.type ? `event-${evt.type}` : 'event-residence';
+                const typeName = activityTypes[evt.type]?.nom || 'Résidence';
+                const displayTitle = evt.titre || typeName;
+                const teamTags = (evt.teams || []).map(t => teams[t] ?
+                    `<span style="background:${teams[t].couleur};color:#fff;padding:1px 4px;border-radius:3px;font-size:8px;margin-right:2px;">${teams[t].nom}</span>` : ''
+                ).join('');
+
+                html += `<div class="gcal-event ${typeClass}" 
+                    style="top:${top}px; height:${height}px;"
+                    onclick="showEventDetails(${i}, '${dateStr}')">
+                    <div class="gcal-event-time">${evt.startTime} - ${evt.endTime}</div>
+                    <div class="gcal-event-title">${displayTitle}</div>
+                    ${teamTags ? `<div style="margin-top:2px;">${teamTags}</div>` : ''}
+                    <div class="gcal-event-session">${evt.people?.length ? `(${evt.people.length}👤)` : ''}</div>
+                </div>`;
+            });
+
+            // Now line
+            if (isToday) {
+                const now = new Date();
+                const mins = now.getHours() * 60 + now.getMinutes();
+                if (mins >= 0 && mins <= 1440) {
+                    html += `<div class="gcal-now-line" style="top:${mins}px"><div class="gcal-now-dot"></div></div>`;
+                }
+            }
+
+            html += `</div></div></div>`;
+            container.innerHTML = html;
+        }
+
+        // Week View
+        function renderWeekView() {
+            const container = document.getElementById('calendar-content');
+            const startOfWeek = new Date(currentDate);
+            startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1);
+
+            let headerHtml = '<div class="gcal-day-header">';
+            const days = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'];
+            const today = formatDateISO(new Date());
+
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(startOfWeek);
+                d.setDate(startOfWeek.getDate() + i);
+                const isToday = formatDateISO(d) === today;
+                headerHtml += `<div class="gcal-day-column-header" onclick="selectDate('${formatDateISO(d)}')">
+                    <div>${days[i]}</div>
+                    <div class="gcal-day-number ${isToday ? 'today' : ''}">${d.getDate()}</div>
+                </div>`;
+            }
+            headerHtml += '</div>';
+
+            let gridHtml = '<div class="gcal-time-grid"><div class="gcal-time-labels">';
+            for (let h = 0; h <= 23; h++) {
+                gridHtml += `<div class="gcal-time-label">${h}:00</div>`;
+            }
+            gridHtml += '</div>';
+
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(startOfWeek);
+                d.setDate(startOfWeek.getDate() + i);
+                const dateStr = formatDateISO(d);
+                const events = data.residencies.filter(r => r.date === dateStr);
+
+                gridHtml += '<div class="gcal-day-column">';
+                for (let h = 0; h <= 23; h++) {
+                    gridHtml += `<div class="gcal-hour-slot"></div>`;
+                }
+
+                events.forEach((evt, idx) => {
+                    const startH = parseInt(evt.startTime.split(':')[0]);
+                    const endH = parseInt(evt.endTime.split(':')[0]);
+                    const top = startH * 60;
+                    const height = (endH - startH) * 60;
+                    const typeClass = evt.type ? `event-${evt.type}` : 'event-residence';
+
+                    gridHtml += `<div class="gcal-event ${typeClass}" 
+                        style="top:${top}px; height:${height}px;"
+                        onclick="showEventDetails(${idx}, '${dateStr}')">
+                        <div class="gcal-event-time">${evt.session || ''}</div>
+                    </div>`;
+                });
+
+                gridHtml += '</div>';
+            }
+            gridHtml += '</div>';
+
+            container.innerHTML = `<div class="gcal-day-view">${headerHtml}${gridHtml}</div>`;
+        }
+
+        // Month View
+        function renderMonthView() {
+            const container = document.getElementById('calendar-content');
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDay = (firstDay.getDay() + 6) % 7; // Monday first
+
+            const daysInMonth = lastDay.getDate();
+            const today = formatDateISO(new Date());
+
+            let html = `<div style="padding:16px;">
+                <div style="display:grid;grid-template-columns:repeat(7, 1fr);gap:1px;background:#dadce0;border:1px solid #dadce0;border-radius:8px;overflow:hidden;">
+                    ${['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(d =>
+                `<div style="background:#f8f9fa;padding:8px;text-align:center;font-weight:500;color:#5f6368;">${d}</div>`
+            ).join('')}`;
+
+            // Previous month days
+            const prevMonthLast = new Date(year, month, 0).getDate();
+            for (let i = startDay - 1; i >= 0; i--) {
+                html += `<div style="background:#fff;min-height:100px;padding:4px;opacity:0.4;">
+                    <div style="font-size:12px;color:#5f6368;">${prevMonthLast - i}</div>
+                </div>`;
+            }
+
+            // Current month days
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isToday = dateStr === today;
+                const dayEvents = getFilteredEvents(dateStr);
+
+                html += `<div style="background:#fff;min-height:100px;padding:4px;cursor:pointer;${isToday ? 'box-shadow:inset 0 0 0 2px #1a73e8;' : ''}" onclick="selectDate('${dateStr}')">
+                    <div style="font-size:12px;${isToday ? 'background:#1a73e8;color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;' : 'color:#5f6368;'}">${d}</div>
+                    <div style="margin-top:4px;max-height:70px;overflow:hidden;">
+                        ${dayEvents.slice(0, 3).map(evt => {
+                    const color = activityTypes[evt.type]?.couleur || '#1a73e8';
+                    const title = evt.titre || activityTypes[evt.type]?.nom || 'Événement';
+                    return `<div style="background:${color};color:#fff;padding:2px 4px;border-radius:2px;font-size:10px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" 
+                                title="${title}">${evt.startTime.slice(0, 5)} ${title}</div>`;
+                }).join('')}
+                        ${dayEvents.length > 3 ? `<div style="font-size:10px;color:#1a73e8;">+${dayEvents.length - 3} autres</div>` : ''}
+                    </div>
+                </div>`;
+            }
+
+            // Next month days
+            const totalCells = Math.ceil((startDay + daysInMonth) / 7) * 7;
+            const remaining = totalCells - (startDay + daysInMonth);
+            for (let i = 1; i <= remaining; i++) {
+                html += `<div style="background:#fff;min-height:100px;padding:4px;opacity:0.4;">
+                    <div style="font-size:12px;color:#5f6368;">${i}</div>
+                </div>`;
+            }
+
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
+
+        // Filter events by type
+        let activeTypeFilter = null;
+
+        function getFilteredEvents(dateStr) {
+            let events = data.residencies.filter(r => r.date === dateStr);
+            if (activeTypeFilter) {
+                events = events.filter(r => r.type === activeTypeFilter);
+            }
+            return events.sort((a, b) => a.startTime.localeCompare(b.startTime));
+        }
+
+        function setTypeFilter(type) {
+            activeTypeFilter = type === activeTypeFilter ? null : type;
+            renderLegend();
+            renderCurrentView();
+        }
+
+        function selectDate(dateStr) {
+            currentDate = parseLocalDate(dateStr);
+            currentView = 'day';
+            document.querySelectorAll('.gcal-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('.gcal-tab').classList.add('active');
+            renderDayView();
+            renderMiniCalendar();
+            updateDateDisplay();
+        }
+
+        // When2Meet Availability View
+        let w2mMode = 'edit'; // 'edit' or 'view'
+        let w2mSelectedPerson = null;
+        let w2mDragging = false;
+        let w2mDragValue = true;
+
+        function renderAvailabilityView() {
+            const container = document.getElementById('calendar-content');
+
+            // Get date range (next 2 weeks from current date)
+            const startDate = new Date(currentDate);
+            startDate.setDate(startDate.getDate() - startDate.getDay() + 1); // Start from Monday
+            const dates = [];
+            for (let i = 0; i < 14; i++) {
+                const d = new Date(startDate);
+                d.setDate(startDate.getDate() + i);
+                dates.push(formatDateISO(d));
+            }
+
+            const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+            const today = formatDateISO(new Date());
+            const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+
+            // Build grid
+            let gridHtml = '';
+
+            // Header row
+            gridHtml += '<div class="w2m-header-cell"></div>';
+            dates.forEach(dateStr => {
+                const d = parseLocalDate(dateStr);
+                const isToday = dateStr === today;
+                gridHtml += `<div class="w2m-header-cell ${isToday ? 'today' : ''}">
+                    ${days[d.getDay()]}<br>${d.getDate()}/${d.getMonth() + 1}
+                </div>`;
+            });
+
+            // Time rows
+            hours.forEach(hour => {
+                gridHtml += `<div class="w2m-time-cell">${hour}:00</div>`;
+                dates.forEach(dateStr => {
+                    const key = `${dateStr}-${hour}`;
+                    let cellClass = 'w2m-cell';
+                    let cellContent = '';
+
+                    if (w2mMode === 'view') {
+                        // Heatmap mode
+                        const count = getAvailabilityCount(dateStr, hour);
+                        const heatLevel = Math.min(10, Math.round(count / data.people.length * 10));
+                        cellClass += ` heat-${heatLevel}`;
+                        if (count > 0) {
+                            cellContent = `<span style="font-size:10px;">${count}</span>`;
+                        }
+                    } else if (w2mSelectedPerson) {
+                        // Edit mode
+                        if (isPersonAvailable(w2mSelectedPerson, dateStr, hour)) {
+                            cellClass += ' selected';
+                        }
+                    }
+
+                    gridHtml += `<div class="${cellClass}" 
+                        data-date="${dateStr}" data-hour="${hour}"
+                        onmousedown="w2mStartDrag(event, '${dateStr}', ${hour})"
+                        onmouseenter="w2mDragOver(event, '${dateStr}', ${hour})"
+                        onmouseup="w2mEndDrag()"
+                        onmousemove="w2mShowTooltip(event, '${dateStr}', ${hour})"
+                        onmouseleave="w2mHideTooltip()">
+                        ${cellContent}
+                    </div>`;
+                });
+            });
+
+            container.innerHTML = `
+                <div class="w2m-container">
+                    <div class="w2m-header">
+                        <div class="w2m-toggle">
+                            <button class="${w2mMode === 'edit' ? 'active' : ''}" onclick="w2mSetMode('edit')">✏️ Modifier</button>
+                            <button class="${w2mMode === 'view' ? 'active' : ''}" onclick="w2mSetMode('view')">👁️ Visualiser</button>
+                        </div>
+                        
+                        ${w2mMode === 'edit' ? `
+                            <select class="w2m-person-select" onchange="w2mSelectPerson(this.value)">
+                                <option value="">-- Sélectionner une personne --</option>
+                                ${data.people.map(p => `<option value="${p}" ${p === w2mSelectedPerson ? 'selected' : ''}>${p}</option>`).join('')}
+                            </select>
+                            ${w2mSelectedPerson ? `<span style="color:#0f9d58;font-weight:500;">✓ ${w2mSelectedPerson}</span>` : ''}
+                        ` : `
+                            <span style="color:#5f6368;">Survolez pour voir les personnes disponibles</span>
+                        `}
+                    </div>
+                    
+                    <div class="w2m-grid" style="grid-template-columns: 60px repeat(${dates.length}, 1fr);">
+                        ${gridHtml}
+                    </div>
+                    
+                    ${w2mMode === 'view' ? `
+                        <div class="w2m-legend">
+                            <span>0</span>
+                            <div class="w2m-legend-gradient">
+                                ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => `<div class="heat-${i}" style="background:var(--heat-${i});"></div>`).join('')}
+                            </div>
+                            <span>Tous</span>
+                        </div>
+                    ` : w2mSelectedPerson ? `
+                        <p style="margin-top:16px;color:#5f6368;font-size:13px;">
+                            💡 Cliquez et glissez pour sélectionner plusieurs créneaux
+                        </p>
+                    ` : `
+                        <p style="margin-top:16px;color:#5f6368;font-size:13px;">
+                            👆 Sélectionnez d'abord une personne pour marquer ses disponibilités
+                        </p>
+                    `}
+                </div>
+                <div id="w2m-tooltip" class="w2m-tooltip" style="display:none;"></div>
+            `;
+        }
+
+        function w2mSetMode(mode) {
+            w2mMode = mode;
+            renderAvailabilityView();
+        }
+
+        function w2mSelectPerson(person) {
+            w2mSelectedPerson = person || null;
+            renderAvailabilityView();
+        }
+
+        function w2mStartDrag(e, dateStr, hour) {
+            if (w2mMode !== 'edit' || !w2mSelectedPerson) return;
+            e.preventDefault();
+            w2mDragging = true;
+            // Toggle: if already selected, we're removing
+            w2mDragValue = !isPersonAvailable(w2mSelectedPerson, dateStr, hour);
+            w2mToggleSlot(dateStr, hour);
+        }
+
+        function w2mDragOver(e, dateStr, hour) {
+            if (!w2mDragging) return;
+            w2mToggleSlot(dateStr, hour);
+        }
+
+        function w2mEndDrag() {
+            w2mDragging = false;
+        }
+
+        function w2mToggleSlot(dateStr, hour) {
+            if (!w2mSelectedPerson) return;
+
+            const key = `${dateStr}-${hour}`;
+            if (!data.availabilities[w2mSelectedPerson]) {
+                data.availabilities[w2mSelectedPerson] = [];
+            }
+
+            // Check if slot exists
+            const slots = data.availabilities[w2mSelectedPerson];
+            const existingIdx = slots.findIndex(s => s.date === dateStr && s.hour === hour);
+
+            if (w2mDragValue && existingIdx === -1) {
+                // Add slot
+                slots.push({ date: dateStr, hour: hour });
+            } else if (!w2mDragValue && existingIdx !== -1) {
+                // Remove slot
+                slots.splice(existingIdx, 1);
+            }
+
+            saveData();
+
+            // Update cell visually without full re-render
+            const cell = document.querySelector(`[data-date="${dateStr}"][data-hour="${hour}"]`);
+            if (cell) {
+                if (w2mDragValue) {
+                    cell.classList.add('selected');
+                } else {
+                    cell.classList.remove('selected');
+                }
+            }
+        }
+
+        function isPersonAvailable(person, dateStr, hour) {
+            const slots = data.availabilities[person] || [];
+            return slots.some(s => s.date === dateStr && s.hour === hour);
+        }
+
+        function getAvailabilityCount(dateStr, hour) {
+            let count = 0;
+            data.people.forEach(person => {
+                if (isPersonAvailable(person, dateStr, hour)) count++;
+            });
+            return count;
+        }
+
+        function getAvailablePeopleForSlot(dateStr, hour) {
+            return data.people.filter(p => isPersonAvailable(p, dateStr, hour));
+        }
+
+        function w2mShowTooltip(e, dateStr, hour) {
+            if (w2mMode !== 'view') return;
+            const people = getAvailablePeopleForSlot(dateStr, hour);
+            if (people.length === 0) return;
+
+            const tooltip = document.getElementById('w2m-tooltip');
+            tooltip.innerHTML = `<strong>${people.length} disponible${people.length > 1 ? 's' : ''}</strong><br>${people.join(', ')}`;
+            tooltip.style.display = 'block';
+            tooltip.style.left = (e.pageX + 10) + 'px';
+            tooltip.style.top = (e.pageY + 10) + 'px';
+        }
+
+        function w2mHideTooltip() {
+            const tooltip = document.getElementById('w2m-tooltip');
+            if (tooltip) tooltip.style.display = 'none';
+        }
+
+        // Prevent text selection while dragging
+        document.addEventListener('mouseup', () => { w2mDragging = false; });
+
+        // Teams View
+        function renderTeamsView() {
+            const container = document.getElementById('calendar-content');
+
+            // Initialize teamMembers if not exists
+            if (!data.teamMembers) data.teamMembers = {};
+            Object.keys(teams).forEach(teamKey => {
+                if (!data.teamMembers[teamKey]) data.teamMembers[teamKey] = [];
+            });
+
+            container.innerHTML = `<div style="padding:24px;">
+                <h2 style="margin-bottom:24px;">👥 Gestion des équipes</h2>
+                
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;">
+                    ${Object.entries(teams).map(([teamKey, team]) => {
+                const members = data.teamMembers[teamKey] || [];
+                return `
+                            <div style="border:2px solid ${team.couleur};border-radius:12px;overflow:hidden;">
+                                <div style="background:${team.couleur};color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+                                    <strong>${team.nom}</strong>
+                                    <span style="background:rgba(255,255,255,0.3);padding:4px 8px;border-radius:12px;font-size:12px;">
+                                        ${members.length} membre${members.length !== 1 ? 's' : ''}
+                                    </span>
+                                </div>
+                                <div style="padding:12px;">
+                                    <div style="display:flex;gap:4px;margin-bottom:8px;">
+                                        <button class="gcal-btn" style="padding:4px 8px;font-size:11px;flex:1;" 
+                                            onclick="selectAllTeamMembers('${teamKey}')">✓ Tous</button>
+                                        <button class="gcal-btn" style="padding:4px 8px;font-size:11px;flex:1;" 
+                                            onclick="deselectAllTeamMembers('${teamKey}')">✗ Aucun</button>
+                                    </div>
+                                    <div style="max-height:200px;overflow-y:auto;">
+                                        ${data.people.map(person => {
+                    const isMember = members.includes(person);
+                    return `
+                                                <label style="display:flex;align-items:center;padding:6px 8px;cursor:pointer;border-radius:4px;${isMember ? `background:${team.couleur}20;` : ''}"
+                                                    onmouseover="this.style.background='${team.couleur}15'"
+                                                    onmouseout="this.style.background='${isMember ? team.couleur + '20' : ''}'">
+                                                    <input type="checkbox" ${isMember ? 'checked' : ''} 
+                                                        onchange="toggleTeamMember('${teamKey}', '${person}', this.checked)"
+                                                        style="margin-right:8px;accent-color:${team.couleur};">
+                                                    <span style="font-size:13px;${isMember ? 'font-weight:500;' : ''}">${person}</span>
+                                                </label>
+                                            `;
+                }).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+            }).join('')}
+                </div>
+                
+                <div style="margin-top:24px;padding:16px;background:#f8f9fa;border-radius:8px;">
+                    <strong>💡 Conseil</strong>
+                    <p style="margin-top:8px;font-size:13px;color:#5f6368;">
+                        Assignez les personnes à leurs équipes respectives. Ces informations seront utilisées 
+                        pour suggérer automatiquement les personnes lors de la création d'événements par équipe.
+                    </p>
+                </div>
+            </div>`;
+        }
+
+        function toggleTeamMember(teamKey, person, isMember) {
+            if (!data.teamMembers) data.teamMembers = {};
+            if (!data.teamMembers[teamKey]) data.teamMembers[teamKey] = [];
+
+            const members = data.teamMembers[teamKey];
+
+            if (isMember && !members.includes(person)) {
+                members.push(person);
+            } else if (!isMember) {
+                data.teamMembers[teamKey] = members.filter(p => p !== person);
+            }
+
+            saveData();
+            renderTeamsView();
+        }
+
+        function selectAllTeamMembers(teamKey) {
+            if (!data.teamMembers) data.teamMembers = {};
+            data.teamMembers[teamKey] = [...data.people];
+            saveData();
+            renderTeamsView();
+        }
+
+        function deselectAllTeamMembers(teamKey) {
+            if (!data.teamMembers) data.teamMembers = {};
+            data.teamMembers[teamKey] = [];
+            saveData();
+            renderTeamsView();
+        }
+
+        // People View
+        function renderPeopleView() {
+            const container = document.getElementById('calendar-content');
+            container.innerHTML = `<div style="padding:24px;">
+                <h2 style="margin-bottom:16px;">Gestion des personnes</h2>
+                <div style="display:flex;gap:8px;margin-bottom:24px;">
+                    <input type="text" id="new-person" placeholder="Ajouter une personne..." 
+                        style="flex:1;padding:12px;border:1px solid #dadce0;border-radius:4px;">
+                    <button class="gcal-btn gcal-btn-primary" onclick="addPerson()">Ajouter</button>
+                </div>
+                <div class="gcal-people-grid">
+                    ${data.people.map(p => `
+                        <span class="gcal-person-chip">${p}
+                            <button onclick="removePerson('${p}')" style="background:none;border:none;cursor:pointer;margin-left:4px;">×</button>
+                        </span>
+                    `).join('')}
+                </div>
+                <div style="margin-top:24px;">
+                    <button class="gcal-btn" onclick="exportData()">Exporter JSON</button>
+                    <button class="gcal-btn" onclick="document.getElementById('import-file').click()">Importer</button>
+                    <input type="file" id="import-file" style="display:none" accept=".json" onchange="handleImport(event)">
+                </div>
+            </div>`;
+        }
+
+        function addPerson() {
+            const name = document.getElementById('new-person').value.trim();
+            if (name && !data.people.includes(name)) {
+                data.people.push(name);
+                data.availabilities[name] = [];
+                data.projects[name] = "";
+                saveData();
+                renderPeopleView();
+            }
+        }
+
+        function removePerson(name) {
+            if (confirm(`Supprimer ${name}?`)) {
+                data.people = data.people.filter(p => p !== name);
+                delete data.availabilities[name];
+                saveData();
+                renderPeopleView();
+            }
+        }
+
+        // Settings View
+        function renderSettingsView() {
+            const container = document.getElementById('calendar-content');
+
+            // Calculate stats for each person
+            const stats = data.people.map(person => {
+                // Count availability hours (each slot = 1 hour)
+                const availSlots = data.availabilities[person] || [];
+                const availHours = availSlots.length;
+
+                // Count assigned hours (in residencies)
+                let assignedHours = 0;
+                data.residencies.forEach(res => {
+                    if (res.people && res.people.includes(person)) {
+                        const startH = parseInt(res.startTime.split(':')[0]);
+                        const endH = parseInt(res.endTime.split(':')[0]);
+                        assignedHours += (endH - startH);
+                    }
+                });
+
+                return { name: person, availHours, assignedHours };
+            }).sort((a, b) => b.availHours - a.availHours);
+
+            const totalAvail = stats.reduce((sum, s) => sum + s.availHours, 0);
+            const totalAssigned = stats.reduce((sum, s) => sum + s.assignedHours, 0);
+
+            container.innerHTML = `<div style="padding:24px;">
+                <h2 style="margin-bottom:16px;">Paramètres</h2>
+                
+                <div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;">
+                    <button class="gcal-btn gcal-btn-primary" onclick="importEDM3003()">
+                        📥 Importer horaire EDM3003
+                    </button>
+                    <button class="gcal-btn" onclick="exportStatsCSV()">
+                        📊 Exporter statistiques (Excel/CSV)
+                    </button>
+                </div>
+                
+                <p style="color:#5f6368;font-size:14px;margin-bottom:24px;">
+                    ${data.residencies.length} événements dans le calendrier
+                </p>
+                
+                <h3 style="margin-bottom:16px;">📊 Statistiques par personne</h3>
+                
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                        <thead>
+                            <tr style="background:#f8f9fa;border-bottom:2px solid #dadce0;">
+                                <th style="padding:12px;text-align:left;">Nom</th>
+                                <th style="padding:12px;text-align:right;">Heures disponibles</th>
+                                <th style="padding:12px;text-align:right;">Heures assignées</th>
+                                <th style="padding:12px;text-align:right;">Taux</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${stats.map(s => `
+                                <tr style="border-bottom:1px solid #e8eaed;">
+                                    <td style="padding:12px;font-weight:500;">${s.name}</td>
+                                    <td style="padding:12px;text-align:right;color:#0f9d58;">${s.availHours}h</td>
+                                    <td style="padding:12px;text-align:right;color:#1a73e8;">${s.assignedHours}h</td>
+                                    <td style="padding:12px;text-align:right;color:#5f6368;">
+                                        ${s.availHours > 0 ? Math.round(s.assignedHours / s.availHours * 100) : 0}%
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#f8f9fa;font-weight:600;border-top:2px solid #dadce0;">
+                                <td style="padding:12px;">TOTAL</td>
+                                <td style="padding:12px;text-align:right;color:#0f9d58;">${totalAvail}h</td>
+                                <td style="padding:12px;text-align:right;color:#1a73e8;">${totalAssigned}h</td>
+                                <td style="padding:12px;text-align:right;color:#5f6368;">
+                                    ${totalAvail > 0 ? Math.round(totalAssigned / totalAvail * 100) : 0}%
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>`;
+        }
+
+        // Export stats to CSV (Excel compatible)
+        function exportStatsCSV() {
+            const stats = data.people.map(person => {
+                const availSlots = data.availabilities[person] || [];
+                const availHours = availSlots.length;
+
+                let assignedHours = 0;
+                data.residencies.forEach(res => {
+                    if (res.people && res.people.includes(person)) {
+                        const startH = parseInt(res.startTime.split(':')[0]);
+                        const endH = parseInt(res.endTime.split(':')[0]);
+                        assignedHours += (endH - startH);
+                    }
+                });
+
+                return { name: person, availHours, assignedHours };
+            });
+
+            // Create CSV content with BOM for Excel UTF-8 support
+            let csv = '\uFEFFNom,Heures Disponibles,Heures Assignées,Taux Utilisation\n';
+            stats.forEach(s => {
+                const rate = s.availHours > 0 ? Math.round(s.assignedHours / s.availHours * 100) : 0;
+                csv += `${s.name},${s.availHours},${s.assignedHours},${rate}%\n`;
+            });
+
+            // Add totals
+            const totalAvail = stats.reduce((sum, s) => sum + s.availHours, 0);
+            const totalAssigned = stats.reduce((sum, s) => sum + s.assignedHours, 0);
+            const totalRate = totalAvail > 0 ? Math.round(totalAssigned / totalAvail * 100) : 0;
+            csv += `TOTAL,${totalAvail},${totalAssigned},${totalRate}%\n`;
+
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `statistiques-residences-${formatDateISO(new Date())}.csv`;
+            a.click();
+
+            alert('✅ Fichier CSV exporté!\n\nOuvrez-le avec Excel pour voir les statistiques.');
+        }
+
+        // Modal
+        let currentEditingEvent = null;
+
+        function showEventDetails(index, dateStr) {
+            const events = data.residencies.filter(r => r.date === dateStr);
+            const evt = events[index];
+            if (!evt) return;
+
+            // Find actual index in data.residencies
+            const actualIndex = data.residencies.findIndex(r =>
+                r.date === dateStr && r.startTime === evt.startTime
+            );
+            currentEditingEvent = actualIndex;
+
+            const typeName = activityTypes[evt.type]?.nom || 'Événement';
+            const typeColor = activityTypes[evt.type]?.couleur || '#1a73e8';
+            document.getElementById('modal-title').innerHTML = `
+                <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:${typeColor};margin-right:8px;"></span>
+                ${typeName}
+            `;
+
+            const assignedPeople = evt.people || [];
+            const assignedTeams = evt.teams || [];
+
+            document.getElementById('modal-body').innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;font-size:13px;color:#5f6368;">
+                    <div><strong>📅</strong> ${formatDateDisplay(evt.date)}</div>
+                    <div><strong>🕐</strong> ${evt.startTime} - ${evt.endTime}</div>
+                </div>
+                ${evt.session ? `<div style="margin-bottom:8px;"><span style="background:#e8f0fe;color:#1a73e8;padding:4px 8px;border-radius:4px;font-size:12px;">${evt.session}</span></div>` : ''}
+                ${evt.description ? `<p style="font-size:13px;color:#5f6368;margin-bottom:16px;">${evt.description}</p>` : ''}
+                
+                <div style="margin-bottom:16px;">
+                    <strong style="font-size:12px;color:#5f6368;">🏷️ Équipes</strong>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+                        ${Object.entries(teams).map(([key, val]) => {
+                const isSelected = assignedTeams.includes(key);
+                return `<label style="display:flex;align-items:center;padding:4px 10px;border:2px solid ${val.couleur};border-radius:16px;cursor:pointer;font-size:12px;${isSelected ? `background:${val.couleur};color:#fff;` : ''}">
+                                <input type="checkbox" value="${key}" ${isSelected ? 'checked' : ''} 
+                                    onchange="toggleTeam('${key}', this.checked)"
+                                    style="display:none;">
+                                ${val.nom}
+                            </label>`;
+            }).join('')}
+                    </div>
+                </div>
+                
+                <hr style="margin:16px 0;border:none;border-top:1px solid #e8eaed;">
+                
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <strong>👥 Personnes (${assignedPeople.length}/${data.people.length})</strong>
+                    <div style="display:flex;gap:8px;">
+                        <button class="gcal-btn" style="padding:6px 12px;font-size:12px;" onclick="selectAllPeople()">✓ Tous</button>
+                        <button class="gcal-btn" style="padding:6px 12px;font-size:12px;" onclick="deselectAllPeople()">✗ Aucun</button>
+                    </div>
+                </div>
+                
+                <div style="max-height:300px;overflow-y:auto;border:1px solid #e8eaed;border-radius:8px;">
+                    ${data.people.map(person => {
+                const isAssigned = assignedPeople.includes(person);
+                return `
+                            <label style="display:flex;align-items:center;padding:10px 12px;cursor:pointer;border-bottom:1px solid #f1f3f4;transition:background 0.1s;${isAssigned ? 'background:#e8f5e9;' : ''}" 
+                                   onmouseover="this.style.background='${isAssigned ? '#c8e6c9' : '#f8f9fa'}'" 
+                                   onmouseout="this.style.background='${isAssigned ? '#e8f5e9' : ''}'">
+                                <input type="checkbox" 
+                                       ${isAssigned ? 'checked' : ''} 
+                                       onchange="togglePerson('${person}', this.checked)"
+                                       style="width:18px;height:18px;margin-right:12px;accent-color:#0f9d58;">
+                                <span style="flex:1;font-size:14px;">${person}</span>
+                                ${isAssigned ? '<span style="color:#0f9d58;font-size:12px;">✓ Assigné</span>' : ''}
+                            </label>
+                        `;
+            }).join('')}
+                </div>
+                
+                <div style="margin-top:16px;padding:12px;background:#f8f9fa;border-radius:8px;font-size:12px;color:#5f6368;">
+                    💡 Cochez les personnes à assigner à cet événement
+                </div>
+                
+                <hr style="margin:16px 0;border:none;border-top:1px solid #e8eaed;">
+                
+                <div style="display:flex;gap:8px;">
+                    <button class="gcal-btn gcal-btn-primary" style="flex:1;" onclick="editEvent()">
+                        ✏️ Modifier l'événement
+                    </button>
+                    <button class="gcal-btn" style="color:#d93025;border-color:#d93025;" onclick="deleteEvent()">
+                        🗑️ Supprimer
+                    </button>
+                </div>
+            `;
+            document.getElementById('event-modal').classList.add('active');
+        }
+
+        function togglePerson(person, isChecked) {
+            if (currentEditingEvent === null) return;
+
+            if (!data.residencies[currentEditingEvent].people) {
+                data.residencies[currentEditingEvent].people = [];
+            }
+
+            const people = data.residencies[currentEditingEvent].people;
+
+            if (isChecked && !people.includes(person)) {
+                people.push(person);
+            } else if (!isChecked) {
+                data.residencies[currentEditingEvent].people = people.filter(p => p !== person);
+            }
+
+            saveData();
+            // Refresh modal
+            const evt = data.residencies[currentEditingEvent];
+            showEventDetails(0, evt.date);
+        }
+
+        function selectAllPeople() {
+            if (currentEditingEvent === null) return;
+            data.residencies[currentEditingEvent].people = [...data.people];
+            saveData();
+            const evt = data.residencies[currentEditingEvent];
+            showEventDetails(0, evt.date);
+        }
+
+        function deselectAllPeople() {
+            if (currentEditingEvent === null) return;
+            data.residencies[currentEditingEvent].people = [];
+            saveData();
+            const evt = data.residencies[currentEditingEvent];
+            showEventDetails(0, evt.date);
+        }
+
+        function toggleTeam(teamKey, isChecked) {
+            if (currentEditingEvent === null) return;
+
+            if (!data.residencies[currentEditingEvent].teams) {
+                data.residencies[currentEditingEvent].teams = [];
+            }
+
+            const eventTeams = data.residencies[currentEditingEvent].teams;
+
+            if (isChecked && !eventTeams.includes(teamKey)) {
+                eventTeams.push(teamKey);
+            } else if (!isChecked) {
+                data.residencies[currentEditingEvent].teams = eventTeams.filter(t => t !== teamKey);
+            }
+
+            saveData();
+            const evt = data.residencies[currentEditingEvent];
+            showEventDetails(0, evt.date);
+        }
+
+        function editEvent() {
+            if (currentEditingEvent === null) return;
+            const evt = data.residencies[currentEditingEvent];
+
+            document.getElementById('modal-title').innerHTML = '✏️ Modifier l\'événement';
+
+            document.getElementById('modal-body').innerHTML = `
+                <div style="display:grid;gap:16px;">
+                    <div>
+                        <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">📌 Titre</label>
+                        <input type="text" id="edit-event-title" value="${evt.titre || ''}" 
+                            style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+                    </div>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div>
+                            <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">📅 Date</label>
+                            <input type="date" id="edit-event-date" value="${evt.date}" 
+                                style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                            <div>
+                                <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">🕐 Début</label>
+                                <input type="time" id="edit-event-start" value="${evt.startTime}" 
+                                    style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">🕐 Fin</label>
+                                <input type="time" id="edit-event-end" value="${evt.endTime}" 
+                                    style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">🏷️ Type d'activité</label>
+                        <select id="edit-event-type" style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+                            ${Object.entries(activityTypes).map(([key, val]) => `
+                                <option value="${key}" ${evt.type === key ? 'selected' : ''}>● ${val.nom}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">📝 Description</label>
+                        <textarea id="edit-event-desc" rows="2" 
+                            style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;resize:vertical;">${evt.description || ''}</textarea>
+                    </div>
+                    
+                    <div style="display:flex;gap:8px;">
+                        <button class="gcal-btn gcal-btn-primary" style="flex:1;" onclick="saveEventEdits()">
+                            ✓ Enregistrer
+                        </button>
+                        <button class="gcal-btn" onclick="showEventDetails(0, '${evt.date}')">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveEventEdits() {
+            if (currentEditingEvent === null) return;
+
+            const title = document.getElementById('edit-event-title').value.trim();
+            const date = document.getElementById('edit-event-date').value;
+            const startTime = document.getElementById('edit-event-start').value;
+            const endTime = document.getElementById('edit-event-end').value;
+            const type = document.getElementById('edit-event-type').value;
+            const desc = document.getElementById('edit-event-desc').value;
+
+            if (!date || !startTime || !endTime) {
+                alert('Veuillez remplir la date et les heures');
+                return;
+            }
+
+            data.residencies[currentEditingEvent].date = date;
+            data.residencies[currentEditingEvent].startTime = startTime;
+            data.residencies[currentEditingEvent].endTime = endTime;
+            data.residencies[currentEditingEvent].type = type;
+            data.residencies[currentEditingEvent].titre = title || activityTypes[type]?.nom || 'Événement';
+            data.residencies[currentEditingEvent].description = desc;
+
+            saveData();
+            closeModal();
+
+            currentDate = parseLocalDate(date);
+            renderCurrentView();
+            renderMiniCalendar();
+            updateDateDisplay();
+
+            alert('✅ Événement modifié!');
+        }
+
+        function deleteEvent() {
+            if (currentEditingEvent === null) return;
+
+            if (confirm('Êtes-vous sûr de vouloir supprimer cet événement?')) {
+                data.residencies.splice(currentEditingEvent, 1);
+                saveData();
+                closeModal();
+                alert('🗑️ Événement supprimé');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('event-modal').classList.remove('active');
+            currentEditingEvent = null;
+            renderCurrentView();
+        }
+
+        function formatDateDisplay(dateStr) {
+            const d = parseLocalDate(dateStr);
+            const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+            const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+            return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        // Mini Calendar
+        function renderMiniCalendar() {
+            const grid = document.getElementById('mini-cal-grid');
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            const first = new Date(year, month, 1);
+            const last = new Date(year, month + 1, 0);
+            const startDay = (first.getDay() + 6) % 7;
+
+            const today = formatDateISO(new Date());
+            const selected = formatDateISO(currentDate);
+
+            let html = ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d =>
+                `<div style="color:#70757a;font-weight:500;padding:4px;">${d}</div>`
+            ).join('');
+
+            // Previous month
+            const prevLast = new Date(year, month, 0).getDate();
+            for (let i = startDay - 1; i >= 0; i--) {
+                const day = prevLast - i;
+                html += `<div class="mini-calendar-day other-month">${day}</div>`;
+            }
+
+            // Current month
+            for (let d = 1; d <= last.getDate(); d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isToday = dateStr === today;
+                const isSelected = dateStr === selected;
+                html += `<div class="mini-calendar-day ${isToday ? 'today' : ''} ${isSelected && !isToday ? 'selected' : ''}" 
+                    onclick="selectDate('${dateStr}')">${d}</div>`;
+            }
+
+            grid.innerHTML = html;
+        }
+
+        // Legend
+        function renderLegend() {
+            const container = document.getElementById('legend-items');
+            let html = `<div class="gcal-legend-item" style="cursor:pointer;${!activeTypeFilter ? 'background:#e8f0fe;border-radius:4px;' : ''}" onclick="setTypeFilter(null)">
+                <div class="gcal-legend-color" style="background:linear-gradient(45deg, #1a73e8, #0f9d58, #f9ab00)"></div>
+                <span style="font-weight:${!activeTypeFilter ? '600' : '400'}">Tous</span>
+            </div>`;
+            html += Object.entries(activityTypes).map(([key, val]) => `
+                <div class="gcal-legend-item" style="cursor:pointer;${activeTypeFilter === key ? 'background:#e8f0fe;border-radius:4px;' : ''}" onclick="setTypeFilter('${key}')">
+                    <div class="gcal-legend-color" style="background:${val.couleur}"></div>
+                    <span style="font-weight:${activeTypeFilter === key ? '600' : '400'}">${val.nom}</span>
+                </div>
+            `).join('');
+            container.innerHTML = html;
+        }
+
+        // Import EDM3003
+        function checkImport() {
+            if (data.residencies.length === 0) {
+                setTimeout(() => {
+                    if (confirm('Aucun événement trouvé. Voulez-vous importer l\'horaire EDM3003?')) {
+                        importEDM3003();
+                    }
+                }, 500);
+            }
+        }
+
+        function importEDM3003() {
+            const schedule = [
+                { date: "2026-01-12", pm: { type: "setup", titre: "Remise en ordre des espaces" }, soir: { type: "presentation", titre: "Rétrospective S4" } },
+                { date: "2026-01-14", pm: { type: "planification", titre: "PLANIFICATION S5" }, soir: { type: "residence", titre: "Résidence Emery" } },
+                { date: "2026-01-19", pm: { type: "residence", titre: "Résidence Emery" }, soir: { type: "residence", titre: "Résidence Emery" } },
+                { date: "2026-01-21", pm: { type: "residence", titre: "Résidence - Test lumière" }, soir: { type: "residence", titre: "Résidence - Test lumière" } },
+                { date: "2026-01-26", pm: { type: "residence", titre: "Résidence Emery" }, soir: { type: "test", titre: "TEST INTÉRIEUR 1" } },
+                { date: "2026-01-28", pm: { type: "residence", titre: "Résidence Emery" }, soir: { type: "revue", titre: "REVUE S5" } },
+                { date: "2026-02-02", pm: { type: "planification", titre: "PLANIFICATION S6" }, soir: { type: "residence", titre: "Résidence Emery" } },
+                { date: "2026-02-04", pm: { type: "residence", titre: "Résidence - Test lumière" }, soir: { type: "residence", titre: "Résidence - Test lumière" } },
+                { date: "2026-02-09", pm: { type: "residence", titre: "Résidence Emery" }, soir: { type: "residence", titre: "Résidence Emery" } },
+                { date: "2026-02-11", pm: { type: "residence", titre: "Résidence Emery" }, soir: { type: "test", titre: "TEST INTÉRIEUR 2" } },
+                { date: "2026-02-16", pm: { type: "residence", titre: "Résidence Emery" }, soir: { type: "revue", titre: "REVUE S6" } },
+                { date: "2026-02-18", pm: { type: "planification", titre: "RÉTRO S6 - PLANIFICATION S7" }, soir: { type: "residence", titre: "Résidence Emery" } },
+                { date: "2026-02-23", pm: { type: "montage", titre: "Montage Synapse" } },
+                { date: "2026-02-25", pm: { type: "generale", titre: "Générale Synapse" } },
+                { date: "2026-02-26", pm: { type: "lancement", titre: "Lancement Synapse" } },
+                { date: "2026-03-02", pm: { type: "demontage", titre: "Démontage" } },
+                { date: "2026-03-16", pm: { type: "postmortem", titre: "Post-mortem" } }
+            ];
+
+            let count = 0;
+            schedule.forEach(day => {
+                if (day.pm) {
+                    data.residencies.push({
+                        date: day.date, startTime: '13:00', endTime: '17:00',
+                        description: day.pm.titre, type: day.pm.type, session: 'PM',
+                        people: [], createdAt: new Date().toISOString(), imported: true
+                    });
+                    count++;
+                }
+                if (day.soir) {
+                    data.residencies.push({
+                        date: day.date, startTime: '18:00', endTime: '22:00',
+                        description: day.soir.titre, type: day.soir.type, session: 'SOIR',
+                        people: [], createdAt: new Date().toISOString(), imported: true
+                    });
+                    count++;
+                }
+            });
+
+            saveData();
+            alert(`✅ ${count} sessions importées!`);
+            renderCurrentView();
+        }
+
+        // Export/Import
+        function exportData() {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `residences-${formatDateISO(new Date())}.json`;
+            a.click();
+        }
+
+        function handleImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    data = JSON.parse(ev.target.result);
+                    saveData();
+                    alert('Import réussi!');
+                    location.reload();
+                } catch (err) {
+                    alert('Erreur: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showImportModal() {
+            // Show create event modal
+            document.getElementById('modal-title').innerHTML = '➕ Créer un événement';
+
+            const todayStr = formatDateISO(currentDate);
+
+            document.getElementById('modal-body').innerHTML = `
+                <div style="display:grid;gap:16px;">
+                    <div>
+                        <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">📌 Titre</label>
+                        <input type="text" id="new-event-title" placeholder="Titre de l'événement..." 
+                            style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+                    </div>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div>
+                            <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">📅 Date</label>
+                            <input type="date" id="new-event-date" value="${todayStr}" 
+                                style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                            <div>
+                                <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">🕐 Début</label>
+                                <input type="time" id="new-event-start" value="13:00" 
+                                    style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+                            </div>
+                            <div>
+                                <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">🕐 Fin</label>
+                                <input type="time" id="new-event-end" value="17:00" 
+                                    style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">🏷️ Type d'activité</label>
+                        <select id="new-event-type" style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;">
+                            ${Object.entries(activityTypes).map(([key, val]) => `
+                                <option value="${key}" style="color:${val.couleur}">● ${val.nom}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:8px;">👥 Équipes concernées</label>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                            ${Object.entries(teams).map(([key, val]) => `
+                                <label style="display:flex;align-items:center;padding:6px 12px;border:2px solid ${val.couleur};border-radius:20px;cursor:pointer;font-size:13px;transition:all 0.2s;">
+                                    <input type="checkbox" value="${key}" class="team-checkbox" 
+                                        onchange="updateTeamMembersSelection()"
+                                        style="margin-right:6px;accent-color:${val.couleur};">
+                                    ${val.nom}
+                                </label>
+                            `).join('')}
+                        </div>
+                        <button type="button" class="gcal-btn" style="margin-top:8px;font-size:12px;" onclick="addTeamMembersToSelection()">
+                            ⚡ Ajouter les membres des équipes sélectionnées
+                        </button>
+                    </div>
+                    
+                    <div>
+                        <label style="display:block;font-size:12px;color:#5f6368;margin-bottom:4px;">📝 Description (optionnel)</label>
+                        <textarea id="new-event-desc" rows="2" placeholder="Description de l'événement..."
+                            style="width:100%;padding:10px;border:1px solid #dadce0;border-radius:4px;resize:vertical;"></textarea>
+                    </div>
+                    
+                    <div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <label style="font-size:12px;color:#5f6368;">👥 Personnes à assigner (<span id="people-count">0</span>/${data.people.length})</label>
+                            <div style="display:flex;gap:4px;">
+                                <button type="button" class="gcal-btn" style="padding:4px 8px;font-size:11px;" onclick="toggleAllNewEventPeople(true)">✓ Tous</button>
+                                <button type="button" class="gcal-btn" style="padding:4px 8px;font-size:11px;" onclick="toggleAllNewEventPeople(false)">✗ Aucun</button>
+                            </div>
+                        </div>
+                        <div style="max-height:150px;overflow-y:auto;border:1px solid #e8eaed;border-radius:8px;" id="people-list">
+                            ${data.people.map(person => `
+                                <label style="display:flex;align-items:center;padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f3f4;">
+                                    <input type="checkbox" value="${person}" class="person-checkbox" 
+                                        onchange="updatePeopleCount()"
+                                        style="width:16px;height:16px;margin-right:10px;accent-color:#0f9d58;">
+                                    <span style="font-size:13px;">${person}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <button class="gcal-btn gcal-btn-primary" style="width:100%;padding:12px;font-size:14px;" onclick="createNewEvent()">
+                        ✓ Créer l'événement
+                    </button>
+                </div>
+            `;
+            document.getElementById('event-modal').classList.add('active');
+        }
+
+        function updatePeopleCount() {
+            const count = document.querySelectorAll('.person-checkbox:checked').length;
+            const el = document.getElementById('people-count');
+            if (el) el.textContent = count;
+        }
+
+        function addTeamMembersToSelection() {
+            const selectedTeams = [];
+            document.querySelectorAll('.team-checkbox:checked').forEach(cb => selectedTeams.push(cb.value));
+
+            if (selectedTeams.length === 0) {
+                alert('Sélectionnez d\'abord des équipes');
+                return;
+            }
+
+            // Get all members from selected teams
+            const teamMembersList = new Set();
+            selectedTeams.forEach(teamKey => {
+                const members = data.teamMembers?.[teamKey] || [];
+                members.forEach(m => teamMembersList.add(m));
+            });
+
+            // Check those people
+            document.querySelectorAll('.person-checkbox').forEach(cb => {
+                if (teamMembersList.has(cb.value)) {
+                    cb.checked = true;
+                    cb.closest('label').style.background = '#e8f5e9';
+                }
+            });
+
+            updatePeopleCount();
+        }
+
+        function updateTeamMembersSelection() {
+            // Auto visual feedback when teams are selected
+        }
+
+        function toggleAllNewEventPeople(checked) {
+            document.querySelectorAll('.person-checkbox').forEach(cb => cb.checked = checked);
+        }
+
+        function createNewEvent() {
+            const title = document.getElementById('new-event-title').value.trim();
+            const date = document.getElementById('new-event-date').value;
+            const startTime = document.getElementById('new-event-start').value;
+            const endTime = document.getElementById('new-event-end').value;
+            const type = document.getElementById('new-event-type').value;
+            const desc = document.getElementById('new-event-desc').value;
+
+            const selectedTeams = [];
+            document.querySelectorAll('.team-checkbox:checked').forEach(cb => selectedTeams.push(cb.value));
+
+            const selectedPeople = [];
+            document.querySelectorAll('.person-checkbox:checked').forEach(cb => selectedPeople.push(cb.value));
+
+            if (!date || !startTime || !endTime) {
+                alert('Veuillez remplir la date et les heures');
+                return;
+            }
+
+            const newEvent = {
+                date: date,
+                startTime: startTime,
+                endTime: endTime,
+                type: type,
+                titre: title || activityTypes[type]?.nom || 'Événement',
+                teams: selectedTeams,
+                description: desc,
+                people: selectedPeople,
+                createdAt: new Date().toISOString()
+            };
+
+            data.residencies.push(newEvent);
+            saveData();
+            closeModal();
+
+            // Navigate to the date of the new event
+            currentDate = parseLocalDate(date);
+            renderCurrentView();
+            renderMiniCalendar();
+            updateDateDisplay();
+
+            alert('✅ Événement créé!');
+        }
+
+        // Close modal on outside click
+        document.getElementById('event-modal').addEventListener('click', e => {
+            if (e.target.id === 'event-modal') closeModal();
+        });
+
+        // Init on load
+        window.onload = init;
+    </script>
+</body>
+
+</html>
