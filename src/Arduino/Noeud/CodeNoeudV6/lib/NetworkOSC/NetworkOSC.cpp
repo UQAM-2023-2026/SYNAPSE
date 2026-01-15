@@ -105,7 +105,6 @@ void updateNetworkOSC() {
                 pNode->setDrainRate(static_cast<float>(msgIn.getInt(0)));
             }
         }
-        Serial.println(pNode->getDrainRate());
     }
 }
 

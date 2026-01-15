@@ -2,8 +2,12 @@
 #include <OSCMessage.h>
 #include "NodeStateAndID.h"
 
+// Forward declaration instead of include
+extern void sendDrainRateToAllUARTs(float drainRate);
+
 static NodeStateAndID *pNode = nullptr;
 
+// --- Variables internes
 static IPAddress _targetIP;
 static unsigned int _targetPort;
 static unsigned int _listenPort;
@@ -15,30 +19,33 @@ void beginNetworkOSC(NodeStateAndID &node) {
     pNode = &node;
 }
 
+// -------------------------------------------------------------------
+// WiFi / ETH events
+// -------------------------------------------------------------------
 void WiFiEvent(WiFiEvent_t event) {
     switch (event) {
         case ARDUINO_EVENT_ETH_START:
-            Serial.println("ETH Started");
+            Serial.println("📡 ETH Started");
             break;
 
         case ARDUINO_EVENT_ETH_CONNECTED:
-            Serial.println("ETH Connected");
+            Serial.println("📡 ETH Connected");
             break;
 
         case ARDUINO_EVENT_ETH_GOT_IP:
-            Serial.print("ETH IP: ");
+            Serial.print("📡 ETH IP: ");
             Serial.println(ETH.localIP());
             eth_connected = true;
             Udp.begin(_listenPort);
             break;
 
         case ARDUINO_EVENT_ETH_DISCONNECTED:
-            Serial.println("ETH Disconnected");
+            Serial.println("❌ ETH Disconnected");
             eth_connected = false;
             break;
 
         case ARDUINO_EVENT_ETH_STOP:
-            Serial.println("ETH Stopped");
+            Serial.println("❌ ETH Stopped");
             eth_connected = false;
             break;
 
@@ -47,6 +54,9 @@ void WiFiEvent(WiFiEvent_t event) {
     }
 }
 
+// -------------------------------------------------------------------
+// Initialisation
+// -------------------------------------------------------------------
 void initNetworkOSC(
     IPAddress localIP,
     IPAddress gateway,
@@ -75,9 +85,19 @@ void initNetworkOSC(
 
     ETH.config(localIP, gateway, subnet, dns1, dns2);
 
-    Serial.println("NetworkOSC initialized for 3 rhizomes");
+    Serial.println("=================================");
+    Serial.println("NETWORK READY");
+    Serial.print("Listen Port: ");
+    Serial.println(listenPort);
+    Serial.print("Target: ");
+    Serial.print(targetIP);
+    Serial.print(":");
+    Serial.println(targetPort);
+    Serial.println("=================================");
 }
 
+// -------------------------------------------------------------------
+// Update à appeler dans loop()
 void updateNetworkOSC() {
     if (!eth_connected) return;
     
@@ -85,43 +105,61 @@ void updateNetworkOSC() {
    
     int packetSize = Udp.parsePacket();
     if (packetSize > 0) {
+        // read entire packet into the OSCMessage object
         while (packetSize--) msgIn.fill(Udp.read());
-            
-        // Update drain rate (sent to all 3 rhizomes)
+        
+        // Update drain rate
         if (msgIn.size() > 0 && pNode) {
+            float newDrainRate = 0.0f;
+            bool updated = false;
+            
             if (msgIn.isFloat(0)) {
-                pNode->setDrainRate(msgIn.getFloat(0));
+                newDrainRate = msgIn.getFloat(0);
+                updated = true;
             } else if (msgIn.isInt(0)) {
-                pNode->setDrainRate(static_cast<float>(msgIn.getInt(0)));
+                newDrainRate = static_cast<float>(msgIn.getInt(0));
+                updated = true;
+            }
+            
+            if (updated) {
+                float oldDrainRate = pNode->getDrainRate();
+                
+                // Only update and print if the value actually changed
+                if (oldDrainRate != newDrainRate) {
+                    pNode->setDrainRate(newDrainRate);
+                    
+                    Serial.print("📥 DrainRate: ");
+                    Serial.print(oldDrainRate);
+                    Serial.print(" → ");
+                    Serial.println(newDrainRate);
+                    
+                    // Send the new drain rate to ALL connected UARTs
+                    sendDrainRateToAllUARTs(newDrainRate);
+                }
             }
         }
-        Serial.print("[OSC IN] Drain rate updated to: ");
-        Serial.println(pNode->getDrainRate());
     }
 }
 
-// Send OSC for specific rhizome
-void sendOSCMulti(int rhizomeNum, int idValue, int energyValue) {
+// -------------------------------------------------------------------
+// Envoi OSC
+// -------------------------------------------------------------------
+void sendOSC(int idValue, int energyValue) {
     if (!eth_connected) {
         idValue = 0;
         energyValue = 0;
     }
 
-    // Create unique OSC addresses for each rhizome
-    char idAddr[16], energyAddr[16];
-    sprintf(idAddr, "/ID%d", rhizomeNum);
-    sprintf(energyAddr, "/energy%d", rhizomeNum);
-
-    // Send /ID1, /ID2, or /ID3
-    OSCMessage msgID(idAddr);
+    // /ID channel
+    OSCMessage msgID("/ID");
     msgID.add(idValue);
     Udp.beginPacket(_targetIP, _targetPort);
     msgID.send(Udp);
     Udp.endPacket();
     msgID.empty();
 
-    // Send /energy1, /energy2, or /energy3
-    OSCMessage msgEnergy(energyAddr);
+    // /energy channel
+    OSCMessage msgEnergy("/energy");
     msgEnergy.add(energyValue);
     Udp.beginPacket(_targetIP, _targetPort);
     msgEnergy.send(Udp);

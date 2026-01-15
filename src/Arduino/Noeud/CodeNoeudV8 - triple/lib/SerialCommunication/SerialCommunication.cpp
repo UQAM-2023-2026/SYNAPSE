@@ -2,53 +2,19 @@
 #include <Arduino.h>
 #include <MicroOscSlip.h>
 #include <NetworkOSC.h>
-#include <SoftwareSerial.h>
 
-#define SERIAL_BAUD 9600
+#define CONNECTION_TIMEOUT 500
+#define CONNECT_DEBOUNCE 150
+#define DISCONNECT_DEBOUNCE 600
+#define NODE_SEND_INTERVAL 1000
 
-// Pin definitions for 3 rhizomes
-#define CONNECT_PIN_1 0   // Rhizome 1 connection detect
-#define CONNECT_PIN_2 14  // Rhizome 2 connection detect
-#define CONNECT_PIN_3 15  // Rhizome 3 connection detect
-
-// Serial port pins
-// Rhizome 1: Serial2 (Hardware UART2) - RX=5, TX=4
-// Rhizome 2: Serial1 (Hardware UART1) - RX=9, TX=10
-// Rhizome 3: SoftwareSerial - RX=16, TX=17
-#define SOFT_RX 16
-#define SOFT_TX 17
-
-// Create serial objects
-SoftwareSerial softSerial(SOFT_RX, SOFT_TX);
-
-// Create OSC handlers for each rhizome
-MicroOscSlip<32> oscRhizome1(&Serial2);
-MicroOscSlip<32> oscRhizome2(&Serial1);
-MicroOscSlip<32> oscRhizome3(&softSerial);
+// Two separate OSC instances for two UARTs
+MicroOscSlip<32> oscNode1(&Serial2);
+MicroOscSlip<32> oscNode2(&Serial1);
 
 static NodeStateAndID *pNode = nullptr;
 
-// Data for each rhizome
-struct RhizomeData {
-  int id;
-  int energy;
-  bool isConnected;
-  ConnectionState connState;
-  unsigned long debounceStart;
-  unsigned long lastNodeSent;
-};
-
-RhizomeData rhizomes[3] = {
-  {0, 0, false, CONN_DISCONNECTED, 0, 0},
-  {0, 0, false, CONN_DISCONNECTED, 0, 0},
-  {0, 0, false, CONN_DISCONNECTED, 0, 0}
-};
-
-static const unsigned long CONNECT_DEBOUNCE = 150;
-static const unsigned long DISCONNECT_DEBOUNCE = 600;
-static const unsigned long NODE_SEND_INTERVAL = 1000;
-
-// Connection state machine enum
+// Connection state machine
 enum ConnectionState {
   CONN_DISCONNECTED,
   CONN_DEBOUNCING_CONNECT,
@@ -56,85 +22,88 @@ enum ConnectionState {
   CONN_DEBOUNCING_DISCONNECT
 };
 
-void onConnected(int rhizomeIndex) {
-  Serial.print("--- [CONN] Rhizome ");
-  Serial.print(rhizomeIndex + 1);
-  Serial.println(" connected! ---");
+// UART 1 state
+struct UartState {
+  int rhizomeID;
+  int energyValue;
+  ConnectionState connState;
+  unsigned long debounceStart;
+  bool isConnected;
+  unsigned long lastNodeSent;
+};
+
+UartState uart1 = {0, 0, CONN_DISCONNECTED, 0, false, 0};
+UartState uart2 = {0, 0, CONN_DISCONNECTED, 0, false, 0};
+
+void onConnected(int uartNum) {
+  Serial.print("🔌 UART");
+  Serial.print(uartNum);
+  Serial.print(" CONNECTED - Sending drainRate: ");
   
-  // Send /node immediately to the specific rhizome
-  MicroOscSlip<32>* osc;
-  if (rhizomeIndex == 0) osc = &oscRhizome1;
-  else if (rhizomeIndex == 1) osc = &oscRhizome2;
-  else osc = &oscRhizome3;
+  float drainRate = pNode->getDrainRate();
+  Serial.println(drainRate);
   
-  osc->sendMessage("/node", "f", pNode->getDrainRate());
-  rhizomes[rhizomeIndex].lastNodeSent = millis();
-  
-  Serial.print("[SEND] Rhizome ");
-  Serial.print(rhizomeIndex + 1);
-  Serial.print(" /node drainRate=");
-  Serial.println(pNode->getDrainRate());
+  if (uartNum == 1) {
+    oscNode1.sendMessage("/node", "f", drainRate);
+    uart1.lastNodeSent = millis();
+    Serial.println("   ✓ Sent to UART1");
+  } else {
+    oscNode2.sendMessage("/node", "f", drainRate);
+    uart2.lastNodeSent = millis();
+    Serial.println("   ✓ Sent to UART2");
+  }
 }
 
-void onDisconnected(int rhizomeIndex) {
-  Serial.print("--- [CONN] Rhizome ");
-  Serial.print(rhizomeIndex + 1);
-  Serial.println(" disconnected ---");
-  
-  // Clear data
-  rhizomes[rhizomeIndex].id = 0;
-  rhizomes[rhizomeIndex].energy = 0;
+void onDisconnected(int uartNum) {
+  Serial.print("❌ UART");
+  Serial.print(uartNum);
+  Serial.println(" DISCONNECTED");
 }
 
-void updateConnectionState(int rhizomeIndex, int connectPin) {
+void updateConnectionState(int uartNum, UartState &state, int pinNum) {
   unsigned long now = millis();
-  bool pinState = digitalRead(connectPin) == LOW;
-  RhizomeData &rhi = rhizomes[rhizomeIndex];
+  bool pinState = digitalRead(pinNum) == LOW;
   
-  switch (rhi.connState) {
+  switch (state.connState) {
     case CONN_DISCONNECTED:
       if (pinState) {
-        rhi.connState = CONN_DEBOUNCING_CONNECT;
-        rhi.debounceStart = now;
+        state.connState = CONN_DEBOUNCING_CONNECT;
+        state.debounceStart = now;
       }
       break;
       
     case CONN_DEBOUNCING_CONNECT:
       if (!pinState) {
-        rhi.connState = CONN_DISCONNECTED;
-      } else if (now - rhi.debounceStart >= CONNECT_DEBOUNCE) {
-        rhi.connState = CONN_CONNECTED;
-        rhi.isConnected = true;
-        onConnected(rhizomeIndex);
+        state.connState = CONN_DISCONNECTED;
+      } else if (now - state.debounceStart >= CONNECT_DEBOUNCE) {
+        state.connState = CONN_CONNECTED;
+        state.isConnected = true;
+        onConnected(uartNum);
       }
       break;
       
     case CONN_CONNECTED:
       if (!pinState) {
-        rhi.connState = CONN_DEBOUNCING_DISCONNECT;
-        rhi.debounceStart = now;
+        state.connState = CONN_DEBOUNCING_DISCONNECT;
+        state.debounceStart = now;
       }
       break;
       
     case CONN_DEBOUNCING_DISCONNECT:
       if (pinState) {
-        rhi.connState = CONN_CONNECTED;
-      } else if (now - rhi.debounceStart >= DISCONNECT_DEBOUNCE) {
-        rhi.connState = CONN_DISCONNECTED;
-        rhi.isConnected = false;
-        onDisconnected(rhizomeIndex);
+        state.connState = CONN_CONNECTED;
+      } else if (now - state.debounceStart >= DISCONNECT_DEBOUNCE) {
+        state.connState = CONN_DISCONNECTED;
+        state.isConnected = false;
+        onDisconnected(uartNum);
       }
       break;
   }
 }
 
-void handleNodeMessage(MicroOscMessage &msg, int rhizomeIndex) {
+void handleNodeMessage(MicroOscMessage &msg, int uartNum, UartState &state) {
   if (msg.checkOscAddress("/discover_list")) {
-    const char* csv = msg.nextAsString();
-    Serial.print("[RECV] Rhizome ");
-    Serial.print(rhizomeIndex + 1);
-    Serial.print(" /discover_list: ");
-    Serial.println(csv);
+    // Silently ignore discovery messages
     return;
   }
   
@@ -142,94 +111,119 @@ void handleNodeMessage(MicroOscMessage &msg, int rhizomeIndex) {
     int receivedId = msg.nextAsInt();
     int energy = msg.nextAsInt();
 
-    rhizomes[rhizomeIndex].id = receivedId;
-    rhizomes[rhizomeIndex].energy = energy;
+    state.rhizomeID = receivedId;
+    state.energyValue = static_cast<int>(energy);
     
-    Serial.print("[ENERGY] Rhizome ");
-    Serial.print(rhizomeIndex + 1);
-    Serial.print(" (ID ");
+    // Print received data
+    Serial.print("📨 UART");
+    Serial.print(uartNum);
+    Serial.print(" | ID: ");
     Serial.print(receivedId);
-    Serial.print("): ");
+    Serial.print(" | Energy: ");
     Serial.print(energy);
-    Serial.println("%");
+    Serial.print("%");
     
+    // Add warning if low
     if (energy <= 5) {
-      Serial.print("  ⚠️  WARNING: Rhizome ");
-      Serial.print(rhizomeIndex + 1);
-      Serial.println(" nearly depleted!");
+      Serial.print(" ⚠️ LOW!");
     }
+    Serial.println();
   }
 }
 
 void beginSerialCommunication(NodeStateAndID &node) {
   pNode = &node;
 
-  // Initialize all serial ports
-  Serial2.begin(SERIAL_BAUD, SERIAL_8N1, 5, 4);      // Rhizome 1
-  Serial1.begin(SERIAL_BAUD, SERIAL_8N1, 9, 10);     // Rhizome 2
-  softSerial.begin(SERIAL_BAUD);                      // Rhizome 3
+  // Initialize UART1 (Serial2)
+  Serial2.begin(SERIAL_BAUD, SERIAL_8N1, UART1_RX_PIN, UART1_TX_PIN);
+  pinMode(UART1_CONNECT_PIN, INPUT_PULLUP);
 
-  // Setup connection detection pins
-  pinMode(CONNECT_PIN_1, INPUT_PULLUP);
-  pinMode(CONNECT_PIN_2, INPUT_PULLUP);
-  pinMode(CONNECT_PIN_3, INPUT_PULLUP);
-  
+  // Initialize UART2 (Serial1)
+  Serial1.begin(SERIAL_BAUD, SERIAL_8N1, UART2_RX_PIN, UART2_TX_PIN);
+  pinMode(UART2_CONNECT_PIN, INPUT_PULLUP);
+
   pNode->setDrainRate(5.0f);
  
-  Serial.println("=== Serial Communication Initialized ===");
-  Serial.println("=== NODE WITH 3 RHIZOMES STARTED ===");
-  Serial.print("Drain rate: ");
-  Serial.println(5.0f);
-  Serial.println("Waiting for rhizomes on 3 ports...");
-  Serial.println("  Port 1: Serial2 (GPIO 5/4)");
-  Serial.println("  Port 2: Serial1 (GPIO 9/10)");
-  Serial.println("  Port 3: SoftSerial (GPIO 16/17)");
+  Serial.println("=================================");
+  Serial.println("DUAL NODE READY");
+  Serial.println("Initial Drain Rate: 5.0");
+  Serial.println("Waiting for rhizomes...");
+  Serial.println("=================================");
+}
+
+void lookForMessages(MicroOscMessage &msg) {
+  // Legacy function kept for compatibility
+}
+
+float getRhizomeValue() {
+  // Return 1.0 if either UART is connected
+  return (uart1.isConnected || uart2.isConnected) ? 1.0f : 0.0f;
 }
 
 void loopSendToTouch() {
-  // Send all 6 values: ID1, energy1, ID2, energy2, ID3, energy3
-  // We'll call sendOSC 3 times with different channels
+  // Send data from BOTH UARTs to TouchDesigner
+  // Only print if there's actual data to send
   
-  for (int i = 0; i < 3; i++) {
-    int idToSend = rhizomes[i].isConnected ? rhizomes[i].id : 0;
-    int energyToSend = rhizomes[i].isConnected ? rhizomes[i].energy : 0;
-    
-    // You'll need to modify NetworkOSC to handle multiple rhizomes
-    // For now, sending on separate channels
-    sendOSCMulti(i + 1, idToSend, energyToSend);
+  if (uart1.isConnected) {
+    sendOSC(uart1.rhizomeID, uart1.energyValue);
+  }
+  
+  if (uart2.isConnected) {
+    sendOSC(uart2.rhizomeID, uart2.energyValue);
+  }
+  
+  // If neither is connected, send zeros
+  if (!uart1.isConnected && !uart2.isConnected) {
+    sendOSC(0, 0);
   }
 }
 
 void SerialLoop() {
-  // Update connection states for all 3 rhizomes
-  updateConnectionState(0, CONNECT_PIN_1);
-  updateConnectionState(1, CONNECT_PIN_2);
-  updateConnectionState(2, CONNECT_PIN_3);
-  
-  // Listen for messages from all rhizomes
-  oscRhizome1.onOscMessageReceived([](MicroOscMessage &msg) {
-    handleNodeMessage(msg, 0);
-  });
-  
-  oscRhizome2.onOscMessageReceived([](MicroOscMessage &msg) {
-    handleNodeMessage(msg, 1);
-  });
-  
-  oscRhizome3.onOscMessageReceived([](MicroOscMessage &msg) {
-    handleNodeMessage(msg, 2);
-  });
-  
-  // Periodically resend /node to all connected rhizomes
   unsigned long now = millis();
-  for (int i = 0; i < 3; i++) {
-    if (rhizomes[i].isConnected && (now - rhizomes[i].lastNodeSent >= NODE_SEND_INTERVAL)) {
-      MicroOscSlip<32>* osc;
-      if (i == 0) osc = &oscRhizome1;
-      else if (i == 1) osc = &oscRhizome2;
-      else osc = &oscRhizome3;
-      
-      osc->sendMessage("/node", "f", pNode->getDrainRate());
-      rhizomes[i].lastNodeSent = now;
-    }
+  
+  // Update connection states for both UARTs
+  updateConnectionState(1, uart1, UART1_CONNECT_PIN);
+  updateConnectionState(2, uart2, UART2_CONNECT_PIN);
+  
+  // Listen for messages on UART1
+  oscNode1.onOscMessageReceived([](MicroOscMessage &msg) {
+    handleNodeMessage(msg, 1, uart1);
+  });
+  
+  // Listen for messages on UART2
+  oscNode2.onOscMessageReceived([](MicroOscMessage &msg) {
+    handleNodeMessage(msg, 2, uart2);
+  });
+}
+
+void sendDrainRateToAllUARTs(float drainRate) {
+  Serial.print("📤 Sending DrainRate ");
+  Serial.print(drainRate);
+  Serial.print(" to: ");
+  
+  bool sentToAny = false;
+  
+  if (uart1.isConnected) {
+    oscNode1.sendMessage("/node", "f", drainRate);
+    uart1.lastNodeSent = millis();
+    Serial.print("UART1 ");
+    sentToAny = true;
   }
+  
+  if (uart2.isConnected) {
+    oscNode2.sendMessage("/node", "f", drainRate);
+    uart2.lastNodeSent = millis();
+    Serial.print("UART2");
+    sentToAny = true;
+  }
+  
+  if (!sentToAny) {
+    Serial.print("(none connected)");
+  }
+  
+  Serial.println();
+}
+
+void checkConnectionStatus() {
+  // Legacy function kept for compatibility
 }

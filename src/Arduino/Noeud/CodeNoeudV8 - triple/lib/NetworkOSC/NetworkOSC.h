@@ -7,6 +7,7 @@
 #include <OSCMessage.h>
 #include "NodeStateAndID.h"
 
+// --- INITIALISATION DU NETWORK
 void beginNetworkOSC(NodeStateAndID &node);
 
 void initNetworkOSC(
@@ -20,11 +21,14 @@ void initNetworkOSC(
     unsigned int targetPort
 );
 
+// --- À appeler dans loop()
 void updateNetworkOSC();
 
-// Send data for multiple rhizomes
-void sendOSCMulti(int rhizomeNum, int idValue, int energyValue);
+// --- Envoi OSC : adresse "/ID", nom + valeur
+//void sendOSC(const char* name, float value);
+void sendOSC(int idValue, int energyValue);
 
+// --- Externs pour main
 extern WiFiUDP Udp;
 extern bool eth_connected;
 
