@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(chmod:*)",
+      "Bash(ls:*)",
+      "Bash(for date in \"2026-01-12\" \"2026-01-14\" \"2026-01-19\" \"2026-01-21\" \"2026-02-02\" \"2026-02-04\")",
+      "Bash(done)"
+    ]
+  }
+}

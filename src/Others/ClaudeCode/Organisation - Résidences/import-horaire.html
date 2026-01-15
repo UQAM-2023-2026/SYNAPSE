@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Horaire EDM3003</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .activity-type {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin: 5px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #c3e6cb;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .horaire-preview {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ffeaa7;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Import Horaire EDM3003</h1>
+        <div class="subtitle">Importation automatique des résidences planifiées</div>
+
+        <div class="section">
+            <h2>Résumé de l'horaire</h2>
+            <div class="stats" id="stats"></div>
+
+            <div style="margin-top: 20px;">
+                <strong>Types d'activités:</strong><br>
+                <span class="activity-type" style="background: #6c757d;">Mise en place</span>
+                <span class="activity-type" style="background: #17a2b8;">Présentation</span>
+                <span class="activity-type" style="background: #007bff;">Planification</span>
+                <span class="activity-type" style="background: #28a745;">Résidence</span>
+                <span class="activity-type" style="background: #ffc107;">Test</span>
+                <span class="activity-type" style="background: #dc3545;">Revue</span>
+                <span class="activity-type" style="background: #6f42c1;">Montage</span>
+                <span class="activity-type" style="background: #fd7e14;">Générale</span>
+                <span class="activity-type" style="background: #e83e8c;">Lancement</span>
+                <span class="activity-type" style="background: #20c997;">Post-mortem</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Aperçu de l'horaire</h2>
+            <img src="Horaire.png" alt="Horaire EDM3003" class="horaire-preview">
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Attention:</strong> Cette opération va créer toutes les résidences dans l'application.
+            Si vous avez déjà des résidences créées, elles seront conservées.
+        </div>
+
+        <button class="btn" onclick="importHoraire()">Importer l'horaire dans l'application</button>
+
+        <div class="success-message" id="success-message">
+            <strong>✅ Import réussi!</strong><br>
+            <span id="import-details"></span><br><br>
+            <button class="btn success" onclick="window.location.href='residences.html'">
+                Ouvrir l'application
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Données de l'horaire EDM3003
+        const horaireData = {
+            "cours": "EDM3003",
+            "session": "Hiver 2026",
+            "residences": [
+                {
+                    "cours": 1,
+                    "jour": "LUN",
+                    "date": "2026-01-12",
+                    "pm": {
+                        "type": "setup",
+                        "titre": "Remise en ordre des espaces de travail",
+                        "description": "Présentation du plan de cours"
+                    },
+                    "soir": {
+                        "type": "presentation",
+                        "titre": "Rétrospective de groupe sur la présentation du S4"
+                    }
+                },
+                {
+                    "cours": 2,
+                    "jour": "MER",
+                    "date": "2026-01-14",
+                    "pm": {
+                        "type": "planification",
+                        "titre": "PLANIFICATION S5"
+                    },
+                    "soir": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    }
+                },
+                {
+                    "cours": 3,
+                    "jour": "LUN",
+                    "date": "2026-01-19",
+                    "pm": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    },
+                    "soir": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    }
+                },
+                {
+                    "cours": 4,
+                    "jour": "MER",
+                    "date": "2026-01-21",
+                    "pm": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery",
+                        "note": "Test lumière/déploiement studio NB"
+                    },
+                    "soir": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery",
+                        "note": "Test lumière/déploiement studio NB"
+                    }
+                },
+                {
+                    "cours": 5,
+                    "jour": "LUN",
+                    "date": "2026-01-26",
+                    "pm": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    },
+                    "soir": {
+                        "type": "test",
+                        "titre": "TEST INTÉRIEUR 1"
+                    }
+                },
+                {
+                    "cours": 6,
+                    "jour": "MER",
+                    "date": "2026-01-28",
+                    "pm": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    },
+                    "soir": {
+                        "type": "revue",
+                        "titre": "REVUE S5 - RÉTRO S5 - INTÉRIEUR"
+                    }
+                },
+                {
+                    "cours": 7,
+                    "jour": "LUN",
+                    "date": "2026-02-02",
+                    "pm": {
+                        "type": "planification",
+                        "titre": "PLANIFICATION S6"
+                    },
+                    "soir": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    }
+                },
+                {
+                    "cours": 8,
+                    "jour": "MER",
+                    "date": "2026-02-04",
+                    "pm": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery",
+                        "note": "Test lumière/déploiement studio NB"
+                    },
+                    "soir": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery",
+                        "note": "Test lumière/déploiement studio NB"
+                    }
+                },
+                {
+                    "cours": 9,
+                    "jour": "LUN",
+                    "date": "2026-02-09",
+                    "pm": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    },
+                    "soir": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    }
+                },
+                {
+                    "cours": 10,
+                    "jour": "MER",
+                    "date": "2026-02-11",
+                    "pm": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    },
+                    "soir": {
+                        "type": "test",
+                        "titre": "TEST INTÉRIEUR 2"
+                    }
+                },
+                {
+                    "cours": 11,
+                    "jour": "LUN",
+                    "date": "2026-02-16",
+                    "pm": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    },
+                    "soir": {
+                        "type": "revue",
+                        "titre": "REVUE S6 : EXTÉRIEUR",
+                        "note": "TEST UTILISATEUR / PUBLIC INVITÉ"
+                    }
+                },
+                {
+                    "cours": 12,
+                    "jour": "MER",
+                    "date": "2026-02-18",
+                    "pm": {
+                        "type": "planification",
+                        "titre": "RÉTRO S6 PLANIFICATION S7"
+                    },
+                    "soir": {
+                        "type": "residence",
+                        "titre": "Résidence de création-production au Emery"
+                    }
+                },
+                {
+                    "cours": 13,
+                    "jour": "LUN",
+                    "date": "2026-02-23",
+                    "pm": {
+                        "type": "montage",
+                        "titre": "Montage synapse (lundi-mardi-mercredi)"
+                    },
+                    "soir": null
+                },
+                {
+                    "cours": 14,
+                    "jour": "MER",
+                    "date": "2026-02-25",
+                    "pm": {
+                        "type": "generale",
+                        "titre": "Générale Synapse"
+                    },
+                    "soir": null
+                },
+                {
+                    "cours": null,
+                    "jour": "JEU",
+                    "date": "2026-02-26",
+                    "pm": {
+                        "type": "lancement",
+                        "titre": "Lancement Synapse (Opération de jeudi à dimanche)"
+                    },
+                    "soir": null
+                },
+                {
+                    "cours": 15,
+                    "jour": "LUN",
+                    "date": "2026-03-02",
+                    "pm": {
+                        "type": "demontage",
+                        "titre": "Démontage 2 mars",
+                        "description": "Rangement - Remise en ordre du Emery (2 au 5 mars)"
+                    },
+                    "soir": null
+                },
+                {
+                    "cours": null,
+                    "jour": "LUN",
+                    "date": "2026-03-16",
+                    "pm": {
+                        "type": "postmortem",
+                        "titre": "Rencontre post-mortem"
+                    },
+                    "soir": null
+                }
+            ],
+            "types_activites": {
+                "setup": { "nom": "Mise en place", "couleur": "#6c757d" },
+                "presentation": { "nom": "Présentation", "couleur": "#17a2b8" },
+                "planification": { "nom": "Planification", "couleur": "#007bff" },
+                "residence": { "nom": "Résidence de création", "couleur": "#28a745" },
+                "test": { "nom": "Test technique", "couleur": "#ffc107" },
+                "revue": { "nom": "Revue / Rétro", "couleur": "#dc3545" },
+                "montage": { "nom": "Montage", "couleur": "#6f42c1" },
+                "generale": { "nom": "Générale", "couleur": "#fd7e14" },
+                "lancement": { "nom": "Lancement", "couleur": "#e83e8c" },
+                "demontage": { "nom": "Démontage", "couleur": "#6c757d" },
+                "postmortem": { "nom": "Post-mortem", "couleur": "#20c997" }
+            }
+        };
+
+        // Afficher les stats
+        window.onload = function() {
+            const pmCount = horaireData.residences.filter(r => r.pm).length;
+            const soirCount = horaireData.residences.filter(r => r.soir).length;
+            const totalSessions = pmCount + soirCount;
+
+            document.getElementById('stats').innerHTML = `
+                <div class="stat">
+                    <div class="stat-number">${horaireData.residences.length}</div>
+                    <div class="stat-label">Journées</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">${pmCount}</div>
+                    <div class="stat-label">Sessions PM</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">${soirCount}</div>
+                    <div class="stat-label">Sessions SOIR</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">${totalSessions}</div>
+                    <div class="stat-label">Sessions totales</div>
+                </div>
+            `;
+        };
+
+        // Fonction d'import
+        function importHoraire() {
+            // Charger les données existantes
+            let data = localStorage.getItem('residences-data');
+            if (!data) {
+                alert('L\'application n\'a pas encore été initialisée. Ouvrez d\'abord residences.html');
+                return;
+            }
+
+            data = JSON.parse(data);
+
+            // Compteurs
+            let imported = 0;
+
+            // Importer chaque session
+            horaireData.residences.forEach(jour => {
+                // Session PM
+                if (jour.pm) {
+                    const existingPM = data.residencies.find(r =>
+                        r.date === jour.date && r.startTime === '13:00'
+                    );
+
+                    if (!existingPM) {
+                        data.residencies.push({
+                            date: jour.date,
+                            startTime: '13:00',
+                            endTime: '17:00',
+                            description: jour.pm.titre + (jour.pm.description ? '\n' + jour.pm.description : '') + (jour.pm.note ? '\n⚠️ ' + jour.pm.note : ''),
+                            type: jour.pm.type,
+                            session: 'PM',
+                            cours: jour.cours,
+                            people: [],
+                            createdAt: new Date().toISOString(),
+                            imported: true
+                        });
+                        imported++;
+                    }
+                }
+
+                // Session SOIR
+                if (jour.soir) {
+                    const existingSoir = data.residencies.find(r =>
+                        r.date === jour.date && r.startTime === '18:00'
+                    );
+
+                    if (!existingSoir) {
+                        data.residencies.push({
+                            date: jour.date,
+                            startTime: '18:00',
+                            endTime: '22:00',
+                            description: jour.soir.titre + (jour.soir.description ? '\n' + jour.soir.description : '') + (jour.soir.note ? '\n⚠️ ' + jour.soir.note : ''),
+                            type: jour.soir.type,
+                            session: 'SOIR',
+                            cours: jour.cours,
+                            people: [],
+                            createdAt: new Date().toISOString(),
+                            imported: true
+                        });
+                        imported++;
+                    }
+                }
+            });
+
+            // Sauvegarder
+            localStorage.setItem('residences-data', JSON.stringify(data));
+
+            // Afficher le message de succès
+            document.getElementById('import-details').textContent =
+                `${imported} sessions ont été importées avec succès!`;
+            document.getElementById('success-message').classList.add('show');
+            document.querySelector('.btn').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
