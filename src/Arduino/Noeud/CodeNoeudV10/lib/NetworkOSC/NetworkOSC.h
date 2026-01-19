@@ -26,7 +26,8 @@ void initNetworkOSC(
 void updateNetworkOSC();
 
 // --- Envoi OSC : 4 channels (energy1, energy2, conn1, conn2)
-void sendOSC(int energy1, int energy2, bool conn1, bool conn2);
+// conn1 and conn2 now send the Rhizome ID (0 if disconnected)
+void sendOSC(int energy1, int energy2, int rhizomeId1, int rhizomeId2);
 
 // --- Externs pour main
 extern WiFiUDP Udp;

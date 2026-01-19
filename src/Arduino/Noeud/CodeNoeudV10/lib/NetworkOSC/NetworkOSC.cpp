@@ -111,16 +111,16 @@ void updateNetworkOSC() {
 // -------------------------------------------------------------------
 // Envoi OSC
 // -------------------------------------------------------------------
-void sendOSC(int energy1, int energy2, bool conn1, bool conn2) {
+void sendOSC(int energy1, int energy2, int rhizomeId1, int rhizomeId2) {
     int e1 = energy1, e2 = energy2;
-    int c1 = conn1 ? 1 : 0;
-    int c2 = conn2 ? 1 : 0;
+    int r1 = rhizomeId1;  // Rhizome ID (0 if disconnected)
+    int r2 = rhizomeId2;  // Rhizome ID (0 if disconnected)
     
     if (!eth_connected) {
         e1 = 0;
         e2 = 0;
-        c1 = 0;
-        c2 = 0;
+        r1 = 0;
+        r2 = 0;
     }
 
     // /energy1 channel
@@ -139,17 +139,17 @@ void sendOSC(int energy1, int energy2, bool conn1, bool conn2) {
     Udp.endPacket();
     msgEnergy2.empty();
 
-    // /conn1 channel
+    // /conn1 channel - now sends Rhizome ID instead of just 1/0
     OSCMessage msgConn1("/conn1");
-    msgConn1.add(c1);
+    msgConn1.add(r1);
     Udp.beginPacket(_targetIP, _targetPort);
     msgConn1.send(Udp);
     Udp.endPacket();
     msgConn1.empty();
 
-    // /conn2 channel
+    // /conn2 channel - now sends Rhizome ID instead of just 1/0
     OSCMessage msgConn2("/conn2");
-    msgConn2.add(c2);
+    msgConn2.add(r2);
     Udp.beginPacket(_targetIP, _targetPort);
     msgConn2.send(Udp);
     Udp.endPacket();

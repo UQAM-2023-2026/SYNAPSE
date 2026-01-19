@@ -50,5 +50,5 @@ void loop() {
     updateNetworkOSC();
     SerialLoop();
     loopSendToTouch();
-    delay(100);
+    delay(20);  // 20ms = good balance between responsiveness and stability
 }

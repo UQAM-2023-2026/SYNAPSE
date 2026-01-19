@@ -200,7 +200,9 @@ void handleNode1Message(MicroOscMessage &msg) {
     rhizome1_Energy = static_cast<int>(energy);
     lastEnergy1_Time = millis(); // Update timeout counter
     
-    Serial.print("[ENERGY] Pogopin 1: ");
+    Serial.print("[ENERGY] Pogopin 1 - Rhizome ID: ");
+    Serial.print(receivedId);
+    Serial.print(" Energy: ");
     Serial.print(energy);
     Serial.println("%");
     
@@ -243,7 +245,9 @@ void handleNode2Message(MicroOscMessage &msg) {
     rhizome2_Energy = static_cast<int>(energy);
     lastEnergy2_Time = millis(); // Update timeout counter
     
-    Serial.print("[ENERGY] Pogopin 2: ");
+    Serial.print("[ENERGY] Pogopin 2 - Rhizome ID: ");
+    Serial.print(receivedId);
+    Serial.print(" Energy: ");
     Serial.print(energy);
     Serial.println("%");
     
@@ -319,11 +323,14 @@ float getRhizomeValue() {
 }
 
 void loopSendToTouch() {
-  // Send all 4 channels with connection states and energy values
+  // Send all 4 channels with rhizome IDs and energy values
+  // If disconnected, rhizome ID will be 0
   int energy1 = isConnected1 ? rhizome1_Energy : 0;
   int energy2 = isConnected2 ? rhizome2_Energy : 0;
+  int rhizId1 = isConnected1 ? rhizome1_ID : 0;
+  int rhizId2 = isConnected2 ? rhizome2_ID : 0;
 
-  sendOSC(energy1, energy2, isConnected1, isConnected2);
+  sendOSC(energy1, energy2, rhizId1, rhizId2);
 }
 
 void SerialLoop() {

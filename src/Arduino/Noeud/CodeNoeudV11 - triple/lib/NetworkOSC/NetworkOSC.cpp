@@ -4,7 +4,6 @@
 
 static NodeStateAndID *pNode = nullptr;
 
-// --- Variables internes
 static IPAddress _targetIP;
 static unsigned int _targetPort;
 static unsigned int _listenPort;
@@ -16,33 +15,24 @@ void beginNetworkOSC(NodeStateAndID &node) {
     pNode = &node;
 }
 
-// -------------------------------------------------------------------
-// WiFi / ETH events
-// -------------------------------------------------------------------
 void WiFiEvent(WiFiEvent_t event) {
     switch (event) {
         case ARDUINO_EVENT_ETH_START:
-            Serial.println("ETH Started");
             break;
 
         case ARDUINO_EVENT_ETH_CONNECTED:
-            Serial.println("ETH Connected");
             break;
 
         case ARDUINO_EVENT_ETH_GOT_IP:
-            Serial.print("ETH IP: ");
-            Serial.println(ETH.localIP());
             eth_connected = true;
             Udp.begin(_listenPort);
             break;
 
         case ARDUINO_EVENT_ETH_DISCONNECTED:
-            Serial.println("ETH Disconnected");
             eth_connected = false;
             break;
 
         case ARDUINO_EVENT_ETH_STOP:
-            Serial.println("ETH Stopped");
             eth_connected = false;
             break;
 
@@ -51,9 +41,6 @@ void WiFiEvent(WiFiEvent_t event) {
     }
 }
 
-// -------------------------------------------------------------------
-// Initialisation
-// -------------------------------------------------------------------
 void initNetworkOSC(
     IPAddress localIP,
     IPAddress gateway,
@@ -81,12 +68,8 @@ void initNetworkOSC(
     );
 
     ETH.config(localIP, gateway, subnet, dns1, dns2);
-
-    Serial.println("NetworkOSC initialized");
 }
 
-// -------------------------------------------------------------------
-// Update à appeler dans loop()
 void updateNetworkOSC() {
     if (!eth_connected) return;
     
@@ -94,10 +77,8 @@ void updateNetworkOSC() {
    
     int packetSize = Udp.parsePacket();
     if (packetSize > 0) {
-        // read entire packet into the OSCMessage object
         while (packetSize--) msgIn.fill(Udp.read());
             
-        // Update drain rate silently (no print)
         if (msgIn.size() > 0 && pNode) {
             if (msgIn.isFloat(0)) {
                 pNode->setDrainRate(msgIn.getFloat(0));
@@ -108,22 +89,14 @@ void updateNetworkOSC() {
     }
 }
 
-// -------------------------------------------------------------------
-// Envoi OSC
-// -------------------------------------------------------------------
-void sendOSC(int energy1, int energy2, int energy3, bool conn1, bool conn2, bool conn3) {
+void sendOSC(int energy1, int energy2, int energy3, 
+             int rhizomeId1, int rhizomeId2, int rhizomeId3) {
     int e1 = energy1, e2 = energy2, e3 = energy3;
-    int c1 = conn1 ? 1 : 0;
-    int c2 = conn2 ? 1 : 0;
-    int c3 = conn3 ? 1 : 0;
+    int r1 = rhizomeId1, r2 = rhizomeId2, r3 = rhizomeId3;
     
     if (!eth_connected) {
-        e1 = 0;
-        e2 = 0;
-        e3 = 0;
-        c1 = 0;
-        c2 = 0;
-        c3 = 0;
+        e1 = e2 = e3 = 0;
+        r1 = r2 = r3 = 0;
     }
 
     // /energy1 channel
@@ -152,7 +125,7 @@ void sendOSC(int energy1, int energy2, int energy3, bool conn1, bool conn2, bool
 
     // /conn1 channel
     OSCMessage msgConn1("/conn1");
-    msgConn1.add(c1);
+    msgConn1.add(r1);
     Udp.beginPacket(_targetIP, _targetPort);
     msgConn1.send(Udp);
     Udp.endPacket();
@@ -160,7 +133,7 @@ void sendOSC(int energy1, int energy2, int energy3, bool conn1, bool conn2, bool
 
     // /conn2 channel
     OSCMessage msgConn2("/conn2");
-    msgConn2.add(c2);
+    msgConn2.add(r2);
     Udp.beginPacket(_targetIP, _targetPort);
     msgConn2.send(Udp);
     Udp.endPacket();
@@ -168,7 +141,7 @@ void sendOSC(int energy1, int energy2, int energy3, bool conn1, bool conn2, bool
 
     // /conn3 channel
     OSCMessage msgConn3("/conn3");
-    msgConn3.add(c3);
+    msgConn3.add(r3);
     Udp.beginPacket(_targetIP, _targetPort);
     msgConn3.send(Udp);
     Udp.endPacket();
