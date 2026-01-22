@@ -1,0 +1,115 @@
+       1 /*
+       2  * Arduino Ethernet W5500 - Réception de données
+       3  *
+       4  * Ce script configure un Arduino avec shield Ethernet W5500
+       5  * pour recevoir des données via Ethernet (TCP Server)
+       6  */
+       7 
+       8 #include <Ethernet.h>
+       9 #include <SPI.h>
+      10 
+      11 // Configuration réseau
+      12 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };  // Adresse MAC
+      13 IPAddress ip(192, 168, 1, 177);                        // Adresse IP fixe
+      14 unsigned int localPort = 8888;                         // Port d'écoute
+      15 
+      16 // Création du serveur
+      17 EthernetServer server(localPort);
+      18 
+      19 void setup() {
+      20   // Initialisation de la communication série
+      21   Serial.begin(9600);
+      22   while (!Serial) {
+      23     ; // Attendre la connexion du port série
+      24   }
+      25 
+      26   Serial.println("Initialisation du shield Ethernet W5500...");
+      27 
+      28   // Initialisation de l'Ethernet avec W5500
+      29   Ethernet.init(10);  // Pin CS pour le W5500 (généralement pin 10)
+      30 
+      31   // Démarrage de l'Ethernet avec IP fixe
+      32   Ethernet.begin(mac, ip);
+      33 
+      34   // Vérification du matériel
+      35   if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+      36     Serial.println("ERREUR: Shield Ethernet introuvable!");
+      37     while (true) {
+      38       delay(1);
+      39     }
+      40   }
+      41 
+      42   // Vérification du câble réseau
+      43   if (Ethernet.linkStatus() == LinkOFF) {
+      44     Serial.println("ATTENTION: Câble Ethernet non connecté!");
+      45   }
+      46 
+      47   // Démarrage du serveur
+      48   server.begin();
+      49 
+      50   Serial.println("Serveur démarré avec succès!");
+      51   Serial.print("Adresse IP: ");
+      52   Serial.println(Ethernet.localIP());
+      53   Serial.print("Port d'écoute: ");
+      54   Serial.println(localPort);
+      55   Serial.println("En attente de connexions...");
+      56 }
+      57 
+      58 void loop() {
+      59   // Vérifier s'il y a un client connecté
+      60   EthernetClient client = server.available();
+      61 
+      62   if (client) {
+      63     Serial.println("\n=== Nouveau client connecté ===");
+      64 
+      65     // Tant que le client est connecté
+      66     while (client.connected()) {
+      67       // Vérifier si des données sont disponibles
+      68       if (client.available()) {
+      69         // Lire les données reçues
+      70         char c = client.read();
+      71 
+      72         // Afficher les données sur le moniteur série
+      73         Serial.print(c);
+      74       }
+      75     }
+      76 
+      77     // Le client s'est déconnecté
+      78     Serial.println("\n=== Client déconnecté ===");
+      79     client.stop();
+      80   }
+      81 
+      82   // Maintenir la connexion Ethernet active
+      83   Ethernet.maintain();
+      84 }
+
+∴ Thinking…
+
+  Good! I've created the basic script. Now let me create an additional example that shows a more advanced version with 
+  complete message parsing and response capability.
+
+⏺ Parfait! J'ai créé un script de base pour recevoir des données via Etherne05:11 PMe claude-sonnet-4-5-20250929ipt fait :
+
+  Caractéristiques principales :
+  - Configure le shield Ethernet W5500
+  - Crée un serveur TCP sur le port 8888
+  - Attend les connexions entrantes
+  - Reçoit et affiche les données sur le moniteur série
+  - Gère automatiquement les connexions/déconnexions
+
+  Configuration réseau :
+  - Adresse IP : 192.168.1.177
+  - Port : 8888
+  - Adresse MAC : DE:AD:BE:EF:FE:ED
+
+  Pour utiliser ce script :
+  1. Installez la bibliothèque "Ethernet" depuis le gestionnaire de bibliothèques Arduino
+  2. Ajustez l'adresse IP selon votre réseau
+  3. Téléversez le script sur votre Arduino
+  4. Ouvrez le moniteur série (9600 baud)
+  5. Connectez-vous au serveur avec un client TCP (par exemple : telnet 192.168.1.177 8888)
+
+  Voulez-vous que je crée également une version avec :
+  - Réponse automatique au client ?
+  - Parsing de commandes spécifiques ?
+  - Utilisation de DHCP au lieu d'IP fixe ?
