@@ -82,11 +82,11 @@ static const unsigned long DEBOUNCE_DELAY = 400; // Very long for stability
 
 void connectedLeft() {
   connectedLeftEvent = true;
-  hapticTwo();
+  //hapticTwo();
 }
 void connectedRight() {
   connectedRightEvent = true;
-  hapticOne();
+  //hapticOne();
 }
 
 /*------------------Connection State-----------------*/

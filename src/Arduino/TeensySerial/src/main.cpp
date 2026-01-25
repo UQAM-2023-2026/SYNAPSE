@@ -17,7 +17,7 @@ void setup() {
   Serial.println("Setup complete.");
 
   SetupEnergyManagement(rhizome); // Initialize energy management with rhizome reference
-  //SetupSerialCommunication(rhizome); // Initialize serial communication with rhizome reference
+  SetupSerialCommunication(rhizome); // Initialize serial communication with rhizome reference
   SetupStrips(rhizome, 255); // Setup LED strips with brightness 50
 
   //SetupHaptic(); // Initialize haptic feedback system
@@ -27,7 +27,7 @@ void setup() {
 void loop() {
   energyLoop(); // Update energy management
 
-  //checkConnectionStatus(); // Check for connection changes
+  checkConnectionStatus(); // Check for connection changes
 
   StripLoop(); // Update LED strips animation
 
