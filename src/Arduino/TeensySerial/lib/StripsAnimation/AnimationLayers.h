@@ -19,7 +19,7 @@ public:
     LayerRenderer(CRGB* ledBuffer, uint8_t numLeds);
     
     // Individual layer render functions
-    void renderGaugeLayer(const GaugeLayerConfig& config, float energy);
+    void renderGaugeLayer(const GaugeLayerConfig& config, float energy, float gaugeOffset);
     void renderPulseLayer(const PulseLayerConfig& config, float energy, uint8_t gaugeLedCount);
     void renderFlowLayer(FlowLayerConfig& config, uint32_t currentTime);
     bool renderEventLayer(EventLayerConfig& config, uint32_t currentTime);
@@ -127,6 +127,9 @@ private:
     
     // Smooth energy transition
     void updateDisplayedEnergy(float targetEnergy, float deltaTime);
+    
+    // Smooth gauge offset transition (sliding effect)
+    void updateGaugeOffset(float deltaTime);
     
     // Render pipeline
     void renderAllLayers();
