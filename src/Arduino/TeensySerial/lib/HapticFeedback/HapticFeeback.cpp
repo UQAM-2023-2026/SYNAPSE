@@ -130,7 +130,7 @@ void SetupHaptic() {
   // IMPORTANT: On passe &Wire1 en paramètre pour dire d'utiliser le 2ème port
   if (!drv2.begin(&Wire1)) {
     Serial.println("ERREUR: DRV2 (Pins 16/17) non détecté !");
-    Serial.println("Vérifie: VIN=3.3V, GND, SDA=16, SCL=17");
+    Serial.println("Vérifie: VIN=3.3V, GND, SDA=17, SCL=16");
     while (1);
   }
   Serial.println("OK: DRV2 connecté.");

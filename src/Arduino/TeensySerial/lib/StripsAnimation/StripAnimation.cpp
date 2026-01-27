@@ -5,8 +5,8 @@
 #include "AnimationLayers.h"
 
 /*------------------LED Configuration--------------------*/
-#define LED_PIN     13
-#define CLOCK_PIN   12
+#define LED_PIN     12
+#define CLOCK_PIN   13
 #define NUM_LEDS    15
 #define BRIGHTNESS  100
 

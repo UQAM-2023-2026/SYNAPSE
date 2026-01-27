@@ -171,6 +171,11 @@ struct AnimationState {
     float displayedEnergy;      // For smooth transitions
     uint8_t numLeds;
     
+    // Gauge transition (sliding effect)
+    float gaugeOffset;          // 0.0 = left-aligned, 1.0 = right-aligned
+    float targetGaugeOffset;    // Target offset for smooth transition
+    bool gaugeTransitioning;    // True during slide animation
+    
     // Timing
     uint32_t lastUpdateTime;
     uint16_t frameInterval;     // Target frame time in ms
@@ -180,6 +185,9 @@ struct AnimationState {
         currentEnergy(0),
         displayedEnergy(0),
         numLeds(15),
+        gaugeOffset(0.0f),
+        targetGaugeOffset(0.0f),
+        gaugeTransitioning(false),
         lastUpdateTime(0),
         frameInterval(16)       // ~60 FPS
     {}
