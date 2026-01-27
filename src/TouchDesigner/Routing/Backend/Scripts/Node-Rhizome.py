@@ -65,8 +65,8 @@ def whileOff(channel: Channel, sampleIndex: int, val: float,
 	return
 
 def onValueChange(channel, sampleIndex, val, prev):
-	rhiz_id = op('valRhiz')[0]
-	rhiz_energy = op('valRhiz')[1]
+	rhiz_energy = op('valRhiz')[0]
+	rhiz_id = op('valRhiz')[1]
 	node_id = op('valRhiz')[2]
 	node_level = op('valRhiz')[3]
 	
