@@ -21,7 +21,7 @@
 #define SERIAL_BAUD 9600
 
 // Timing constants - BALANCED FOR SPEED AND STABILITY
-#define CONNECTION_TIMEOUT 250       // 250ms without /energy = disconnected (reduced from 500ms)
+#define CONNECTION_TIMEOUT 2000      // 2000ms without /energy = disconnected (increased to prevent bouncing)
 #define CONNECT_DEBOUNCE 100         // Debounce time for connection (balanced)
 #define DISCONNECT_DEBOUNCE 100      // Debounce time for disconnection (reduced from 1500ms)
 #define NODE_SEND_INTERVAL 1000      // Resend /node every 1s while connected

@@ -7,9 +7,9 @@
 HardwareSerial SerialPogopin1(1);  // UART1
 HardwareSerial SerialPogopin2(2);  // UART2
 
-// Create two separate OSC instances for each pogopin
-MicroOscSlip<32> oscNode1(&SerialPogopin1);
-MicroOscSlip<32> oscNode2(&SerialPogopin2);
+// Create two separate OSC instances for each pogopin (128 byte buffer for larger messages)
+MicroOscSlip<128> oscNode1(&SerialPogopin1);
+MicroOscSlip<128> oscNode2(&SerialPogopin2);
 
 static NodeStateAndID *pNode = nullptr;
 
@@ -89,104 +89,61 @@ void onDisconnected2() {
   rhizome2_Energy = 0;
 }
 
-// ===== POGOPIN 1 CONNECTION STATE MACHINE =====
+// ===== POGOPIN 1 CONNECTION STATE MACHINE (NO DEBOUNCING) =====
 void updateConnectionState1() {
-  unsigned long now = millis();
-  bool pinState = digitalRead(POGOPIN1_FLAG_PIN) == LOW;
+  bool flagConnected = (digitalRead(POGOPIN1_FLAG_PIN) == LOW);  // FLAG LOW = connected
   
-  // NOTE: FLAG1 doesn't work reliably, so we rely on OSC message timeout instead
-  // If connected but no energy message for CONNECTION_TIMEOUT ms, disconnect
-  if (isConnected1 && (now - lastEnergy1_Time > CONNECTION_TIMEOUT)) {
-    conn1_State = CONN_DISCONNECTED;
+  if (flagConnected && !isConnected1) {
+    // Just connected
+    isConnected1 = true;
+    conn1_State = CONN_CONNECTED;
+    lastEnergy1_Time = millis();
+    onConnected1();
+  } else if (!flagConnected && isConnected1) {
+    // Just disconnected
     isConnected1 = false;
+    conn1_State = CONN_DISCONNECTED;
     onDisconnected1();
-    return;
-  }
-  
-  // Only use FLAG for initial connection if it actually goes LOW
-  switch (conn1_State) {
-    case CONN_DISCONNECTED:
-      if (pinState) {
-        conn1_State = CONN_DEBOUNCING_CONNECT;
-        debounce1_Start = now;
-      }
-      break;
-      
-    case CONN_DEBOUNCING_CONNECT:
-      if (!pinState) {
-        conn1_State = CONN_DISCONNECTED;
-      } else if (now - debounce1_Start >= CONNECT_DEBOUNCE) {
-        conn1_State = CONN_CONNECTED;
-        isConnected1 = true;
-        onConnected1();
-      }
-      break;
-      
-    case CONN_CONNECTED:
-      // Don't check FLAG for disconnection on Pogopin 1 - use timeout instead
-      break;
-      
-    case CONN_DEBOUNCING_DISCONNECT:
-      // Not used for Pogopin 1
-      break;
   }
 }
 
-// ===== POGOPIN 2 CONNECTION STATE MACHINE =====
+// ===== POGOPIN 2 CONNECTION STATE MACHINE (NO DEBOUNCING) =====
 void updateConnectionState2() {
-  unsigned long now = millis();
-  bool pinState = digitalRead(POGOPIN2_FLAG_PIN) == LOW;
+  bool flagConnected = (digitalRead(POGOPIN2_FLAG_PIN) == LOW);  // FLAG LOW = connected
   
-  // Timeout-based disconnection if no energy messages received
-  if (isConnected2 && (now - lastEnergy2_Time > CONNECTION_TIMEOUT)) {
-    conn2_State = CONN_DISCONNECTED;
+  if (flagConnected && !isConnected2) {
+    // Just connected
+    isConnected2 = true;
+    conn2_State = CONN_CONNECTED;
+    lastEnergy2_Time = millis();
+    onConnected2();
+  } else if (!flagConnected && isConnected2) {
+    // Just disconnected
     isConnected2 = false;
+    conn2_State = CONN_DISCONNECTED;
     onDisconnected2();
-    return;
-  }
-  
-  switch (conn2_State) {
-    case CONN_DISCONNECTED:
-      if (pinState) {
-        conn2_State = CONN_DEBOUNCING_CONNECT;
-        debounce2_Start = now;
-      }
-      break;
-      
-    case CONN_DEBOUNCING_CONNECT:
-      if (!pinState) {
-        conn2_State = CONN_DISCONNECTED;
-      } else if (now - debounce2_Start >= CONNECT_DEBOUNCE) {
-        conn2_State = CONN_CONNECTED;
-        isConnected2 = true;
-        lastEnergy2_Time = now; // Initialize timeout counter
-        onConnected2();
-      }
-      break;
-      
-    case CONN_CONNECTED:
-      // Don't check FLAG for disconnection on Pogopin 2 - use timeout instead (FLAG pins are unreliable)
-      break;
-      
-    case CONN_DEBOUNCING_DISCONNECT:
-      // Not used for Pogopin 2
-      break;
   }
 }
 
 // ===== MESSAGE HANDLERS =====
 void handleNode1Message(MicroOscMessage &msg) {
+  // Ignore /node - it's loopback of our own message
+  if (msg.checkOscAddress("/node")) {
+    return;
+  }
+  
   // Check for discover_list
   if (msg.checkOscAddress("/discover_list")) {
     const char* csv = msg.nextAsString();
     Serial.print("[RECV-1] /discover_list: ");
     Serial.println(csv);
     
-    // FALLBACK: If we receive message and not connected, force connection
+    // Connection is detected when we receive OSC messages (FLAG pins unreliable)
     if (!isConnected1) {
-      Serial.println("[FALLBACK] Pogopin 1 - Forcing connection (FLAG not working, but receiving OSC)");
+      Serial.println("[CONN] Pogopin 1 - Connected via OSC");
       isConnected1 = true;
       conn1_State = CONN_CONNECTED;
+      lastEnergy1_Time = millis();
       onConnected1();
     }
     return;
@@ -210,28 +167,43 @@ void handleNode1Message(MicroOscMessage &msg) {
       Serial.println("  ⚠️  WARNING: Rhizome 1 nearly depleted!");
     }
     
-    // FALLBACK: If we receive energy and not connected, force connection
+    // FALLBACK: If we receive energy and not connected, force connection (silently)
     if (!isConnected1) {
-      Serial.println("[FALLBACK] Pogopin 1 - Forcing connection (FLAG not working, but receiving OSC)");
+      Serial.println("[FALLBACK] Pogopin 1 - Connected via OSC");
       isConnected1 = true;
       conn1_State = CONN_CONNECTED;
       lastEnergy1_Time = millis();
-      onConnected1();
+      // Don't call onConnected1() here - just update state silently to avoid spam
     }
   }
 }
 
 void handleNode2Message(MicroOscMessage &msg) {
+  // Handle /node message from rhizome
+  if (msg.checkOscAddress("/node")) {
+    float value = msg.nextAsFloat();
+    lastEnergy2_Time = millis();
+    
+    Serial.print("[RECV-2] /node value=");
+    Serial.println(value);
+    
+    rhizome2_Energy = (int)(value * 100);
+    if (rhizome2_ID == 0) rhizome2_ID = 2;
+    return;
+  }
+  
   // Check for discover_list
   if (msg.checkOscAddress("/discover_list")) {
     const char* csv = msg.nextAsString();
     Serial.print("[RECV-2] /discover_list: ");
     Serial.println(csv);
     
-    // FALLBACK: If we receive message and not connected, force connection
+    // Connection is detected when we receive OSC messages (FLAG pins unreliable)
     if (!isConnected2) {
+      Serial.println("[CONN] Pogopin 2 - Connected via OSC");
       isConnected2 = true;
       conn2_State = CONN_CONNECTED;
+      lastEnergy2_Time = millis();
       onConnected2();
     }
     return;
@@ -255,12 +227,13 @@ void handleNode2Message(MicroOscMessage &msg) {
       Serial.println("  ⚠️  WARNING: Rhizome 2 nearly depleted!");
     }
     
-    // FALLBACK: If we receive energy and not connected, force connection
+    // FALLBACK: If we receive energy and not connected, force connection (silently)
     if (!isConnected2) {
+      Serial.println("[FALLBACK] Pogopin 2 - Connected via OSC");
       isConnected2 = true;
       conn2_State = CONN_CONNECTED;
       lastEnergy2_Time = millis();
-      onConnected2();
+      // Don't call onConnected2() here - just update state silently to avoid spam
     }
   }
 }
@@ -343,33 +316,39 @@ void SerialLoop() {
   updateConnectionState1();
   updateConnectionState2();
   
-  // Listen for messages from both rhizomes
+  // Listen for messages on both UARTs
   oscNode1.onOscMessageReceived(handleNode1Message);
   oscNode2.onOscMessageReceived(handleNode2Message);
   
   // Periodically resend /node to Pogopin 1 while connected
   if (isConnected1) {
-    if (now - lastNode1_Sent >= NODE_SEND_INTERVAL) {
+    // Only send /node ONCE when first connected, then stop to allow receiving
+    static bool sentInitial1 = false;
+    if (!sentInitial1) {
       oscNode1.sendMessage("/node", "f", currentDrainRate);
+      Serial.print("[SEND] Pogopin 1 - /node drainRate=");
+      Serial.println(currentDrainRate);
+      sentInitial1 = true;
       lastNode1_Sent = now;
-      if (currentDrainRate != lastDrainRate1) {
-        Serial.print("[SEND] Pogopin 1 - /node drainRate=");
-        Serial.println(currentDrainRate);
-        lastDrainRate1 = currentDrainRate;
-      }
     }
+  } else {
+    // Reset flag when disconnected
+    static bool sentInitial1 = false;
+    sentInitial1 = false;
   }
   
   // Periodically resend /node to Pogopin 2 while connected
   if (isConnected2) {
-    if (now - lastNode2_Sent >= NODE_SEND_INTERVAL) {
+    static bool sentInitial2 = false;
+    if (!sentInitial2) {
       oscNode2.sendMessage("/node", "f", currentDrainRate);
+      Serial.print("[SEND] Pogopin 2 - /node drainRate=");
+      Serial.println(currentDrainRate);
+      sentInitial2 = true;
       lastNode2_Sent = now;
-      if (currentDrainRate != lastDrainRate2) {
-        Serial.print("[SEND] Pogopin 2 - /node drainRate=");
-        Serial.println(currentDrainRate);
-        lastDrainRate2 = currentDrainRate;
-      }
     }
+  } else {
+    static bool sentInitial2 = false;
+    sentInitial2 = false;
   }
 }
