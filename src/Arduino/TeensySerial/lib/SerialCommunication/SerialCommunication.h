@@ -27,5 +27,7 @@ int getSeenIdAt(int index);
 // Status monitoring
 //void printRhizomeStatus(); // Print current status on demand
 void printStatus();
+bool isRightConnected();  // Get right serial (14-15) connection status
+bool isLeftConnected();   // Get left serial connection status
 
 #endif

@@ -75,12 +75,17 @@ void LayerRenderer::renderGaugeLayer(const GaugeLayerConfig& config, float energ
  * - Diastole: pic plus FAIBLE et court (croche)
  * - Long temps de repos avant le prochain battement
  *----------------------------------------------------------------------------*/
+
+// External function to get heartbeat callback
+extern void (*getHeartbeatCallback())(void);
+
 void LayerRenderer::renderPulseLayer(const PulseLayerConfig& config, float energy, uint8_t gaugeLedCount) {
     if (!config.enabled) return;
     
     // Variables statiques pour un timing stable
     static uint32_t lastPulseUpdate = 0;
     static float pulsePhase = 0.0f;  // 0.0 - 1.0, accumulé
+    static float previousPhase = 0.0f;  // Pour détecter le début d'un nouveau battement
     
     uint32_t now = millis();
     float deltaTime = (now - lastPulseUpdate) / 1000.0f;
@@ -94,10 +99,23 @@ void LayerRenderer::renderPulseLayer(const PulseLayerConfig& config, float energ
     
     // Avancer la phase selon le BPM
     float beatsPerSecond = currentBPM / 60.0f;
+    previousPhase = pulsePhase;
     pulsePhase += beatsPerSecond * deltaTime;
     
-    // Wrap phase entre 0 et 1
-    while (pulsePhase >= 1.0f) pulsePhase -= 1.0f;
+    // Détecter le début d'un nouveau battement (phase wrap around)
+    bool newBeatStarted = false;
+    while (pulsePhase >= 1.0f) {
+        pulsePhase -= 1.0f;
+        newBeatStarted = true;
+    }
+    
+    // Appeler le callback haptique au début de chaque battement
+    if (newBeatStarted) {
+        void (*callback)(void) = getHeartbeatCallback();
+        if (callback != nullptr) {
+            callback();
+        }
+    }
     
     // Courbe de battement de cœur DOUBLE PIC (noire pointée + croche):
     // 0.00 - 0.08 : Montée rapide SYSTOLE (pic principal)

@@ -13,7 +13,7 @@ static RhizomeStateAndID *pRhizome = nullptr; // pointer to external rhizome obj
 /*----------------Energy variables-------------------- */
 static float energy = 0.0f;
 
-float baseRegenRate = 1.3;      // Recharge lente (quand < energyThreshold)
+float baseRegenRate = 0.7;      // Recharge lente (quand < energyThreshold)
 float decayRate = 0.1;         // Perte d’énergie lente (quand > energyThreshold)
 float nodeDrainRate = 0.0;       // Taux de vidange imposé par le nœud
 float generationRate = 0.5;      // Taux de génération quand connecté

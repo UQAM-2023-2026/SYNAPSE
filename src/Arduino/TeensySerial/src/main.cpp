@@ -1,62 +1,71 @@
-#include <Arduino.h> // Main Arduino library
-#include <RhizomeStateAndID.h> // Custom Rhizome state and ID management
-#include <EnergyManagement.h> // Custom energy management header
-#include <SerialCommunication.h> // Custom serial communication header
-#include <StripsAnimation.h> // Custom LED strips animation header
-#include <SoundsManagement.h> // Custom sounds management header
-#include <HapticFeedback.h> // Custom haptic feedback header
+  #include <Arduino.h>
+  #include <FastLED.h>
+  #include <RhizomeStateAndID.h>
+  #include <EnergyManagement.h>
+  #include <SerialCommunication.h>
+  #include <StripsAnimation.h>
+  #include <SoundsManagement.h>
+  #include "HapticSystem.h"
 
+  /*-----------Status LED Strip (WS2812B on pin 1)--------*/
+  #define STATUS_LED_PIN 1
+  #define STATUS_NUM_LEDS 5
+  CRGB statusLeds[STATUS_NUM_LEDS];
 
-/*-----------Rhizome base stats----------------------*/
-RhizomeStateAndID rhizome(1); // Initialize Rhizome with ID 0
-/*---------------------------------------------------*/
+  /*-----------Rhizome base stats----------------------*/
+  RhizomeStateAndID rhizome(1);
+  /*---------------------------------------------------*/
 
+  void updateStatusLeds() {
+    // Red when Serial3 (pins 14-15) not connected, Green when connected
+    CRGB color = isRightConnected() ? CRGB::Green : CRGB::Red;
+    for (int i = 0; i < STATUS_NUM_LEDS; i++) {
+      statusLeds[i] = color;
+    }
+    FastLED.show();
+  }
 
-void setup() {
-  Serial.begin(115200);
-  Serial.println("Setup complete.");
+  void setup() {
+    Serial.begin(115200);
+    delay(100);
+    Serial.println("Setup starting...");
 
-  SetupEnergyManagement(rhizome); // Initialize energy management with rhizome reference
-  SetupSerialCommunication(rhizome); // Initialize serial communication with rhizome reference
-  SetupStrips(rhizome, 255); // Setup LED strips with brightness 50
+    // Setup status LED strip
+    FastLED.addLeds<WS2812B, STATUS_LED_PIN, GRB>(statusLeds, STATUS_NUM_LEDS);
+    FastLED.setBrightness(50);  // Not too bright
+    for (int i = 0; i < STATUS_NUM_LEDS; i++) {
+      statusLeds[i] = CRGB::Red;  // Start red (disconnected)
+    }
+    FastLED.show();
+    Serial.println("Status LEDs OK");
 
-  //SetupHaptic(); // Initialize haptic feedback system
+    SetupEnergyManagement(rhizome);
+    Serial.println("Energy OK");
+    
+    SetupSerialCommunication(rhizome);
+    Serial.println("Serial OK");
+    
+    SetupStrips(rhizome, 255);
+    Serial.println("Strips OK");
 
-}
+    // Initialize haptic system
+    hapticSystem.begin();
+    Serial.println("Haptic OK");
 
-void loop() {
-  energyLoop(); // Update energy management
+    // Register heartbeat callback - LEDs will call this on each pulse
+    StripSetHeartbeatCallback(hapticStripCallbackWrapper);
 
-  checkConnectionStatus(); // Check for connection changes
+    Serial.println("System initialized - LED-synced haptics");
+  }
 
-  StripLoop(); // Update LED strips animation
+  void loop() {
+    energyLoop();
+    checkConnectionStatus();
+    StripLoop();
 
-  
-  //HapticLoop(); // Update haptic feedback
+    // Update status LEDs based on right serial connection
+    updateStatusLeds();
 
-  // static uint32_t lastPrint = 0;
-  // if (millis() - lastPrint > 100) {  // print 20 times/sec max
-  //   lastPrint = millis();
-  //   Serial.print("Rhizome ID: ");
-  //   Serial.print(rhizome.getID());
-  //   Serial.print(", Count: ");
-  //   Serial.print(rhizome.getCount());
-  //   Serial.print(", Energy: ");
-  //   Serial.print(rhizome.getEnergy());
-  //   Serial.print(", State: ");
-  //   Serial.println(rhizome.getState());
-  // }
-
-
-}
-
-// // Example: Print status when user sends a command via Serial
-// void serialEvent() {
-//   if (Serial.available()) {
-//     char cmd = Serial.read();
-//     if (cmd == 's' || cmd == 'S') {
-//       // Press 's' in Serial Monitor to print status
-//       printRhizomeStatus();
-//     }
-//   }
-// }
+    // Update haptic state (energy level for intensity mapping)
+    hapticSystem.update(rhizome.getEnergy(), rhizome.getState());
+  }
