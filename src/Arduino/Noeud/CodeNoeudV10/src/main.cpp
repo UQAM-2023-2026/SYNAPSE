@@ -14,13 +14,13 @@ void setup() {
 
     initNetworkOSC(
         //local_IP
-        //IPAddress(169,254,19,50),
+        IPAddress(10,0,2,225),
         // ESP 
-        IPAddress(10,0,2,180),
+        //IPAddress(10,0,2,180),
 
         //gateway
-        IPAddress(10,0,1,1),
-        //IPAddress(172,29,64,1),
+        //IPAddress(10,0,1,1),
+        IPAddress(10,0,2,1),
 
         //subnet
         IPAddress(255,255,0,0),
@@ -36,9 +36,9 @@ void setup() {
         9600,
 
         //target_IP
-        //IPAddress(169,254,19,60),
+        IPAddress(10,0,2,222),
         // adresse ordi lah lah 
-        IPAddress(10,0,2,245),
+        //IPAddress(10,0,2,245),
         
         //target_port
         //osc In
