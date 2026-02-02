@@ -5,8 +5,8 @@
 #include "AnimationLayers.h"
 
 /*------------------LED Configuration--------------------*/
-#define LED_PIN     13
-#define CLOCK_PIN   12
+#define LED_PIN     12
+#define CLOCK_PIN   13
 #define NUM_LEDS    15
 #define BRIGHTNESS  100
 
@@ -18,6 +18,7 @@ AnimationManager animManager;
 
 // Callback pour haptic feedback (défini dans main ou HapticFeedback)
 static void (*hapticCallbackStrong)(void) = nullptr;
+static void (*heartbeatCallback)(void) = nullptr;
 
 /*------------------Setup--------------------*/
 
@@ -35,6 +36,15 @@ void SetupStrips(RhizomeStateAndID& rhizome, uint8_t brightness) {
 // Permet d'enregistrer un callback pour le haptic feedback
 void StripSetHapticCallback(void (*callback)(void)) {
   hapticCallbackStrong = callback;
+}
+
+void StripSetHeartbeatCallback(void (*callback)(void)) {
+  heartbeatCallback = callback;
+}
+
+// Getter for heartbeat callback (used by AnimationLayers)
+void (*getHeartbeatCallback())(void) {
+  return heartbeatCallback;
 }
 
 /*------------------Main Loop--------------------*/

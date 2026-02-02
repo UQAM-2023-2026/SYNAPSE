@@ -15,6 +15,7 @@ void StripEventDisconnection();
 
 // Haptic callback registration
 void StripSetHapticCallback(void (*callback)(void));
+void StripSetHeartbeatCallback(void (*callback)(void));  // Called on each heartbeat pulse
 
 // MiddleMan synchronization
 void StripSetFlowSync(uint8_t speed);

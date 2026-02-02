@@ -20,7 +20,7 @@ def whileOff(channel, sampleIndex, val, prev):
 	return
 
 def onValueChange(channel: Channel, sampleIndex: int, val: float, prev: float):
-	if (op('null_rhizome')['N1_RzID'] == 1 and op('null_rhizome')['N1_I/S'] == 0) or (op('null_rhizome')['N2_RzID'] == 1 and op('null_rhizome')['N2_I/S'] == 0): # rhizome connexion
+	if (op('null_rhizome')['ConInfra'] == 1) : # rhizome connexion
 	    	op('constant3').par.const0value = 1
 	else:
 			op('constant3').par.const0value = 0.1

@@ -6,7 +6,10 @@
 
 #include <EnergyManagement.h>
 #include <StripsAnimation.h>
-#include <HapticFeedback.h>
+#include <HapticSystem.h>
+
+// External haptic system for connection feedback
+extern HapticSystem hapticSystem;
 
 #include <RhizomeStateAndID.h>
 
@@ -77,16 +80,25 @@ static volatile bool connectedRightEvent = false;
 static bool connectionRightState = false;
 static unsigned long lastRightChangeTime = 0;
 
+// Public getters for connection status
+bool isRightConnected() {
+  return connectionRightState;
+}
+
+bool isLeftConnected() {
+  return connectionLeftState;
+}
+
 // Debounce settings
 static const unsigned long DEBOUNCE_DELAY = 400; // Very long for stability
 
 void connectedLeft() {
   connectedLeftEvent = true;
-  hapticTwo();
+  //hapticTwo();
 }
 void connectedRight() {
   connectedRightEvent = true;
-  hapticOne();
+  //hapticOne();
 }
 
 /*------------------Connection State-----------------*/
@@ -614,6 +626,9 @@ void onLeftConnected() {
   Serial.println("[CONN] Left connected");
   listening = true;
   
+  // Haptic feedback on left motor
+  hapticSystem.triggerLeftConnection();
+  
   // If we're GIVING_TO_NODE and a rhizome connects behind us,
   // we need to become MIDDLEMAN and tell them to drain
   if (pRhizome->getState() == GIVING_TO_NODE && connectedToNode) {
@@ -660,6 +675,9 @@ void onLeftDisconnected() {
 
 void onRightConnected() {
   Serial.println("[CONN] Right connected");
+  
+  // Haptic feedback on right motor
+  hapticSystem.triggerRightConnection();
   
   // Always send discover_list when right connects
   discoveryMode = true;

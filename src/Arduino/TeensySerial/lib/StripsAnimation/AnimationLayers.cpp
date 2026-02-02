@@ -26,90 +26,133 @@ uint8_t LayerRenderer::energyToLedCount(float energy) const {
 }
 
 /*------------------------------------------------------------------------------
- * Gauge Layer - Base energy visualization
- * Direction: Idle/Generating = droite→gauche (fill from right)
- *            Giving/MiddleMan = gauche→droite (fill from left, drains visually)
- * Remplissage fluide: la LED suivante s'allume progressivement
+ * Gauge Layer - Base energy visualization with smooth slide transition
+ * - gaugeOffset: 0.0 = jauge alignée à gauche, 1.0 = alignée à droite
+ * - La jauge "glisse" de gauche à droite (ou vice versa) avec easing sinusoïdal
  *----------------------------------------------------------------------------*/
-void LayerRenderer::renderGaugeLayer(const GaugeLayerConfig& config, float energy) {
+void LayerRenderer::renderGaugeLayer(const GaugeLayerConfig& config, float energy, float gaugeOffset) {
     if (!config.enabled) return;
     if (energy <= 0) return;
     
     // Calcul précis avec partie fractionnelle
-    // Ex: 33% sur 15 LEDs = 4.95 -> 4 LEDs pleines + 1 LED à 95%
     float exactLeds = (energy / 100.0f) * _numLeds;
-    uint8_t fullLeds = (uint8_t)exactLeds;  // Partie entière
-    uint8_t partialBrightness = (uint8_t)((exactLeds - fullLeds) * 255);  // Partie fractionnelle
+    uint8_t fullLeds = (uint8_t)exactLeds;
+    uint8_t partialBrightness = (uint8_t)((exactLeds - fullLeds) * 255);
     
-    // Dessiner les LEDs pleines
-    for (uint8_t i = 0; i < fullLeds; i++) {
-        uint8_t ledIndex;
-        if (config.direction == DIR_RIGHT_TO_LEFT) {
-            ledIndex = (_numLeds - 1) - i;
-        } else {
-            ledIndex = i;
-        }
-        
-        CRGB pixelColor = config.baseColor;
-        blendPixel(ledIndex, pixelColor, config.blendMode, config.opacity);
-    }
+    // Calcul de la position de départ de la jauge avec l'offset
+    // offset=0: démarre à LED 0 (gauche)
+    // offset=1: démarre à LED (numLeds - gaugeLeds) pour finir à droite
+    float maxStartOffset = _numLeds - exactLeds;  // Espace disponible pour décaler
+    float startPos = gaugeOffset * maxStartOffset;  // Position de départ flottante
     
-    // Dessiner la LED partielle (celle qui se remplit)
-    if (fullLeds < _numLeds && partialBrightness > 0) {
-        uint8_t partialIndex;
-        if (config.direction == DIR_RIGHT_TO_LEFT) {
-            partialIndex = (_numLeds - 1) - fullLeds;
-        } else {
-            partialIndex = fullLeds;
-        }
+    // Dessiner les LEDs avec anti-aliasing aux bords
+    for (uint8_t i = 0; i < _numLeds; i++) {
+        float ledStart = (float)i;
+        float ledEnd = ledStart + 1.0f;
         
-        CRGB partialColor = config.baseColor;
-        partialColor.nscale8(partialBrightness);  // Intensité proportionnelle
-        blendPixel(partialIndex, partialColor, config.blendMode, config.opacity);
+        // Zone de la jauge: [startPos, startPos + exactLeds]
+        float gaugeStart = startPos;
+        float gaugeEnd = startPos + exactLeds;
+        
+        // Calcul de la couverture de cette LED par la jauge
+        float overlapStart = max(ledStart, gaugeStart);
+        float overlapEnd = min(ledEnd, gaugeEnd);
+        float coverage = max(0.0f, overlapEnd - overlapStart);
+        
+        if (coverage > 0) {
+            CRGB pixelColor = config.baseColor;
+            // Appliquer la couverture comme brightness (anti-aliasing)
+            pixelColor.nscale8((uint8_t)(coverage * 255));
+            blendPixel(i, pixelColor, config.blendMode, config.opacity);
+        }
     }
 }
 
 /*------------------------------------------------------------------------------
  * Pulse Layer - Heartbeat brightness modulation
- * Vraie courbe de battement de cœur:
- * - Montée RAPIDE vers le pic
- * - Descente LENTE vers le repos
+ * Vraie courbe de battement de cœur avec DOUBLE PIC:
+ * - Systole: pic FORT et rapide (noire pointée)
+ * - Diastole: pic plus FAIBLE et court (croche)
  * - Long temps de repos avant le prochain battement
  *----------------------------------------------------------------------------*/
+
+// External function to get heartbeat callback
+extern void (*getHeartbeatCallback())(void);
+
 void LayerRenderer::renderPulseLayer(const PulseLayerConfig& config, float energy, uint8_t gaugeLedCount) {
     if (!config.enabled) return;
+    
+    // Variables statiques pour un timing stable
+    static uint32_t lastPulseUpdate = 0;
+    static float pulsePhase = 0.0f;  // 0.0 - 1.0, accumulé
+    static float previousPhase = 0.0f;  // Pour détecter le début d'un nouveau battement
+    
+    uint32_t now = millis();
+    float deltaTime = (now - lastPulseUpdate) / 1000.0f;
+    lastPulseUpdate = now;
+    
+    // Limiter deltaTime pour éviter les gros sauts
+    if (deltaTime > 0.1f) deltaTime = 0.1f;
     
     // Calculate BPM based on energy (higher energy = faster pulse)
     uint8_t currentBPM = map((uint8_t)constrain(energy, 0, 100), 0, 100, config.minBPM, config.maxBPM);
     
-    // Période en ms
-    uint32_t periodMs = 60000UL / currentBPM;
+    // Avancer la phase selon le BPM
+    float beatsPerSecond = currentBPM / 60.0f;
+    previousPhase = pulsePhase;
+    pulsePhase += beatsPerSecond * deltaTime;
     
-    // Position dans le cycle (0.0 - 1.0)
-    uint32_t now = millis();
-    float cyclePos = (float)(now % periodMs) / (float)periodMs;
+    // Détecter le début d'un nouveau battement (phase wrap around)
+    bool newBeatStarted = false;
+    while (pulsePhase >= 1.0f) {
+        pulsePhase -= 1.0f;
+        newBeatStarted = true;
+    }
     
-    // Courbe de battement de cœur:
-    // 0.00 - 0.10 : Montée rapide (systole) - repos vers pic
-    // 0.10 - 0.40 : Descente lente (diastole) - pic vers repos
-    // 0.40 - 1.00 : Repos (long plateau bas)
+    // Appeler le callback haptique au début de chaque battement
+    if (newBeatStarted) {
+        void (*callback)(void) = getHeartbeatCallback();
+        if (callback != nullptr) {
+            callback();
+        }
+    }
+    
+    // Courbe de battement de cœur DOUBLE PIC (noire pointée + croche):
+    // 0.00 - 0.08 : Montée rapide SYSTOLE (pic principal)
+    // 0.08 - 0.18 : Descente systole
+    // 0.18 - 0.22 : Petit creux entre les deux pics
+    // 0.22 - 0.28 : Montée DIASTOLE (pic secondaire, plus faible)
+    // 0.28 - 0.38 : Descente diastole
+    // 0.38 - 1.00 : Long repos
     
     float normalizedBrightness;
     
-    if (cyclePos < 0.10f) {
-        // Montée rapide vers le pic (ease-out pour finir vite au sommet)
-        float t = cyclePos / 0.10f;  // 0 -> 1
-        // Ease-out quadratic: rapide au début, ralentit vers la fin
-        normalizedBrightness = t * (2.0f - t);
+    if (pulsePhase < 0.08f) {
+        // Montée rapide SYSTOLE (pic fort)
+        float t = pulsePhase / 0.08f;
+        normalizedBrightness = t * (2.0f - t);  // ease-out, atteint 1.0
     }
-    else if (cyclePos < 0.40f) {
-        // Descente lente vers le repos (ease-in pour ralentir vers le bas)
-        float t = (cyclePos - 0.10f) / 0.30f;  // 0 -> 1
-        // Ease-in quadratic: lent au début, accélère vers la fin mais on inverse
-        normalizedBrightness = 1.0f - (t * t);
+    else if (pulsePhase < 0.18f) {
+        // Descente systole
+        float t = (pulsePhase - 0.08f) / 0.10f;
+        normalizedBrightness = 1.0f - t * 0.7f;  // Descend à 0.3
+    }
+    else if (pulsePhase < 0.22f) {
+        // Petit creux entre les pics
+        normalizedBrightness = 0.3f;
+    }
+    else if (pulsePhase < 0.28f) {
+        // Montée DIASTOLE (pic secondaire, 60% du pic principal)
+        float t = (pulsePhase - 0.22f) / 0.06f;
+        normalizedBrightness = 0.3f + t * 0.3f;  // Monte à 0.6
+    }
+    else if (pulsePhase < 0.38f) {
+        // Descente diastole vers repos
+        float t = (pulsePhase - 0.28f) / 0.10f;
+        normalizedBrightness = 0.6f * (1.0f - t);  // Descend à 0
     }
     else {
-        // Long repos - plateau bas
+        // Long repos
         normalizedBrightness = 0.0f;
     }
     
@@ -127,8 +170,9 @@ void LayerRenderer::renderPulseLayer(const PulseLayerConfig& config, float energ
 
 /*------------------------------------------------------------------------------
  * Flow Layer - Animated energy packets
- * Direction INVARIANTE: toujours gauche → droite (sens horaire)
- * Le flux s'additionne visuellement à la jauge (CRGB +=)
+ * Direction configurable:
+ *   DIR_RIGHT_TO_LEFT = packets vont de droite vers gauche (index décroissant)
+ *   DIR_LEFT_TO_RIGHT = packets vont de gauche vers droite (index croissant)
  *----------------------------------------------------------------------------*/
 void LayerRenderer::renderFlowLayer(FlowLayerConfig& config, uint32_t currentTime) {
     if (!config.enabled) return;
@@ -138,48 +182,56 @@ void LayerRenderer::renderFlowLayer(FlowLayerConfig& config, uint32_t currentTim
     float deltaTime = (currentTime - lastFlowUpdate) / 1000.0f;
     lastFlowUpdate = currentTime;
     
-    // Move position (pixels per second) - TOUJOURS gauche→droite
-    float speedFactor = config.speed / 50.0f; // Normalize around 50
-    _flowPosition += speedFactor * deltaTime * 30.0f; // ~30 pixels/sec at speed=50
+    // Limiter deltaTime pour éviter les sauts
+    if (deltaTime > 0.1f) deltaTime = 0.1f;
+    
+    // Avancer la position du flow
+    float speedFactor = config.speed / 50.0f;
+    _flowPosition += speedFactor * deltaTime * 25.0f;  // pixels/sec
     
     // Wrap position
     float totalCycleLength = config.packetSize + config.packetSpacing;
-    if (_flowPosition >= totalCycleLength) {
+    while (_flowPosition >= totalCycleLength) {
         _flowPosition -= totalCycleLength;
     }
     
-    // Render packets - direction INVARIANTE (gauche→droite)
+    // Render packets selon la direction configurée
     for (uint8_t i = 0; i < _numLeds; i++) {
-        // LED index = i (pas d'inversion, flux toujours dans le même sens)
-        uint8_t ledIndex = i;
+        float adjustedPos;
         
-        // Determine position within packet cycle
-        // On soustrait flowPosition pour que les packets "avancent" vers la droite
-        float adjustedPos = (float)i - _flowPosition;
-        if (adjustedPos < 0) adjustedPos += totalCycleLength * (1 + (int)(-adjustedPos / totalCycleLength));
+        if (config.direction == DIR_RIGHT_TO_LEFT) {
+            // Droite → Gauche : on AJOUTE flowPosition à l'index
+            // Quand flowPosition augmente, le pattern "avance" vers la gauche
+            adjustedPos = (float)i + _flowPosition;
+        } else {
+            // Gauche → Droite : on SOUSTRAIT flowPosition
+            adjustedPos = (float)i - _flowPosition;
+            while (adjustedPos < 0) adjustedPos += totalCycleLength;
+        }
+        
         float posInCycle = fmod(adjustedPos, totalCycleLength);
         
         // Inside a packet?
         if (posInCycle < config.packetSize) {
-            // Calculate brightness based on position in packet (creates soft edges)
-            float packetPos = posInCycle / config.packetSize; // 0 to 1
+            // Soft edges avec sin8
+            float packetPos = posInCycle / config.packetSize;
             uint8_t brightness = sin8(packetPos * 128) * config.intensity / 255;
             
             CRGB packetPixel = config.packetColor;
             packetPixel.nscale8(brightness);
             
-            // Additive blend sur la jauge
-            addPixelClamped(ledIndex, packetPixel);
+            // Additive blend (ne remplace pas la jauge)
+            addPixelClamped(i, packetPixel);
         }
-        // Trail effect (traînée derrière le packet)
+        // Trail (traînée derrière le packet)
         else if (posInCycle < config.packetSize + config.trailLength) {
             float trailPos = (posInCycle - config.packetSize) / config.trailLength;
-            uint8_t brightness = (1.0f - trailPos) * config.intensity / 3;
+            uint8_t brightness = (1.0f - trailPos) * config.intensity / 4;
             
             CRGB trailPixel = config.packetColor;
             trailPixel.nscale8(brightness);
             
-            addPixelClamped(ledIndex, trailPixel);
+            addPixelClamped(i, trailPixel);
         }
     }
 }
@@ -462,19 +514,18 @@ bool StateController::isInTransition() const {
  *----------------------------------------------------------------------------*/
 
 void StateController::configureIdle(AnimationState& animState) {
-    // Gauge: orange, direction droite→gauche
+    // Gauge: orange, direction ANTI-HORAIRE (gauche vers droite visuellement = index croissant)
     animState.gauge.enabled = true;
     animState.gauge.baseColor = CRGB(255, 80, 0);   // Orange
-    animState.gauge.direction = DIR_RIGHT_TO_LEFT;  // Jauge de droite vers gauche
+    animState.gauge.direction = DIR_LEFT_TO_RIGHT;  // Remplissage anti-horaire
     animState.gauge.opacity = 255;
     
     // Pulse: battement de coeur - lent et organique
-    // BPM bas pour un effet calme (comme un coeur au repos)
     animState.pulse.enabled = true;
-    animState.pulse.minBPM = 30;          // 30 BPM à 0% énergie (très calme)
+    animState.pulse.minBPM = 30;          // 30 BPM à 0% énergie
     animState.pulse.maxBPM = 60;          // 60 BPM à 100% énergie
-    animState.pulse.minBrightness = 100;  // Repos: plus sombre pour contraste
-    animState.pulse.maxBrightness = 255;  // Peak: pleine luminosité
+    animState.pulse.minBrightness = 100;  // Repos
+    animState.pulse.maxBrightness = 255;  // Peak
     animState.pulse.affectsGaugeOnly = true;
     
     // Flow: désactivé en Idle
@@ -482,10 +533,10 @@ void StateController::configureIdle(AnimationState& animState) {
 }
 
 void StateController::configureGenerating(AnimationState& animState) {
-    // Gauge: orange, direction droite→gauche (se remplit)
+    // Gauge: orange, direction ANTI-HORAIRE
     animState.gauge.enabled = true;
     animState.gauge.baseColor = CRGB(255, 80, 0);   // Orange
-    animState.gauge.direction = DIR_RIGHT_TO_LEFT;  // Jauge de droite vers gauche
+    animState.gauge.direction = DIR_LEFT_TO_RIGHT;  // Remplissage anti-horaire
     animState.gauge.opacity = 255;
     
     // Pulse: mêmes paramètres que Idle
@@ -496,22 +547,23 @@ void StateController::configureGenerating(AnimationState& animState) {
     animState.pulse.maxBrightness = 255;
     animState.pulse.affectsGaugeOnly = true;
     
-    // Flow: actif, direction gauche→droite (invariante)
+    // Flow: actif, paquets arrivent (anti-horaire)
     animState.flow.enabled = true;
-    animState.flow.packetColor = CRGB(255, 120, 30);  // Orange plus clair
+    animState.flow.packetColor = CRGB(255, 140, 40);  // Orange plus clair
     animState.flow.direction = DIR_LEFT_TO_RIGHT;
-    animState.flow.speed = 55;
+    animState.flow.speed = 45;
     animState.flow.packetSize = 3;
-    animState.flow.packetSpacing = 10;
-    animState.flow.trailLength = 3;
-    animState.flow.intensity = 160;
+    animState.flow.packetSpacing = 12;
+    animState.flow.trailLength = 2;
+    animState.flow.intensity = 120;
 }
 
 void StateController::configureGiving(AnimationState& animState) {
-    // Gauge: orange, direction gauche→droite (se vide)
+    // Gauge: orange, direction DROITE→GAUCHE (commence à droite, se vide vers la gauche)
+    // Ainsi les paquets semblent "partir" du bout de la jauge
     animState.gauge.enabled = true;
     animState.gauge.baseColor = CRGB(255, 80, 0);   // Orange
-    animState.gauge.direction = DIR_LEFT_TO_RIGHT;  // Jauge de gauche vers droite
+    animState.gauge.direction = DIR_RIGHT_TO_LEFT;  // Jauge commence à DROITE
     animState.gauge.opacity = 255;
     
     // Pulse: mêmes paramètres que Idle
@@ -522,15 +574,15 @@ void StateController::configureGiving(AnimationState& animState) {
     animState.pulse.maxBrightness = 255;
     animState.pulse.affectsGaugeOnly = true;
     
-    // Flow: actif, direction gauche→droite (invariante)
+    // Flow: paquets qui partent de DROITE vers GAUCHE (quittent le rhizome)
     animState.flow.enabled = true;
-    animState.flow.packetColor = CRGB(255, 100, 20);  // Orange
-    animState.flow.direction = DIR_LEFT_TO_RIGHT;
-    animState.flow.speed = 65;
-    animState.flow.packetSize = 4;
-    animState.flow.packetSpacing = 8;
-    animState.flow.trailLength = 4;
-    animState.flow.intensity = 180;
+    animState.flow.packetColor = CRGB(255, 120, 30);  // Orange
+    animState.flow.direction = DIR_RIGHT_TO_LEFT;     // Droite → Gauche
+    animState.flow.speed = 50;
+    animState.flow.packetSize = 3;
+    animState.flow.packetSpacing = 10;
+    animState.flow.trailLength = 3;
+    animState.flow.intensity = 140;
 }
 
 void StateController::configureMiddleMan(AnimationState& animState) {
@@ -620,11 +672,17 @@ void AnimationManager::update(uint8_t rhizomeState, float energy) {
     float deltaTime = (currentTime - _animState.lastUpdateTime) / 1000.0f;
     _animState.lastUpdateTime = currentTime;
     
+    // Limiter deltaTime pour éviter les sauts
+    if (deltaTime > 0.1f) deltaTime = 0.1f;
+    
     // Update state controller (configures layers)
     _stateController.updateFromState(rhizomeState, energy, _animState);
     
     // Smooth energy transition for display
     updateDisplayedEnergy(energy, deltaTime);
+    
+    // Smooth gauge offset transition (sliding effect)
+    updateGaugeOffset(deltaTime);
     
     // Render all layers
     renderAllLayers();
@@ -632,6 +690,37 @@ void AnimationManager::update(uint8_t rhizomeState, float energy) {
     // Copy to output and show
     _renderer->applyToOutput(_leds);
     FastLED.show();
+}
+
+void AnimationManager::updateGaugeOffset(float deltaTime) {
+    // Transition fluide vers targetGaugeOffset avec courbe sinusoïdale
+    float diff = _animState.targetGaugeOffset - _animState.gaugeOffset;
+    
+    if (abs(diff) < 0.005f) {
+        // Arrivé à destination
+        _animState.gaugeOffset = _animState.targetGaugeOffset;
+        _animState.gaugeTransitioning = false;
+    } else {
+        _animState.gaugeTransitioning = true;
+        // Vitesse de transition: ~1.5 secondes pour traverser tout le strip
+        // Easing sinusoïdal: plus rapide au milieu, plus lent aux extrémités
+        float speed = 0.8f; // Unités par seconde (0 à 1 en ~1.25s)
+        
+        // Easing: on utilise la position actuelle pour moduler la vitesse
+        // Plus proche des bords = plus lent (smooth in/out)
+        float posInTransition = abs(diff);  // Distance restante
+        // Courbe sinusoïdale: sin(x * PI) donne une cloche, max au milieu
+        float easeFactor = sin(posInTransition * 3.14159f);
+        easeFactor = max(0.3f, easeFactor);  // Minimum 30% de vitesse
+        
+        float maxChange = speed * easeFactor * deltaTime;
+        
+        if (abs(diff) < maxChange) {
+            _animState.gaugeOffset = _animState.targetGaugeOffset;
+        } else {
+            _animState.gaugeOffset += (diff > 0 ? maxChange : -maxChange);
+        }
+    }
 }
 
 void AnimationManager::updateDisplayedEnergy(float targetEnergy, float deltaTime) {
@@ -656,8 +745,8 @@ void AnimationManager::renderAllLayers() {
     bool eventActive = _renderer->renderEventLayer(_animState.event, currentTime);
     
     if (!eventActive) {
-        // Layer 0: Energy Gauge (base)
-        _renderer->renderGaugeLayer(_animState.gauge, _animState.displayedEnergy);
+        // Layer 0: Energy Gauge (base) avec offset pour transition fluide
+        _renderer->renderGaugeLayer(_animState.gauge, _animState.displayedEnergy, _animState.gaugeOffset);
         
         // Calculate gauge LED count for pulse layer
         uint8_t gaugeLedCount = _renderer->energyToLedCount(_animState.displayedEnergy);

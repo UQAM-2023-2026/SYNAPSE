@@ -22,7 +22,7 @@ def onOffToOn(channel: Channel, sampleIndex: int, val: float,
 def whileOn(channel: Channel, sampleIndex: int, val: float, 
             prev: float):
 	
-	op('constant4').par.const2value = 1
+	
 
 	"""
 	Called every frame while a channel is non-zero.
@@ -50,8 +50,6 @@ def onOnToOff(channel: Channel, sampleIndex: int, val: float,
 
 def whileOff(channel: Channel, sampleIndex: int, val: float, 
              prev: float):
-	
-	op('constant4').par.const2value = 0
 
 	"""
 	Called every frame while a channel is 0.
@@ -65,8 +63,8 @@ def whileOff(channel: Channel, sampleIndex: int, val: float,
 	return
 
 def onValueChange(channel, sampleIndex, val, prev):
-	rhiz_id = op('valRhiz')[0]
-	rhiz_energy = op('valRhiz')[1]
+	rhiz_energy = op('valRhiz')[0]
+	rhiz_id = op('valRhiz')[1]
 	node_id = op('valRhiz')[2]
 	node_level = op('valRhiz')[3]
 	
