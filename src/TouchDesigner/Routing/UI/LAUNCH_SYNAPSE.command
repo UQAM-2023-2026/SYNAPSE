@@ -5,4 +5,4 @@
 cd "$(dirname "$0")"
 
 # Run launcher
-python3 launch.py
+caffeinate -ims python3 launch.py
