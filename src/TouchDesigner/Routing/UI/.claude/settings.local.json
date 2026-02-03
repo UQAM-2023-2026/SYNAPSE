@@ -11,7 +11,8 @@
       "Bash(timeout:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(python server.py:*)"
+      "Bash(python server.py:*)",
+      "Bash(ls:*)"
     ]
   }
 }
