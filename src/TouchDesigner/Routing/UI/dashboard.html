@@ -579,13 +579,13 @@
         .breath-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: var(--space-4);
+            gap: var(--space-2);
         }
 
         .breath-card {
             display: flex;
             flex-direction: column;
-            padding: var(--space-3);
+            padding: var(--space-2);
             background: var(--bg-tertiary);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-sm);
@@ -597,7 +597,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: var(--space-2);
+            margin-bottom: 4px;
         }
 
         .breath-label {
@@ -616,7 +616,7 @@
         }
 
         .lfo-visualizer {
-            height: 60px;
+            height: 100px;
             position: relative;
             background: var(--bg-secondary);
             border-radius: var(--radius-sm);
@@ -627,6 +627,7 @@
             width: 100%;
             height: 100%;
             display: block;
+            object-fit: contain;
         }
 
         .lfo-grid {
@@ -979,14 +980,14 @@
         .delta-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: var(--space-2);
+            gap: 4px;
         }
 
         .delta-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: var(--space-2) var(--space-2);
+            padding: 4px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-sm);
@@ -994,15 +995,15 @@
         }
 
         .delta-label {
-            font-size: 8px;
+            font-size: 7px;
             color: var(--text-tertiary);
             letter-spacing: 0.05em;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
 
         .delta-value {
             font-family: var(--font-mono);
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
             color: var(--text-primary);
             letter-spacing: -0.02em;
@@ -1207,7 +1208,7 @@
                                 <div class="lfo-grid-line"></div>
                                 <div class="lfo-grid-line"></div>
                             </div>
-                            <canvas class="lfo-canvas" id="lfo-s-breath" width="600" height="160"></canvas>
+                            <canvas class="lfo-canvas" id="lfo-s-breath"></canvas>
                         </div>
                     </div>
                     <div class="breath-card">
@@ -1223,7 +1224,7 @@
                                 <div class="lfo-grid-line"></div>
                                 <div class="lfo-grid-line"></div>
                             </div>
-                            <canvas class="lfo-canvas" id="lfo-i-breath" width="600" height="160"></canvas>
+                            <canvas class="lfo-canvas" id="lfo-i-breath"></canvas>
                         </div>
                     </div>
                 </div>
@@ -1244,12 +1245,28 @@
                         <span class="delta-value" id="delta-s2">0.00</span>
                     </div>
                     <div class="delta-item">
+                        <span class="delta-label">S3</span>
+                        <span class="delta-value" id="delta-s3">0.00</span>
+                    </div>
+                    <div class="delta-item">
+                        <span class="delta-label">S4</span>
+                        <span class="delta-value" id="delta-s4">0.00</span>
+                    </div>
+                    <div class="delta-item">
                         <span class="delta-label">I1</span>
                         <span class="delta-value" id="delta-i1">0.00</span>
                     </div>
                     <div class="delta-item">
                         <span class="delta-label">I2</span>
                         <span class="delta-value" id="delta-i2">0.00</span>
+                    </div>
+                    <div class="delta-item">
+                        <span class="delta-label">I3</span>
+                        <span class="delta-value" id="delta-i3">0.00</span>
+                    </div>
+                    <div class="delta-item">
+                        <span class="delta-label">I4</span>
+                        <span class="delta-value" id="delta-i4">0.00</span>
                     </div>
                 </div>
             </div>
@@ -1373,12 +1390,17 @@
             '/_samplerate': { type: 'samplerate', id: 'sampleRate' },
             '/S1_Delta': { type: 'delta', id: 'delta-s1' },
             '/S2_Delta': { type: 'delta', id: 'delta-s2' },
+            '/S3_Delta': { type: 'delta', id: 'delta-s3' },
+            '/S4_Delta': { type: 'delta', id: 'delta-s4' },
             '/I1_Delta': { type: 'delta', id: 'delta-i1' },
-            '/I2_Delta': { type: 'delta', id: 'delta-i2' }
+            '/I2_Delta': { type: 'delta', id: 'delta-i2' },
+            '/I3_Delta': { type: 'delta', id: 'delta-i3' },
+            '/I4_Delta': { type: 'delta', id: 'delta-i4' }
         };
 
-        // Connection settings
-        let wsIp = localStorage.getItem('synapse_ws_ip') || 'localhost';
+        // Connection settings - auto-detect from page URL
+        const defaultWsIp = window.location.hostname || 'localhost';
+        let wsIp = localStorage.getItem('synapse_ws_ip') || defaultWsIp;
         let wsPort = localStorage.getItem('synapse_ws_port') || '8765';
         let autoReconnect = true;
         let reconnectTimeout = null;
@@ -1463,8 +1485,8 @@
             const wsIpInput = document.getElementById('wsIpInput');
             const wsPortInput = document.getElementById('wsPortInput');
 
-            // Load saved settings
-            wsIpInput.value = wsIp;
+            // Load saved settings (use current hostname as default)
+            wsIpInput.value = wsIp || window.location.hostname || 'localhost';
             wsPortInput.value = wsPort;
 
             toggle.addEventListener('click', (e) => {
@@ -1658,29 +1680,40 @@
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
 
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
+            const rect = canvas.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
 
+            // Resize canvas to match display size
+            if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+            }
+
+            const ctx = canvas.getContext('2d');
+            const width = rect.width;
+            const height = rect.height;
+
             // Clear canvas
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(dpr, dpr);
             ctx.clearRect(0, 0, width, height);
 
             if (buffer.length < 2) return;
 
-            // Draw waveform
+            // Draw waveform (fixed range 0-1)
             ctx.beginPath();
             ctx.strokeStyle = '#4AFFB0';
-            ctx.lineWidth = 2 * dpr;
+            ctx.lineWidth = 2;
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
 
             const stepX = width / (LFO_BUFFER_SIZE - 1);
+            const padding = 4;
+            const drawHeight = height - padding * 2;
 
             for (let i = 0; i < buffer.length; i++) {
                 const x = i * stepX;
-                // Invert Y because canvas Y goes down, but we want high values at top
-                const y = height - (buffer[i] * height);
+                const y = padding + drawHeight * (1 - buffer[i]);
 
                 if (i === 0) {
                     ctx.moveTo(x, y);
@@ -1691,49 +1724,28 @@
 
             ctx.stroke();
 
-            // Draw glow effect
-            ctx.shadowBlur = 15;
+            // Glow
+            ctx.shadowBlur = 8;
             ctx.shadowColor = 'rgba(74, 255, 176, 0.5)';
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Draw current value indicator (dot at the end)
+            // Dot at end
             if (buffer.length > 0) {
-                const lastValue = buffer[buffer.length - 1];
+                const lastVal = buffer[buffer.length - 1];
                 const lastX = (buffer.length - 1) * stepX;
-                const lastY = height - (lastValue * height);
+                const lastY = padding + drawHeight * (1 - lastVal);
 
                 ctx.beginPath();
-                ctx.arc(lastX, lastY, 4 * dpr, 0, Math.PI * 2);
+                ctx.arc(lastX, lastY, 3, 0, Math.PI * 2);
                 ctx.fillStyle = '#4AFFB0';
                 ctx.fill();
-
-                // Glow for the dot
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = 'rgba(74, 255, 176, 0.8)';
-                ctx.fill();
-                ctx.shadowBlur = 0;
             }
         }
 
         // Initialize canvases
         function initLFOCanvases() {
-            const canvases = ['lfo-s-breath', 'lfo-i-breath'];
-            canvases.forEach(canvasId => {
-                const canvas = document.getElementById(canvasId);
-                if (canvas) {
-                    const ctx = canvas.getContext('2d');
-                    const dpr = window.devicePixelRatio || 1;
-
-                    // Scale canvas for high DPI displays
-                    const rect = canvas.getBoundingClientRect();
-                    canvas.width = rect.width * dpr;
-                    canvas.height = rect.height * dpr;
-                    ctx.scale(dpr, dpr);
-
-                    lfoCanvases[canvasId] = ctx;
-                }
-            });
+            // Canvas sizing is handled in drawLFOWaveform
         }
 
         // Update message rate counter
