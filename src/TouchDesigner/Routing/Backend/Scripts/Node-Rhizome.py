@@ -22,7 +22,7 @@ def onOffToOn(channel: Channel, sampleIndex: int, val: float,
 def whileOn(channel: Channel, sampleIndex: int, val: float, 
             prev: float):
 	
-	op('constant4').par.const2value = 1
+	
 
 	"""
 	Called every frame while a channel is non-zero.
@@ -50,8 +50,6 @@ def onOnToOff(channel: Channel, sampleIndex: int, val: float,
 
 def whileOff(channel: Channel, sampleIndex: int, val: float, 
              prev: float):
-	
-	op('constant4').par.const2value = 0
 
 	"""
 	Called every frame while a channel is 0.
