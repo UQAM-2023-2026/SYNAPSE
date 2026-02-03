@@ -52,13 +52,11 @@ void onConnected1() {
   Serial.println("---");
   Serial.println("[CONN] Pogopin 1 connected!");
   
-  float drainInfra = pNode->getDrainRateInfra();
-  oscNode1.sendMessage("/node", "f", drainInfra);
+  oscNode1.sendMessage("/node", "f", pNode->getDrainRateInfra());
   lastNode1_Sent = millis();
-  lastSentDrainInfra = drainInfra;
   
   Serial.print("[SEND] Pogopin 1 - /node drain_infra=");
-  Serial.println(drainInfra);
+  Serial.println(pNode->getDrainRateInfra());
   Serial.println("---");
 }
 
@@ -77,13 +75,11 @@ void onConnected2() {
   Serial.println("---");
   Serial.println("[CONN] Pogopin 2 connected!");
   
-  float drainSupra = pNode->getDrainRateSupra();
-  oscNode2.sendMessage("/node", "f", drainSupra);
+  oscNode2.sendMessage("/node", "f", pNode->getDrainRateSupra());
   lastNode2_Sent = millis();
-  lastSentDrainSupra = drainSupra;
   
   Serial.print("[SEND] Pogopin 2 - /node drain_supra=");
-  Serial.println(drainSupra);
+  Serial.println(pNode->getDrainRateSupra());
   Serial.println("---");
 }
 
