@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SYNAPSE · Data Routing Monitor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             /* Core palette - Ultra refined grayscale */
@@ -47,8 +50,8 @@
             /* Spacing system (4px base) */
             --space-1: 4px;
             --space-2: 8px;
-            --space-3: 12px;
-            --space-4: 16px;
+            --space-3: 10px;
+            --space-4: 12px;
             --space-5: 20px;
             --space-6: 24px;
             --space-8: 32px;
@@ -156,8 +159,15 @@
         }
 
         @keyframes pulse-led {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
         }
 
         .metric-inline {
@@ -201,10 +211,9 @@
             right: 0;
             height: 1px;
             background: linear-gradient(90deg,
-                transparent,
-                rgba(255, 255, 255, 0.1),
-                transparent
-            );
+                    transparent,
+                    rgba(255, 255, 255, 0.1),
+                    transparent);
             opacity: 0;
             transition: opacity var(--transition-base);
         }
@@ -214,10 +223,21 @@
         }
 
         /* Grid spans */
-        .span-3 { grid-column: span 3; }
-        .span-4 { grid-column: span 4; }
-        .span-6 { grid-column: span 6; }
-        .span-12 { grid-column: span 12; }
+        .span-3 {
+            grid-column: span 3;
+        }
+
+        .span-4 {
+            grid-column: span 4;
+        }
+
+        .span-6 {
+            grid-column: span 6;
+        }
+
+        .span-12 {
+            grid-column: span 12;
+        }
 
         /* Card Header */
         .card-header {
@@ -388,8 +408,15 @@
         }
 
         @keyframes pulse-warning {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
         }
 
         .timer-bar {
@@ -487,7 +514,7 @@
         }
 
         .lfo-visualizer {
-            height: 80px;
+            height: 60px;
             position: relative;
             background: var(--bg-secondary);
             border-radius: var(--radius-sm);
@@ -519,11 +546,25 @@
             height: 1px;
         }
 
-        .lfo-grid-line:nth-child(1) { top: 0; }
-        .lfo-grid-line:nth-child(2) { top: 25%; }
-        .lfo-grid-line:nth-child(3) { top: 50%; }
-        .lfo-grid-line:nth-child(4) { top: 75%; }
-        .lfo-grid-line:nth-child(5) { bottom: 0; }
+        .lfo-grid-line:nth-child(1) {
+            top: 0;
+        }
+
+        .lfo-grid-line:nth-child(2) {
+            top: 25%;
+        }
+
+        .lfo-grid-line:nth-child(3) {
+            top: 50%;
+        }
+
+        .lfo-grid-line:nth-child(4) {
+            top: 75%;
+        }
+
+        .lfo-grid-line:nth-child(5) {
+            bottom: 0;
+        }
 
         /* Progress Bars */
         .progress-group {
@@ -586,8 +627,13 @@
         }
 
         @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
         }
 
         /* Node Grid */
@@ -743,12 +789,29 @@
         }
 
         /* Fixed 1280x720 layout - no responsive needed */
-        .span-2 { grid-column: span 2; }
-        .span-3 { grid-column: span 3; }
-        .span-4 { grid-column: span 4; }
-        .span-6 { grid-column: span 6; }
-        .span-8 { grid-column: span 8; }
-        .span-12 { grid-column: span 12; }
+        .span-2 {
+            grid-column: span 2;
+        }
+
+        .span-3 {
+            grid-column: span 3;
+        }
+
+        .span-4 {
+            grid-column: span 4;
+        }
+
+        .span-6 {
+            grid-column: span 6;
+        }
+
+        .span-8 {
+            grid-column: span 8;
+        }
+
+        .span-12 {
+            grid-column: span 12;
+        }
 
         /* Animations - Staggered entrance */
         @keyframes fadeInUp {
@@ -756,6 +819,7 @@
                 opacity: 0;
                 transform: translateY(5px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -766,18 +830,43 @@
             animation: fadeInUp 250ms ease-out backwards;
         }
 
-        .card:nth-child(1) { animation-delay: 0ms; }
-        .card:nth-child(2) { animation-delay: 30ms; }
-        .card:nth-child(3) { animation-delay: 60ms; }
-        .card:nth-child(4) { animation-delay: 90ms; }
-        .card:nth-child(5) { animation-delay: 120ms; }
-        .card:nth-child(6) { animation-delay: 150ms; }
-        .card:nth-child(7) { animation-delay: 180ms; }
+        .card:nth-child(1) {
+            animation-delay: 0ms;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 30ms;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 60ms;
+        }
+
+        .card:nth-child(4) {
+            animation-delay: 90ms;
+        }
+
+        .card:nth-child(5) {
+            animation-delay: 120ms;
+        }
+
+        .card:nth-child(6) {
+            animation-delay: 150ms;
+        }
+
+        .card:nth-child(7) {
+            animation-delay: 180ms;
+        }
 
         /* Value update flash */
         @keyframes value-flash {
-            0% { color: var(--accent-signal); }
-            100% { color: var(--text-primary); }
+            0% {
+                color: var(--accent-signal);
+            }
+
+            100% {
+                color: var(--text-primary);
+            }
         }
 
         .value-update {
@@ -785,6 +874,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="app">
         <!-- Header -->
@@ -1102,6 +1192,7 @@
             ws.onopen = () => {
                 document.getElementById('wsLed').classList.add('active');
                 document.getElementById('wsStatus').textContent = 'Connected';
+                document.getElementById('wsStatus').title = `Connected to ${wsUrl}`;
             };
 
             ws.onmessage = (event) => {
@@ -1112,7 +1203,8 @@
 
             ws.onclose = () => {
                 document.getElementById('wsLed').classList.remove('active');
-                document.getElementById('wsStatus').textContent = 'Disconnected';
+                document.getElementById('wsStatus').textContent = 'Disconnected'; // + ' (' + wsUrl + ')';
+                document.getElementById('wsStatus').title = `Trying to connect to ${wsUrl}`;
                 setTimeout(connect, 2000);
             };
 
@@ -1353,4 +1445,5 @@
         connect();
     </script>
 </body>
+
 </html>
