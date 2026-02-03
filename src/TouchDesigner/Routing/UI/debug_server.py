@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
 Debug OSC/WebSocket Server with verbose logging
+Usage: python debug_server.py [--osc-port PORT] [--ws-port PORT]
 """
 
 import asyncio
 import json
 import logging
+import argparse
 from datetime import datetime
 from pythonosc import dispatcher, osc_server
 import websockets
@@ -128,23 +130,20 @@ async def start_websocket_server(ip, port):
         await asyncio.Future()
 
 
-async def main():
+async def main(osc_port, ws_port):
     """Main function"""
     global event_loop
 
-    event_loop = asyncio.get_event_loop()
+    event_loop = asyncio.get_running_loop()
     logger.info("=" * 60)
     logger.info("SYNAPSE OSC DEBUG SERVER")
     logger.info("=" * 60)
 
     osc_ip = "0.0.0.0"
-    osc_port = 6970
     ws_ip = "0.0.0.0"
-    ws_port = 8765
 
     logger.info(f"OSC will listen on: {osc_ip}:{osc_port}")
     logger.info(f"WebSocket will listen on: {ws_ip}:{ws_port}")
-    logger.info(f"Web UI: http://10.0.2.245:8000")
     logger.info("=" * 60)
 
     # Start OSC server in thread
@@ -160,11 +159,19 @@ async def main():
     await asyncio.sleep(0.5)
 
     # Start WebSocket server
-    await start_websocket_server(ws_ip, ws_port)
+    logger.info(f"[WS] Starting WebSocket server on {ws_ip}:{ws_port}")
+    server = await websockets.serve(websocket_handler, ws_ip, ws_port)
+    logger.info(f"[WS] WebSocket Server listening and ready")
+    await server.wait_closed()
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='SYNAPSE OSC/WebSocket Server')
+    parser.add_argument('--osc-port', type=int, default=6970, help='OSC listening port (default: 6970)')
+    parser.add_argument('--ws-port', type=int, default=8765, help='WebSocket port (default: 8765)')
+    args = parser.parse_args()
+
     try:
-        asyncio.run(main())
+        asyncio.run(main(args.osc_port, args.ws_port))
     except KeyboardInterrupt:
         logger.info("\nServer stopped by user")

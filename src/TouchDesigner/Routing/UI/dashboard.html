@@ -104,6 +104,7 @@
             padding-bottom: var(--space-3);
             border-bottom: 1px solid var(--border-subtle);
             flex-shrink: 0;
+            position: relative;
         }
 
         .brand {
@@ -131,8 +132,109 @@
 
         .status-cluster {
             display: flex;
-            gap: var(--space-6);
+            gap: var(--space-4);
             align-items: center;
+        }
+
+        /* Settings Panel */
+        .settings-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 4px 8px;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .settings-toggle:hover {
+            border-color: var(--border-medium);
+            color: var(--text-primary);
+        }
+
+        .settings-panel {
+            position: absolute;
+            top: 45px;
+            right: 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            z-index: 100;
+            display: none;
+            min-width: 260px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .settings-panel.open {
+            display: block;
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
+        }
+
+        .settings-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-label {
+            font-size: 9px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            min-width: 30px;
+        }
+
+        .settings-input {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            padding: 6px 8px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            outline: none;
+            transition: border-color var(--transition-base);
+        }
+
+        .settings-input:focus {
+            border-color: var(--accent-signal);
+        }
+
+        .settings-input.ip {
+            width: 120px;
+        }
+
+        .settings-input.port {
+            width: 60px;
+        }
+
+        .settings-btn {
+            background: var(--accent-signal);
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            color: var(--bg-primary);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .settings-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .settings-btn.disconnect {
+            background: var(--accent-danger);
         }
 
         .status-indicator {
@@ -872,6 +974,47 @@
         .value-update {
             animation: value-flash 250ms ease-out;
         }
+
+        /* Delta Display */
+        .delta-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-2);
+        }
+
+        .delta-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--space-2) var(--space-2);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-base);
+        }
+
+        .delta-label {
+            font-size: 8px;
+            color: var(--text-tertiary);
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+
+        .delta-value {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .delta-value.positive {
+            color: var(--accent-signal);
+        }
+
+        .delta-value.negative {
+            color: var(--accent-danger);
+        }
     </style>
 </head>
 
@@ -894,6 +1037,28 @@
                 </div>
                 <div class="status-indicator">
                     <span class="metric-inline" id="updateRate">0 msg/s</span>
+                </div>
+                <button class="settings-toggle" id="settingsToggle">CONFIG</button>
+            </div>
+
+            <!-- Settings Panel -->
+            <div class="settings-panel" id="settingsPanel">
+                <div class="settings-row">
+                    <span class="settings-label">WS</span>
+                    <input type="text" class="settings-input ip" id="wsIpInput" placeholder="IP" value="localhost">
+                    <span style="color: var(--text-tertiary)">:</span>
+                    <input type="text" class="settings-input port" id="wsPortInput" placeholder="Port" value="8765">
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">OSC</span>
+                    <input type="text" class="settings-input ip" id="oscIpInput" placeholder="IP" value="localhost" disabled style="opacity:0.5">
+                    <span style="color: var(--text-tertiary)">:</span>
+                    <input type="text" class="settings-input port" id="oscPortInput" placeholder="Port" value="6970" disabled style="opacity:0.5">
+                </div>
+                <div class="settings-row" style="justify-content: flex-end; gap: var(--space-3);">
+                    <button class="settings-btn" id="resetBtn" style="background: var(--text-tertiary);">RESET</button>
+                    <button class="settings-btn disconnect" id="disconnectBtn">STOP</button>
+                    <button class="settings-btn" id="connectBtn">CONNECT</button>
                 </div>
             </div>
         </header>
@@ -1064,8 +1229,33 @@
                 </div>
             </div>
 
+            <!-- Deltas -->
+            <div class="card span-4">
+                <div class="card-header">
+                    <span class="card-title">Deltas</span>
+                </div>
+                <div class="delta-grid">
+                    <div class="delta-item">
+                        <span class="delta-label">S1</span>
+                        <span class="delta-value" id="delta-s1">0.00</span>
+                    </div>
+                    <div class="delta-item">
+                        <span class="delta-label">S2</span>
+                        <span class="delta-value" id="delta-s2">0.00</span>
+                    </div>
+                    <div class="delta-item">
+                        <span class="delta-label">I1</span>
+                        <span class="delta-value" id="delta-i1">0.00</span>
+                    </div>
+                    <div class="delta-item">
+                        <span class="delta-label">I2</span>
+                        <span class="delta-value" id="delta-i2">0.00</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Nodes -->
-            <div class="card span-12">
+            <div class="card span-8">
                 <div class="card-header">
                     <span class="card-title">Node Channels</span>
                     <span class="card-badge">4 Nodes × 2 Channels</span>
@@ -1180,14 +1370,34 @@
             '/total': { type: 'value', id: 'val-total' },
             '/S_Breath': { type: 'lfo', id: 'lfo-s-breath', textId: 'val-s-breath-text' },
             '/I_Breath': { type: 'lfo', id: 'lfo-i-breath', textId: 'val-i-breath-text' },
-            '/_samplerate': { type: 'samplerate', id: 'sampleRate' }
+            '/_samplerate': { type: 'samplerate', id: 'sampleRate' },
+            '/S1_Delta': { type: 'delta', id: 'delta-s1' },
+            '/S2_Delta': { type: 'delta', id: 'delta-s2' },
+            '/I1_Delta': { type: 'delta', id: 'delta-i1' },
+            '/I2_Delta': { type: 'delta', id: 'delta-i2' }
         };
 
-        function connect() {
-            const wsHost = window.location.hostname || '10.0.2.245';
-            const wsUrl = `ws://${wsHost}:8765`;
+        // Connection settings
+        let wsIp = localStorage.getItem('synapse_ws_ip') || 'localhost';
+        let wsPort = localStorage.getItem('synapse_ws_port') || '8765';
+        let autoReconnect = true;
+        let reconnectTimeout = null;
 
-            ws = new WebSocket(wsUrl);
+        function connect() {
+            // Clear any pending reconnect
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout);
+                reconnectTimeout = null;
+            }
+
+            const wsUrl = `ws://${wsIp}:${wsPort}`;
+
+            try {
+                ws = new WebSocket(wsUrl);
+            } catch (e) {
+                console.error('WebSocket creation failed:', e);
+                return;
+            }
 
             ws.onopen = () => {
                 document.getElementById('wsLed').classList.add('active');
@@ -1203,14 +1413,96 @@
 
             ws.onclose = () => {
                 document.getElementById('wsLed').classList.remove('active');
-                document.getElementById('wsStatus').textContent = 'Disconnected'; // + ' (' + wsUrl + ')';
+                document.getElementById('wsStatus').textContent = 'Disconnected';
                 document.getElementById('wsStatus').title = `Trying to connect to ${wsUrl}`;
-                setTimeout(connect, 2000);
+                if (autoReconnect) {
+                    reconnectTimeout = setTimeout(connect, 2000);
+                }
             };
 
             ws.onerror = (error) => {
                 console.error('WebSocket error:', error);
             };
+        }
+
+        function disconnect() {
+            autoReconnect = false;
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout);
+                reconnectTimeout = null;
+            }
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+            document.getElementById('wsLed').classList.remove('active');
+            document.getElementById('wsStatus').textContent = 'Stopped';
+        }
+
+        function reconnect() {
+            autoReconnect = true;
+            wsIp = document.getElementById('wsIpInput').value || '192.168.10.146';
+            wsPort = document.getElementById('wsPortInput').value || '8765';
+
+            // Save to localStorage
+            localStorage.setItem('synapse_ws_ip', wsIp);
+            localStorage.setItem('synapse_ws_port', wsPort);
+
+            if (ws) {
+                ws.close();
+            }
+            connect();
+        }
+
+        // Settings panel toggle
+        function initSettingsPanel() {
+            const toggle = document.getElementById('settingsToggle');
+            const panel = document.getElementById('settingsPanel');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const wsIpInput = document.getElementById('wsIpInput');
+            const wsPortInput = document.getElementById('wsPortInput');
+
+            // Load saved settings
+            wsIpInput.value = wsIp;
+            wsPortInput.value = wsPort;
+
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                panel.classList.toggle('open');
+            });
+
+            // Close panel when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!panel.contains(e.target) && e.target !== toggle) {
+                    panel.classList.remove('open');
+                }
+            });
+
+            connectBtn.addEventListener('click', () => {
+                reconnect();
+                panel.classList.remove('open');
+            });
+
+            disconnectBtn.addEventListener('click', () => {
+                disconnect();
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                localStorage.removeItem('synapse_ws_ip');
+                localStorage.removeItem('synapse_ws_port');
+                location.reload();
+            });
+
+            // Allow Enter key to connect
+            [wsIpInput, wsPortInput].forEach(input => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        reconnect();
+                        panel.classList.remove('open');
+                    }
+                });
+            });
         }
 
         function updateDisplay(message) {
@@ -1347,6 +1639,17 @@
                 case 'samplerate':
                     element.textContent = Math.round(value) + ' Hz';
                     break;
+
+                case 'delta':
+                    const deltaVal = typeof value === 'number' ? value.toFixed(2) : value;
+                    element.textContent = deltaVal;
+                    element.classList.remove('positive', 'negative');
+                    if (value > 0.01) {
+                        element.classList.add('positive');
+                    } else if (value < -0.01) {
+                        element.classList.add('negative');
+                    }
+                    break;
             }
         }
 
@@ -1442,6 +1745,7 @@
 
         // Initialize
         initLFOCanvases();
+        initSettingsPanel();
         connect();
     </script>
 </body>

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(where:*)",
+      "Bash(C:ProgramDataanaconda3python.exe -m pip install python-osc websockets)",
+      "Bash(python -m pip install:*)",
+      "Bash(python -c:*)",
+      "Bash(taskkill:*)",
+      "Bash(python debug_server.py:*)",
+      "Bash(timeout:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(python server.py:*)"
+    ]
+  }
+}
