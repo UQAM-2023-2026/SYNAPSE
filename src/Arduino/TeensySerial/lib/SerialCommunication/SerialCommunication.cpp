@@ -169,6 +169,9 @@ void completeDiscovery() {
   discoveryMode = false;
   pRhizome->setState(GENERATING);
   
+  // Trigger haptic feedback for generation start
+  hapticSystem.onGenerationStart();
+  
   // Send discover_done to RIGHT (propagate around the loop)
   if (connectionRightState) {
     oscSlipSend.sendMessage("/discover_done", "i", seenCount);
@@ -259,6 +262,9 @@ void oscMessageReceived(MicroOscMessage &msg) {
       pRhizome->setState(GENERATING);
       discoveryCompleted = true;
       discoveryMode = false;
+      
+      // Trigger haptic feedback for generation start
+      hapticSystem.onGenerationStart();
       
       // Forward to right ONLY if we just completed (one-time propagation)
       if (connectionRightState) {
@@ -626,9 +632,6 @@ void onLeftConnected() {
   Serial.println("[CONN] Left connected");
   listening = true;
   
-  // Haptic feedback on left motor
-  hapticSystem.triggerLeftConnection();
-  
   // If we're GIVING_TO_NODE and a rhizome connects behind us,
   // we need to become MIDDLEMAN and tell them to drain
   if (pRhizome->getState() == GIVING_TO_NODE && connectedToNode) {
@@ -675,9 +678,6 @@ void onLeftDisconnected() {
 
 void onRightConnected() {
   Serial.println("[CONN] Right connected");
-  
-  // Haptic feedback on right motor
-  hapticSystem.triggerRightConnection();
   
   // Always send discover_list when right connects
   discoveryMode = true;

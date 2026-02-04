@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 #include <RhizomeStateAndID.h>
+#include <HapticSystem.h>
 static RhizomeStateAndID *pRhizome = nullptr; // pointer to external rhizome object
 
 // ==========================================================
@@ -81,11 +82,17 @@ void updateEnergy() {
   }
   
   if (pRhizome->getState() == GENERATING) {
-    // Génération d’énergie entre rhizomes connectés
+    // Energy generation when rhizomes form a loop
     energy += generationRate;
-    // Serial.print("GENERATING energy: ");
-    // Serial.println(generationRate);
-    if (energy > maxEnergy) energy = maxEnergy;
+    if (energy >= maxEnergy) {
+      // Clamp to max
+      bool wasBelow100 = (energy - generationRate) < maxEnergy;
+      energy = maxEnergy;
+      // Trigger celebration when just reached 100%
+      if (wasBelow100) {
+        hapticSystem.onFullyCharged();
+      }
+    }
 
   } else if (pRhizome->getState() == GIVING_TO_NODE && nodeDrainRate > 0) {
     // Si connecté au nœud, celui-ci peut drainer l’énergie sous 10%

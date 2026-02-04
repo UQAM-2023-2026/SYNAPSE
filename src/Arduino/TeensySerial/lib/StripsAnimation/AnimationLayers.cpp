@@ -5,6 +5,7 @@
 
 #include "AnimationLayers.h"
 #include <RhizomeStateAndID.h>
+#include <HeartbeatSystem.h>
 
 /*==============================================================================
  * LayerRenderer Implementation
@@ -70,97 +71,23 @@ void LayerRenderer::renderGaugeLayer(const GaugeLayerConfig& config, float energ
 
 /*------------------------------------------------------------------------------
  * Pulse Layer - Heartbeat brightness modulation
- * Vraie courbe de battement de cœur avec DOUBLE PIC:
- * - Systole: pic FORT et rapide (noire pointée)
- * - Diastole: pic plus FAIBLE et court (croche)
- * - Long temps de repos avant le prochain battement
+ * Uses HeartbeatSystem for synchronized timing across all systems:
+ * - LED strip brightness
+ * - Haptic motors
+ * - Heartbeat indicator LED (pin 2)
  *----------------------------------------------------------------------------*/
-
-// External function to get heartbeat callback
-extern void (*getHeartbeatCallback())(void);
 
 void LayerRenderer::renderPulseLayer(const PulseLayerConfig& config, float energy, uint8_t gaugeLedCount) {
     if (!config.enabled) return;
     
-    // Variables statiques pour un timing stable
-    static uint32_t lastPulseUpdate = 0;
-    static float pulsePhase = 0.0f;  // 0.0 - 1.0, accumulé
-    static float previousPhase = 0.0f;  // Pour détecter le début d'un nouveau battement
+    // Get heartbeat phase from centralized HeartbeatSystem
+    const HeartbeatPhase& phase = heartbeatSystem.getPhase();
     
-    uint32_t now = millis();
-    float deltaTime = (now - lastPulseUpdate) / 1000.0f;
-    lastPulseUpdate = now;
-    
-    // Limiter deltaTime pour éviter les gros sauts
-    if (deltaTime > 0.1f) deltaTime = 0.1f;
-    
-    // Calculate BPM based on energy (higher energy = faster pulse)
-    uint8_t currentBPM = map((uint8_t)constrain(energy, 0, 100), 0, 100, config.minBPM, config.maxBPM);
-    
-    // Avancer la phase selon le BPM
-    float beatsPerSecond = currentBPM / 60.0f;
-    previousPhase = pulsePhase;
-    pulsePhase += beatsPerSecond * deltaTime;
-    
-    // Détecter le début d'un nouveau battement (phase wrap around)
-    bool newBeatStarted = false;
-    while (pulsePhase >= 1.0f) {
-        pulsePhase -= 1.0f;
-        newBeatStarted = true;
-    }
-    
-    // Appeler le callback haptique au début de chaque battement
-    if (newBeatStarted) {
-        void (*callback)(void) = getHeartbeatCallback();
-        if (callback != nullptr) {
-            callback();
-        }
-    }
-    
-    // Courbe de battement de cœur DOUBLE PIC (noire pointée + croche):
-    // 0.00 - 0.08 : Montée rapide SYSTOLE (pic principal)
-    // 0.08 - 0.18 : Descente systole
-    // 0.18 - 0.22 : Petit creux entre les deux pics
-    // 0.22 - 0.28 : Montée DIASTOLE (pic secondaire, plus faible)
-    // 0.28 - 0.38 : Descente diastole
-    // 0.38 - 1.00 : Long repos
-    
-    float normalizedBrightness;
-    
-    if (pulsePhase < 0.08f) {
-        // Montée rapide SYSTOLE (pic fort)
-        float t = pulsePhase / 0.08f;
-        normalizedBrightness = t * (2.0f - t);  // ease-out, atteint 1.0
-    }
-    else if (pulsePhase < 0.18f) {
-        // Descente systole
-        float t = (pulsePhase - 0.08f) / 0.10f;
-        normalizedBrightness = 1.0f - t * 0.7f;  // Descend à 0.3
-    }
-    else if (pulsePhase < 0.22f) {
-        // Petit creux entre les pics
-        normalizedBrightness = 0.3f;
-    }
-    else if (pulsePhase < 0.28f) {
-        // Montée DIASTOLE (pic secondaire, 60% du pic principal)
-        float t = (pulsePhase - 0.22f) / 0.06f;
-        normalizedBrightness = 0.3f + t * 0.3f;  // Monte à 0.6
-    }
-    else if (pulsePhase < 0.38f) {
-        // Descente diastole vers repos
-        float t = (pulsePhase - 0.28f) / 0.10f;
-        normalizedBrightness = 0.6f * (1.0f - t);  // Descend à 0
-    }
-    else {
-        // Long repos
-        normalizedBrightness = 0.0f;
-    }
-    
-    // Map à la plage de brightness
+    // Map normalized brightness (0.0-1.0) to config brightness range
     uint8_t pulseValue = config.minBrightness + 
-                         (uint8_t)(normalizedBrightness * (config.maxBrightness - config.minBrightness));
+                         (uint8_t)(phase.normalizedBrightness * (config.maxBrightness - config.minBrightness));
     
-    // Appliquer le pulse à TOUTES les LEDs du buffer qui ont de la couleur
+    // Apply pulse to ALL LEDs in buffer that have color
     for (uint8_t i = 0; i < _numLeds; i++) {
         if (_buffer[i].r > 0 || _buffer[i].g > 0 || _buffer[i].b > 0) {
             _buffer[i].nscale8(pulseValue);
@@ -514,9 +441,9 @@ bool StateController::isInTransition() const {
  *----------------------------------------------------------------------------*/
 
 void StateController::configureIdle(AnimationState& animState) {
-    // Gauge: orange, direction ANTI-HORAIRE (gauche vers droite visuellement = index croissant)
+    // Gauge: direction ANTI-HORAIRE (gauche vers droite visuellement = index croissant)
     animState.gauge.enabled = true;
-    animState.gauge.baseColor = CRGB(255, 80, 0);   // Orange
+    animState.gauge.baseColor = getBaseColorForState(IDLE);
     animState.gauge.direction = DIR_LEFT_TO_RIGHT;  // Remplissage anti-horaire
     animState.gauge.opacity = 255;
     
@@ -533,9 +460,9 @@ void StateController::configureIdle(AnimationState& animState) {
 }
 
 void StateController::configureGenerating(AnimationState& animState) {
-    // Gauge: orange, direction ANTI-HORAIRE
+    // Gauge: direction ANTI-HORAIRE
     animState.gauge.enabled = true;
-    animState.gauge.baseColor = CRGB(255, 80, 0);   // Orange
+    animState.gauge.baseColor = getBaseColorForState(GENERATING);
     animState.gauge.direction = DIR_LEFT_TO_RIGHT;  // Remplissage anti-horaire
     animState.gauge.opacity = 255;
     
@@ -559,10 +486,10 @@ void StateController::configureGenerating(AnimationState& animState) {
 }
 
 void StateController::configureGiving(AnimationState& animState) {
-    // Gauge: orange, direction DROITE→GAUCHE (commence à droite, se vide vers la gauche)
+    // Gauge: direction DROITE→GAUCHE (commence à droite, se vide vers la gauche)
     // Ainsi les paquets semblent "partir" du bout de la jauge
     animState.gauge.enabled = true;
-    animState.gauge.baseColor = CRGB(255, 80, 0);   // Orange
+    animState.gauge.baseColor = getBaseColorForState(GIVING_TO_NODE);
     animState.gauge.direction = DIR_RIGHT_TO_LEFT;  // Jauge commence à DROITE
     animState.gauge.opacity = 255;
     
@@ -589,9 +516,9 @@ void StateController::configureMiddleMan(AnimationState& animState) {
     // MiddleMan: extension du rhizome connecté
     // PAS de battement propre - on relaie simplement l'énergie
     
-    // Gauge: orange, direction gauche→droite (relais)
+    // Gauge: direction gauche→droite (relais)
     animState.gauge.enabled = true;
-    animState.gauge.baseColor = CRGB(255, 80, 0);   // Orange
+    animState.gauge.baseColor = getBaseColorForState(MIDDLEMAN);
     animState.gauge.direction = DIR_LEFT_TO_RIGHT;  // Même sens que Giving
     animState.gauge.opacity = 255;
     
@@ -624,10 +551,10 @@ void StateController::configureDead(AnimationState& animState) {
 CRGB StateController::getBaseColorForState(uint8_t state) const {
     // Couleur de base = orange pour tous les états actifs
     switch (state) {
-        case IDLE:          return CRGB(255, 80, 0);
-        case GENERATING:    return CRGB(255, 80, 0);
-        case GIVING_TO_NODE:return CRGB(255, 80, 0);
-        case MIDDLEMAN:     return CRGB(255, 80, 0);
+        case IDLE:          return CRGB(255, 60, 0);  //100, 36, 255 infra 99, 200, 142 supra !important
+        case GENERATING:    return CRGB(255, 60, 0);
+        case GIVING_TO_NODE:return CRGB(255, 60, 0);
+        case MIDDLEMAN:     return CRGB(255, 60, 0);
         case DEAD:          return CRGB(0, 0, 0);
         default:            return CRGB::Black;
     }
@@ -636,9 +563,9 @@ CRGB StateController::getBaseColorForState(uint8_t state) const {
 CRGB StateController::getFlowColorForState(uint8_t state) const {
     // Couleur du flux = orange clair
     switch (state) {
-        case GENERATING:    return CRGB(255, 120, 30);
-        case GIVING_TO_NODE:return CRGB(255, 100, 20);
-        case MIDDLEMAN:     return CRGB(255, 100, 20);
+        case GENERATING:    return CRGB(255, 60, 0);
+        case GIVING_TO_NODE:return CRGB(255, 60, 00);
+        case MIDDLEMAN:     return CRGB(255, 60, 00);
         default:            return CRGB::Black;
     }
 }
