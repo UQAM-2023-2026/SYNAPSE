@@ -1,3 +1,17 @@
+/*==============================================================================
+ * HapticSystem.h - Haptic feedback for Synapse Rhizome
+ * 
+ * Provides vibration feedback synchronized with the centralized HeartbeatSystem.
+ * 
+ * Behaviors:
+ * - IDLE: Heartbeat on both motors (if energy > 0)
+ * - ONE END CONNECTED: Heartbeat only on unconnected end
+ * - GENERATING (chain): 2 clicks at start, then continuous buzz until 100%
+ * - FULLY CHARGED: 2 clicks on both ends
+ * - MIDDLEMAN: No vibration
+ * - DEAD: No vibration
+ *============================================================================*/
+
 #ifndef HAPTIC_SYSTEM_H
 #define HAPTIC_SYSTEM_H
 
@@ -5,91 +19,79 @@
 #include <Wire.h>
 #include <Adafruit_DRV2605.h>
 
-// Haptic states matching rhizome states
-enum HapticState {
-  HAPTIC_IDLE = 0,
-  HAPTIC_GENERATING = 1,
-  HAPTIC_GIVING = 2,
-  HAPTIC_MIDDLEMAN = 3,
-  HAPTIC_DEAD = 4,
-  HAPTIC_INVITE = 5
-};
-
-// Function pointer type for BPM access
-typedef uint8_t (*BPMGetterFunc)(void);
+// DRV2605 Waveform IDs used in this system
+namespace HapticEffects {
+    // Heartbeat
+    constexpr uint8_t SYSTOLE = 52;          // sharp systole 17
+    constexpr uint8_t DIASTOLE = 0;        // softer diastole 24
+    
+    // Confirmation clicks
+    constexpr uint8_t SHARP_CLICK = 4;      // Sharp click 100%
+    
+    // Continuous generation buzz
+    constexpr uint8_t LONG_BUZZ = 118;      // Long buzz for programmatic stopping
+    
+    // Waveform sequence terminator
+    constexpr uint8_t END = 0;
+}
 
 class HapticSystem {
 public:
-  HapticSystem();
-
-  // Initialize haptic drivers - returns false if init fails (non-blocking)
-  bool begin();
-
-  // Main update function - call in loop() - completely non-blocking
-  void update(float energy, uint8_t rhizomeState);
-
-  // Public API for external triggering
-  void triggerEvent(bool isRight, uint8_t effect);
-  void triggerLeftConnection();   // Vibrate left motor on left pogo connection
-  void triggerRightConnection();  // Vibrate right motor on right pogo connection
-  void setState(uint8_t state);
-  void setBPMGetter(BPMGetterFunc getter);
-
-  // Helper function to get current BPM
-  uint8_t getCurrentBPM(float energy) const;
-
-  // Callback for StripAnimation to trigger haptics (synchronized with LED heartbeat)
-  void stripCallback();
-
-  // Check if system is ready
-  bool isReady() const { return initialized; }
+    HapticSystem();
+    
+    // Initialize both DRV2605 drivers
+    bool begin();
+    
+    // Main update - call in loop() with current state info
+    void update(float energy, uint8_t rhizomeState, bool leftConnected, bool rightConnected);
+    
+    // Called by HeartbeatSystem at the start of each heartbeat
+    void onHeartbeat();
+    
+    // Event triggers (called externally)
+    void onGenerationStart();    // Chain formed, start generating
+    void onFullyCharged();       // Loop reached 100% energy
+    void stopGeneration();       // Stop continuous buzz
+    
+    // Status
+    bool isReady() const { return _initialized; }
 
 private:
-  // Driver instances
-  Adafruit_DRV2605 drv1; // Left haptic driver (pins 18/19)
-  Adafruit_DRV2605 drv2; // Right haptic driver (pins 16/17)
-
-  // Initialization status
-  bool initialized;
-  bool drv1Ready;
-  bool drv2Ready;
-
-  // Current state
-  HapticState currentState;
-  HapticState previousState;
-  float currentEnergy;
-
-  // Timing variables - all non-blocking
-  uint32_t lastHeartbeat;
-  uint32_t lastUpdate;
-  uint32_t stateEffectTimer;
-
-  // BPM getter function pointer
-  BPMGetterFunc bpmGetter;
-
-  // Rate limiting to prevent I2C bus saturation
-  static const uint32_t MIN_UPDATE_INTERVAL = 50; // ms between I2C commands
-  uint32_t lastI2CCommand;
-
-  // Private helper functions - all non-blocking
-  void handleHeartbeat(float energy);
-  void handleStateEffects(float energy);
-
-  // Safe motor trigger with rate limiting
-  void triggerMotor(Adafruit_DRV2605& drv, uint8_t effect);
-  void triggerMotorSequence(Adafruit_DRV2605& drv, uint8_t* effects, uint8_t count);
-
-  // Utility functions
-  uint8_t mapBPM(float energy) const;
-  uint8_t mapIntensity(float energy) const;
-  bool shouldTriggerHeartbeat(uint8_t currentBPM);
-  bool canSendI2C();
+    // Hardware
+    Adafruit_DRV2605 _drvLeft;   // Left motor (Wire, pins 18/19)
+    Adafruit_DRV2605 _drvRight;  // Right motor (Wire1, pins 16/17)
+    bool _initialized;
+    bool _leftReady;
+    bool _rightReady;
+    
+    // State tracking
+    uint8_t _currentState;
+    float _currentEnergy;
+    bool _leftConnected;
+    bool _rightConnected;
+    
+    // Generation buzz state
+    bool _generationActive;
+    uint32_t _generationStartTime;
+    
+    // Startup protection
+    static constexpr uint32_t STARTUP_DELAY_MS = 2000;
+    
+    // Helper functions
+    void initDriver(Adafruit_DRV2605& drv, bool& ready, const char* name);
+    void playEffect(Adafruit_DRV2605& drv, uint8_t effect);
+    void playHeartbeat(Adafruit_DRV2605& drv);
+    void playDoubleClick(Adafruit_DRV2605& drv);
+    void startBuzz(Adafruit_DRV2605& drv);
+    void stopBuzz(Adafruit_DRV2605& drv);
+    
+    bool shouldPlayHeartbeat() const;
 };
 
 // Global instance
 extern HapticSystem hapticSystem;
 
-// Wrapper function for callback
-void hapticStripCallbackWrapper();
+// Wrapper for HeartbeatSystem callback
+void hapticHeartbeatCallback();
 
 #endif // HAPTIC_SYSTEM_H

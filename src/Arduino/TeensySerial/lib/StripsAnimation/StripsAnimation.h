@@ -13,9 +13,10 @@ void StripEventEmptyEnergy();
 void StripEventConnection();
 void StripEventDisconnection();
 
-// Haptic callback registration
+// Haptic callback registration (for one-shot events like full energy)
 void StripSetHapticCallback(void (*callback)(void));
-void StripSetHeartbeatCallback(void (*callback)(void));  // Called on each heartbeat pulse
+// Note: Heartbeat callbacks are now managed by HeartbeatSystem
+// Use heartbeatSystem.setHapticCallback() for heartbeat-synced haptics
 
 // MiddleMan synchronization
 void StripSetFlowSync(uint8_t speed);

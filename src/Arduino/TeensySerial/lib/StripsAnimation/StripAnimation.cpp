@@ -2,9 +2,20 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include <RhizomeStateAndID.h>
-#include "AnimationLayers.h"
+#include <AnimationLayers.h>
+#include <HeartbeatSystem.h>
 
-/*------------------LED Configuration--------------------*/
+/*-----------LED strip Male Side--------*/
+#define MALE_LED_PIN 1
+#define MALE_NUM_LEDS 5
+CRGB maleLeds[MALE_NUM_LEDS];
+
+/*------------LED strip Female Side--------*/
+#define FEMALE_LED_PIN 0
+#define FEMALE_NUM_LEDS 5
+CRGB femaleLeds[FEMALE_NUM_LEDS];
+
+/*------------------LED Tube Configuration--------------------*/
 #define LED_PIN     12
 #define CLOCK_PIN   13
 #define NUM_LEDS    15
@@ -16,9 +27,8 @@ RhizomeStateAndID* pRhizome = nullptr;
 // Animation Manager instance
 AnimationManager animManager;
 
-// Callback pour haptic feedback (défini dans main ou HapticFeedback)
+// Callback pour haptic feedback (événements ponctuels comme pleine énergie)
 static void (*hapticCallbackStrong)(void) = nullptr;
-static void (*heartbeatCallback)(void) = nullptr;
 
 /*------------------Setup--------------------*/
 
@@ -33,19 +43,13 @@ void SetupStrips(RhizomeStateAndID& rhizome, uint8_t brightness) {
   animManager.begin(leds, NUM_LEDS, brightness);
 }
 
-// Permet d'enregistrer un callback pour le haptic feedback
+// Permet d'enregistrer un callback pour le haptic feedback (événements ponctuels)
 void StripSetHapticCallback(void (*callback)(void)) {
   hapticCallbackStrong = callback;
 }
 
-void StripSetHeartbeatCallback(void (*callback)(void)) {
-  heartbeatCallback = callback;
-}
-
-// Getter for heartbeat callback (used by AnimationLayers)
-void (*getHeartbeatCallback())(void) {
-  return heartbeatCallback;
-}
+// Note: Heartbeat callbacks are now managed centrally by HeartbeatSystem
+// Use heartbeatSystem.setHapticCallback() instead of StripSetHeartbeatCallback()
 
 /*------------------Main Loop--------------------*/
 
