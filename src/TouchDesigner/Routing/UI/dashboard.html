@@ -1016,6 +1016,690 @@
         .delta-value.negative {
             color: var(--accent-danger);
         }
+
+        /* ─── Tab Navigation ─── */
+        .tab-nav {
+            display: flex;
+            gap: var(--space-2);
+            flex-shrink: 0;
+            margin-bottom: var(--space-3);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: var(--space-2) var(--space-4);
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: color var(--transition-base), border-color var(--transition-base);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-secondary);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-signal);
+            border-bottom-color: var(--accent-signal);
+        }
+
+        /* ─── Tab Content ─── */
+        .tab-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-content.hidden {
+            display: none;
+        }
+
+        /* ─── OSC Send Tab ─── */
+        .osc-target-strip {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) 0;
+            flex-shrink: 0;
+        }
+
+        .osc-target-strip .settings-label {
+            min-width: 40px;
+        }
+
+        .osc-target-strip .settings-input.ip {
+            width: 140px;
+            flex: none;
+        }
+
+        .osc-target-strip .settings-input.port {
+            width: 60px;
+            flex: none;
+        }
+
+        .osc-target-strip .status-indicator {
+            margin-left: auto;
+        }
+
+        /* ─── Preset strip ─── */
+        .osc-preset-strip {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) 0;
+            flex-shrink: 0;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .osc-preset-strip .settings-label {
+            min-width: 40px;
+            color: var(--text-tertiary);
+            font-size: 9px;
+            letter-spacing: 0.08em;
+        }
+
+        .osc-preset-strip input[type="text"],
+        .osc-preset-strip select {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            padding: 5px 7px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            outline: none;
+            transition: border-color var(--transition-base);
+        }
+
+        .osc-preset-strip input[type="text"]:focus,
+        .osc-preset-strip select:focus {
+            border-color: var(--accent-signal);
+        }
+
+        .osc-preset-strip input[type="text"] {
+            width: 140px;
+            flex-shrink: 0;
+        }
+
+        .osc-preset-strip input[type="text"]::placeholder {
+            color: var(--text-ghost);
+        }
+
+        .osc-preset-strip select {
+            width: 140px;
+            flex-shrink: 0;
+            color: var(--text-secondary);
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6'%3E%3Cpath d='M0 0l4 6 4-6z' fill='%236E6E6E'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            padding-right: 22px;
+        }
+
+        .osc-preset-strip select option {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .osc-preset-strip .preset-btn {
+            height: 28px;
+            padding: 0 10px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+        }
+
+        .osc-preset-strip .preset-btn:hover {
+            border-color: var(--border-medium);
+            color: var(--text-secondary);
+        }
+
+        .osc-preset-strip .preset-btn.save:hover {
+            border-color: var(--accent-signal);
+            color: var(--accent-signal);
+            background: var(--accent-signal-dim);
+        }
+
+        .osc-preset-strip .preset-btn.delete {
+            width: 28px;
+            padding: 0;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .osc-preset-strip .preset-btn.delete:hover {
+            border-color: var(--accent-danger);
+            color: var(--accent-danger);
+            background: var(--accent-danger-dim);
+        }
+
+        .osc-msg-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            padding-right: 4px;
+        }
+
+        .osc-msg-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .osc-msg-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .osc-msg-list::-webkit-scrollbar-thumb {
+            background: var(--border-soft);
+            border-radius: 2px;
+        }
+
+        .osc-msg-list::-webkit-scrollbar-thumb:hover {
+            background: var(--border-medium);
+        }
+
+        /* Message Card */
+        .osc-msg-card {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            transition: border-color var(--transition-base);
+            flex-shrink: 0;
+        }
+
+        .osc-msg-card:hover {
+            border-color: var(--border-soft);
+        }
+
+        .osc-msg-card input,
+        .osc-msg-card select {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            padding: 5px 7px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            outline: none;
+            transition: border-color var(--transition-base);
+        }
+
+        .osc-msg-card input:focus,
+        .osc-msg-card select:focus {
+            border-color: var(--accent-signal);
+        }
+
+        .osc-msg-card .input-title {
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        .osc-msg-card .input-address {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .osc-msg-card .input-value {
+            width: 70px;
+            flex-shrink: 0;
+        }
+
+        .osc-msg-card .select-type {
+            width: 52px;
+            flex-shrink: 0;
+            padding: 5px 4px;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .osc-msg-card select option {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .osc-msg-card .select-ctrl-type {
+            width: 72px;
+            flex-shrink: 0;
+            padding: 5px 6px;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        /* Toggle button */
+        .osc-btn-toggle {
+            width: 52px;
+            height: 28px;
+            flex-shrink: 0;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .osc-btn-toggle:hover {
+            border-color: var(--border-medium);
+            color: var(--text-secondary);
+        }
+
+        .osc-btn-toggle.active {
+            background: var(--accent-signal-dim);
+            border-color: var(--accent-signal);
+            color: var(--accent-signal);
+            box-shadow: 0 0 0 1px var(--accent-signal-dim);
+        }
+
+        /* Pulse button */
+        .osc-btn-pulse {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-tertiary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .osc-btn-pulse:hover {
+            border-color: var(--border-medium);
+            color: var(--text-secondary);
+        }
+
+        .osc-btn-pulse::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            border: 1.5px solid var(--accent-signal);
+            opacity: 0;
+            transition: none;
+        }
+
+        .osc-btn-pulse.pulsing::after {
+            animation: pulse-ring 300ms ease-out forwards;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                opacity: 0.8;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.4);
+            }
+        }
+
+        /* Delete button */
+        .osc-btn-delete {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            background: transparent;
+            border: none;
+            color: var(--text-ghost);
+            font-size: 14px;
+            cursor: pointer;
+            transition: color var(--transition-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+        }
+
+        .osc-btn-delete:hover {
+            color: var(--accent-danger);
+            background: var(--accent-danger-dim);
+        }
+
+        /* Add message button */
+        .osc-btn-add {
+            width: 100%;
+            padding: var(--space-2) 0;
+            background: transparent;
+            border: 1px dashed var(--border-soft);
+            border-radius: var(--radius-sm);
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            flex-shrink: 0;
+        }
+
+        .osc-btn-add:hover {
+            border-color: var(--accent-signal);
+            color: var(--accent-signal);
+            background: var(--accent-signal-dim);
+        }
+
+        /* ─── OSC Send Control Panel ─── */
+        .osc-ctrl-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-3);
+            align-content: start;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .osc-ctrl-grid::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .osc-ctrl-grid::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .osc-ctrl-grid::-webkit-scrollbar-thumb {
+            background: var(--border-soft);
+            border-radius: 2px;
+        }
+
+        .osc-ctrl-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+            position: relative;
+            overflow: hidden;
+            transition: border-color var(--transition-base);
+        }
+
+        .osc-ctrl-card:hover {
+            border-color: var(--border-soft);
+        }
+
+        .osc-ctrl-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-signal), transparent);
+            opacity: 0;
+            transition: opacity var(--transition-base);
+        }
+
+        .osc-ctrl-card:hover::before {
+            opacity: 1;
+        }
+
+        .osc-ctrl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: var(--space-2);
+            padding-bottom: var(--space-2);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .osc-ctrl-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .osc-ctrl-address {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Slider */
+        .osc-ctrl-slider-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .osc-ctrl-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            background: var(--bg-tertiary);
+        }
+
+        .osc-ctrl-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-signal);
+            cursor: pointer;
+            border: 3px solid var(--bg-primary);
+            box-shadow: 0 0 8px var(--accent-signal-glow);
+            transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+        }
+
+        .osc-ctrl-slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 0 14px var(--accent-signal-glow);
+            transform: scale(1.15);
+        }
+
+        .osc-ctrl-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-signal);
+            cursor: pointer;
+            border: 3px solid var(--bg-primary);
+            box-shadow: 0 0 8px var(--accent-signal-glow);
+        }
+
+        .osc-ctrl-value-input {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            width: 58px;
+            text-align: right;
+            letter-spacing: -0.02em;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            padding: 4px 6px;
+            outline: none;
+            transition: border-color var(--transition-base);
+            -moz-appearance: textfield;
+        }
+
+        .osc-ctrl-value-input::-webkit-inner-spin-button,
+        .osc-ctrl-value-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .osc-ctrl-value-input:focus {
+            border-color: var(--accent-signal);
+        }
+
+        /* Control Buttons */
+        .osc-ctrl-btns {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .osc-ctrl-toggle {
+            flex: 1;
+            height: 32px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+        }
+
+        .osc-ctrl-toggle:hover {
+            border-color: var(--border-medium);
+            color: var(--text-secondary);
+        }
+
+        .osc-ctrl-toggle.active {
+            background: var(--accent-signal-dim);
+            border-color: var(--accent-signal);
+            color: var(--accent-signal);
+            box-shadow: 0 0 0 1px var(--accent-signal-dim);
+        }
+
+        .osc-ctrl-toggle-led {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-ghost);
+            transition: all var(--transition-base);
+        }
+
+        .osc-ctrl-toggle.active .osc-ctrl-toggle-led {
+            background: var(--accent-signal);
+            box-shadow: 0 0 6px var(--accent-signal-glow);
+            animation: pulse-led 2s ease-in-out infinite;
+        }
+
+        /* Pulse button */
+        .osc-ctrl-pulse {
+            width: 48px;
+            height: 32px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: border-color var(--transition-base);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .osc-ctrl-pulse::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-ghost);
+            transition: background var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .osc-ctrl-pulse:hover {
+            border-color: var(--border-medium);
+        }
+
+        .osc-ctrl-pulse:hover::before {
+            background: var(--text-secondary);
+        }
+
+        .osc-ctrl-pulse.pulsing {
+            border-color: var(--accent-warning);
+            transition: none;
+        }
+
+        .osc-ctrl-pulse.pulsing::before {
+            background: var(--accent-warning);
+            box-shadow: 0 0 0 4px var(--accent-warning-dim), 0 0 12px var(--accent-warning-dim);
+            transition: none;
+        }
+
+        /* Empty state */
+        .osc-ctrl-empty {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-4);
+            padding: var(--space-12) 0;
+            color: var(--text-tertiary);
+            font-size: 12px;
+            letter-spacing: 0.02em;
+        }
+
+        .osc-ctrl-empty-btn {
+            background: transparent;
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-sm);
+            padding: var(--space-2) var(--space-5);
+            color: var(--accent-signal);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+
+        .osc-ctrl-empty-btn:hover {
+            background: var(--accent-signal-dim);
+            border-color: var(--accent-signal);
+        }
     </style>
 </head>
 
@@ -1064,6 +1748,15 @@
             </div>
         </header>
 
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="monitor">Monitor</button>
+            <button class="tab-btn" data-tab="osc-send">OSC Send</button>
+            <button class="tab-btn" data-tab="osc-send-settings">Settings</button>
+        </div>
+
+        <!-- Monitor Tab -->
+        <div class="tab-content" id="tab-monitor">
         <!-- Main Grid -->
         <div class="grid">
             <!-- System States -->
@@ -1341,6 +2034,38 @@
                 </div>
             </div>
         </div>
+        </div><!-- end tab-monitor -->
+
+        <!-- OSC Send Control Tab -->
+        <div class="tab-content hidden" id="tab-osc-send">
+            <div class="osc-ctrl-grid" id="oscCtrlGrid"></div>
+        </div>
+
+        <!-- OSC Send Settings Tab -->
+        <div class="tab-content hidden" id="tab-osc-send-settings">
+            <div class="osc-target-strip">
+                <span class="settings-label">TARGET</span>
+                <input type="text" class="settings-input ip" id="oscSendIp" placeholder="IP" value="127.0.0.1">
+                <span style="color: var(--text-tertiary)">:</span>
+                <input type="text" class="settings-input port" id="oscSendPort" placeholder="Port" value="9000">
+                <div class="status-indicator">
+                    <div class="led" id="oscSendLed"></div>
+                    <span id="oscSendStatus">WS off</span>
+                </div>
+            </div>
+            <div class="osc-preset-strip">
+                <span class="settings-label">PRESET</span>
+                <input type="text" id="presetNameInput" placeholder="new preset…">
+                <button class="preset-btn save" id="presetSaveBtn">SAVE</button>
+                <select id="presetSelect">
+                    <option value="">── load ──</option>
+                </select>
+                <button class="preset-btn delete" id="presetDeleteBtn">✕</button>
+            </div>
+            <div class="osc-msg-list" id="oscMsgList"></div>
+            <button class="osc-btn-add" id="oscBtnAdd">+ ADD MESSAGE</button>
+        </div><!-- end tab-osc-send-settings -->
+
     </div>
 
     <script>
@@ -1349,6 +2074,9 @@
         let messageCount = 0;
         let lastSecondCount = 0;
         const sensorData = {};
+        const CLIENT_ID  = 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        let   oscConfig  = { messages: [], target_ip: '127.0.0.1', target_port: 9000 };
+        let   presetList = [];
 
         // LFO waveform buffers
         const lfoBuffers = {
@@ -1429,6 +2157,15 @@
 
             ws.onmessage = (event) => {
                 const message = JSON.parse(event.data);
+                if (message.type === 'osc_config') {
+                    if (message.sender_id !== CLIENT_ID) applyOscConfig(message);
+                    return;
+                }
+                if (message.type === 'preset_list') {
+                    presetList = message.presets || [];
+                    renderPresetSelect();
+                    return;
+                }
                 updateDisplay(message);
                 messageCount++;
             };
@@ -1755,9 +2492,486 @@
             document.getElementById('updateRate').textContent = messagesThisSecond + ' msg/s';
         }, 1000);
 
+        // ─── Tab Switching ───
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-tab="' + tabId + '"]').classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            if (tabId === 'osc-send') renderOscControls();
+        }
+
+        function initTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+        }
+
+        // ─── OSC Send ───
+        const activeIntervals = new Map();
+        let oscIdCounter = Date.now();
+
+        function applyOscConfig(config) {
+            oscConfig.messages    = config.messages    || [];
+            oscConfig.target_ip   = config.target_ip   || '127.0.0.1';
+            oscConfig.target_port = config.target_port || 9000;
+
+            document.getElementById('oscSendIp').value   = oscConfig.target_ip;
+            document.getElementById('oscSendPort').value = oscConfig.target_port;
+
+            // Re-render liste Settings
+            const list = document.getElementById('oscMsgList');
+            list.innerHTML = '';
+            oscConfig.messages.forEach(msg => renderMessageCard(msg));
+
+            // Re-render contrôles si le tab OSC Send est visible
+            if (!document.getElementById('tab-osc-send').classList.contains('hidden')) {
+                renderOscControls();
+            }
+        }
+
+        function getOscTarget() {
+            return {
+                ip:   document.getElementById('oscSendIp').value || '127.0.0.1',
+                port: parseInt(document.getElementById('oscSendPort').value, 10) || 9000
+            };
+        }
+
+        function sendOscMessage(address, value, valueType) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+            const t = getOscTarget();
+            ws.send(JSON.stringify({
+                type:        'send_osc',
+                address:     address,
+                value:       valueType === 'int' ? parseInt(value, 10) : parseFloat(value),
+                value_type:  valueType,
+                target_ip:   t.ip,
+                target_port: t.port
+            }));
+        }
+
+        function updateOscSendLed() {
+            const led    = document.getElementById('oscSendLed');
+            const status = document.getElementById('oscSendStatus');
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                led.classList.add('active');
+                status.textContent = 'WS on';
+            } else {
+                led.classList.remove('active');
+                status.textContent = 'WS off';
+            }
+        }
+
+        function renderMessageCard(msg) {
+            const card = document.createElement('div');
+            card.className = 'osc-msg-card';
+            card.dataset.id = msg.id;
+
+            // Title
+            const titleInput = document.createElement('input');
+            titleInput.className = 'input-title';
+            titleInput.type = 'text';
+            titleInput.placeholder = 'Title';
+            titleInput.value = msg.title || '';
+            titleInput.addEventListener('input', persistCurrentMessages);
+
+            // Address
+            const addrInput = document.createElement('input');
+            addrInput.className = 'input-address';
+            addrInput.type = 'text';
+            addrInput.placeholder = '/address';
+            addrInput.value = msg.address || '';
+            addrInput.addEventListener('input', persistCurrentMessages);
+
+            // Control type (Toggle / Pulse / Slider)
+            const ctrlTypeSelect = document.createElement('select');
+            ctrlTypeSelect.className = 'select-ctrl-type';
+            [['toggle','Toggle'],['pulse','Pulse'],['slider','Int/Float']].forEach(([val, label]) => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = label;
+                if (val === (msg.controlType || 'slider')) opt.selected = true;
+                ctrlTypeSelect.appendChild(opt);
+            });
+            ctrlTypeSelect.addEventListener('change', persistCurrentMessages);
+
+            // Value
+            const valInput = document.createElement('input');
+            valInput.className = 'input-value';
+            valInput.type = 'number';
+            valInput.step = 'any';
+            valInput.value = msg.value !== undefined ? msg.value : 0;
+            valInput.addEventListener('input', persistCurrentMessages);
+
+            // Type selector
+            const typeSelect = document.createElement('select');
+            typeSelect.className = 'select-type';
+            ['Int', 'Float'].forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.toLowerCase();
+                opt.textContent = t;
+                if (t.toLowerCase() === (msg.valueType || 'float')) opt.selected = true;
+                typeSelect.appendChild(opt);
+            });
+            typeSelect.addEventListener('change', persistCurrentMessages);
+
+            // Toggle button
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'osc-btn-toggle';
+            toggleBtn.textContent = 'OFF';
+            toggleBtn.addEventListener('click', () => {
+                if (activeIntervals.has(msg.id)) {
+                    // Stop: send 0 final
+                    stopToggle(msg.id);
+                    const vt = typeSelect.value;
+                    sendOscMessage(addrInput.value, 0, vt);
+                    toggleBtn.classList.remove('active');
+                    toggleBtn.textContent = 'OFF';
+                } else {
+                    // Start
+                    toggleBtn.classList.add('active');
+                    toggleBtn.textContent = 'ON';
+                    startToggle(msg.id, addrInput, valInput, typeSelect);
+                }
+            });
+
+            // Pulse button
+            const pulseBtn = document.createElement('button');
+            pulseBtn.className = 'osc-btn-pulse';
+            pulseBtn.textContent = '▶';
+            pulseBtn.addEventListener('click', () => {
+                sendOscMessage(addrInput.value, valInput.value, typeSelect.value);
+                pulseBtn.classList.remove('pulsing');
+                void pulseBtn.offsetWidth; // reflow to restart animation
+                pulseBtn.classList.add('pulsing');
+                setTimeout(() => pulseBtn.classList.remove('pulsing'), 300);
+            });
+
+            // Delete button
+            const delBtn = document.createElement('button');
+            delBtn.className = 'osc-btn-delete';
+            delBtn.textContent = '✕';
+            delBtn.addEventListener('click', () => {
+                if (activeIntervals.has(msg.id)) stopToggle(msg.id);
+                card.remove();
+                persistCurrentMessages();
+            });
+
+            card.appendChild(titleInput);
+            card.appendChild(addrInput);
+            card.appendChild(ctrlTypeSelect);
+            card.appendChild(valInput);
+            card.appendChild(typeSelect);
+            card.appendChild(toggleBtn);
+            card.appendChild(pulseBtn);
+            card.appendChild(delBtn);
+
+            document.getElementById('oscMsgList').appendChild(card);
+        }
+
+        function startToggle(id, addrInput, valInput, typeSelect) {
+            const intervalId = setInterval(() => {
+                sendOscMessage(addrInput.value, valInput.value, typeSelect.value);
+            }, 33); // 30 Hz
+            activeIntervals.set(id, intervalId);
+        }
+
+        function stopToggle(id) {
+            if (activeIntervals.has(id)) {
+                clearInterval(activeIntervals.get(id));
+                activeIntervals.delete(id);
+            }
+        }
+
+        function persistCurrentMessages() {
+            const cards = document.querySelectorAll('.osc-msg-card');
+            const msgs = [];
+            cards.forEach(card => {
+                msgs.push({
+                    id:          card.dataset.id,
+                    title:       card.querySelector('.input-title').value,
+                    address:     card.querySelector('.input-address').value,
+                    value:       card.querySelector('.input-value').value,
+                    valueType:   card.querySelector('.select-type').value,
+                    controlType: card.querySelector('.select-ctrl-type').value
+                });
+            });
+            oscConfig.messages    = msgs;
+            oscConfig.target_ip   = document.getElementById('oscSendIp').value;
+            oscConfig.target_port = parseInt(document.getElementById('oscSendPort').value, 10) || 9000;
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type:        'osc_config_update',
+                    sender_id:   CLIENT_ID,
+                    messages:    oscConfig.messages,
+                    target_ip:   oscConfig.target_ip,
+                    target_port: oscConfig.target_port
+                }));
+            }
+        }
+
+        function initOscSend() {
+            // Target IP/port — persist via serveur à chaque changement
+            document.getElementById('oscSendIp').addEventListener('input', persistCurrentMessages);
+            document.getElementById('oscSendPort').addEventListener('input', persistCurrentMessages);
+
+            // Add button
+            document.getElementById('oscBtnAdd').addEventListener('click', () => {
+                const id = String(++oscIdCounter);
+                renderMessageCard({ id, title: '', address: '', value: 0, valueType: 'float', controlType: 'slider' });
+                persistCurrentMessages();
+            });
+        }
+
+        // ─── Presets ───
+        function renderPresetSelect() {
+            const sel = document.getElementById('presetSelect');
+            sel.innerHTML = '<option value="">── load ──</option>';
+            presetList.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                sel.appendChild(opt);
+            });
+            // Si le champ nom correspond à un preset existant, le sélectionner
+            const cur = document.getElementById('presetNameInput').value.trim();
+            if (cur && presetList.includes(cur)) sel.value = cur;
+        }
+
+        function initPresets() {
+            document.getElementById('presetSaveBtn').addEventListener('click', () => {
+                const name = document.getElementById('presetNameInput').value.trim();
+                if (!name || !ws || ws.readyState !== WebSocket.OPEN) return;
+                ws.send(JSON.stringify({ type: 'save_preset', name, sender_id: CLIENT_ID }));
+            });
+
+            document.getElementById('presetSelect').addEventListener('change', (e) => {
+                const name = e.target.value;
+                if (!name || !ws || ws.readyState !== WebSocket.OPEN) return;
+                document.getElementById('presetNameInput').value = name;
+                ws.send(JSON.stringify({ type: 'load_preset', name, sender_id: CLIENT_ID }));
+            });
+
+            document.getElementById('presetDeleteBtn').addEventListener('click', () => {
+                const name = document.getElementById('presetSelect').value;
+                if (!name || !ws || ws.readyState !== WebSocket.OPEN) return;
+                ws.send(JSON.stringify({ type: 'delete_preset', name, sender_id: CLIENT_ID }));
+                document.getElementById('presetNameInput').value = '';
+                document.getElementById('presetSelect').value = '';
+            });
+        }
+
+        // ─── OSC Send Controls ───
+        const ctrlIntervals = new Map();
+        const ctrlToggles   = new Set();
+
+        function renderOscControls() {
+            const grid = document.getElementById('oscCtrlGrid');
+
+            // Stop all running intervals, keep ctrlToggles for state restore
+            ctrlIntervals.forEach(id => clearInterval(id));
+            ctrlIntervals.clear();
+            grid.innerHTML = '';
+
+            const configured = oscConfig.messages.filter(m => m.address && m.address.trim());
+
+            if (configured.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'osc-ctrl-empty';
+                const text = document.createElement('p');
+                text.textContent = 'No messages configured yet';
+                const btn = document.createElement('button');
+                btn.className = 'osc-ctrl-empty-btn';
+                btn.textContent = 'Go to Settings →';
+                btn.addEventListener('click', () => switchTab('osc-send-settings'));
+                empty.appendChild(text);
+                empty.appendChild(btn);
+                grid.appendChild(empty);
+                return;
+            }
+
+            configured.forEach(msg => grid.appendChild(renderControlCard(msg)));
+        }
+
+        function renderControlCard(msg) {
+            const isInt       = msg.valueType === 'int';
+            const controlType = msg.controlType || 'slider';
+
+            const card = document.createElement('div');
+            card.className = 'osc-ctrl-card';
+            card.dataset.id = msg.id;
+
+            // ── Header ──
+            const header = document.createElement('div');
+            header.className = 'osc-ctrl-header';
+
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'osc-ctrl-title';
+            titleSpan.textContent = msg.title || 'Untitled';
+
+            const addrSpan = document.createElement('span');
+            addrSpan.className = 'osc-ctrl-address';
+            addrSpan.textContent = msg.address;
+
+            header.appendChild(titleSpan);
+            header.appendChild(addrSpan);
+            card.appendChild(header);
+
+            if (controlType === 'slider') {
+                // ── Slider — envoie en continu à 30 Hz ──
+                const min    = 0;
+                const max    = isInt ? 100 : 1;
+                const step   = isInt ? 1 : 0.001;
+                const rawVal = isInt ? parseInt(msg.value, 10) : parseFloat(msg.value);
+                let   sendValue = isNaN(rawVal) ? 0 : rawVal;
+
+                const sliderRow = document.createElement('div');
+                sliderRow.className = 'osc-ctrl-slider-row';
+
+                const slider = document.createElement('input');
+                slider.type  = 'range';
+                slider.className = 'osc-ctrl-slider';
+                slider.min   = min;
+                slider.max   = max;
+                slider.step  = step;
+                slider.value = Math.min(max, Math.max(min, sendValue));
+
+                const valueInput = document.createElement('input');
+                valueInput.type  = 'number';
+                valueInput.className = 'osc-ctrl-value-input';
+                valueInput.step  = step;
+                valueInput.value = isInt ? String(parseInt(sendValue)) : parseFloat(sendValue).toFixed(3);
+
+                const updateSliderVisual = () => {
+                    const pct = ((slider.value - min) / (max - min)) * 100;
+                    slider.style.background = `linear-gradient(to right, var(--accent-signal) ${pct}%, var(--bg-tertiary) ${pct}%)`;
+                };
+                updateSliderVisual();
+
+                // Slider → met à jour sendValue + input
+                slider.addEventListener('input', () => {
+                    sendValue = parseFloat(slider.value);
+                    valueInput.value = isInt ? String(parseInt(sendValue)) : sendValue.toFixed(3);
+                    updateSliderVisual();
+                });
+
+                // Input typé → met à jour sendValue + slider (clampé)
+                valueInput.addEventListener('input', () => {
+                    const v = isInt ? parseInt(valueInput.value, 10) : parseFloat(valueInput.value);
+                    if (!isNaN(v)) {
+                        sendValue = v;
+                        slider.value = Math.min(max, Math.max(min, v));
+                        updateSliderVisual();
+                    }
+                });
+
+                sliderRow.appendChild(slider);
+                sliderRow.appendChild(valueInput);
+                card.appendChild(sliderRow);
+
+                // Send continu 30 Hz — lit sendValue (pas limité au slider)
+                const intervalId = setInterval(() => {
+                    sendOscMessage(msg.address, sendValue, msg.valueType);
+                }, 33);
+                ctrlIntervals.set(msg.id, intervalId);
+
+            } else if (controlType === 'toggle') {
+                // ── Toggle ──
+                const btnsRow = document.createElement('div');
+                btnsRow.className = 'osc-ctrl-btns';
+
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'osc-ctrl-toggle';
+                toggleBtn.style.height = '44px';
+                const toggleLed = document.createElement('span');
+                toggleLed.className = 'osc-ctrl-toggle-led';
+                const toggleLabel = document.createElement('span');
+                toggleLabel.textContent = 'TOGGLE';
+                toggleBtn.appendChild(toggleLed);
+                toggleBtn.appendChild(toggleLabel);
+
+                // Restore état OR démarrer ON par défaut
+                if (!ctrlToggles.has(msg.id)) ctrlToggles.add(msg.id);
+                toggleBtn.classList.add('active');
+                startCtrlToggle(msg.id, msg.address, msg.valueType);
+
+                toggleBtn.addEventListener('click', () => {
+                    if (ctrlToggles.has(msg.id)) {
+                        stopCtrlToggle(msg.id);
+                        sendOscMessage(msg.address, 0, msg.valueType);
+                        toggleBtn.classList.remove('active');
+                        ctrlToggles.delete(msg.id);
+                    } else {
+                        ctrlToggles.add(msg.id);
+                        toggleBtn.classList.add('active');
+                        startCtrlToggle(msg.id, msg.address, msg.valueType);
+                    }
+                });
+
+                btnsRow.appendChild(toggleBtn);
+                card.appendChild(btnsRow);
+
+            } else if (controlType === 'pulse') {
+                // ── Pulse ──
+                const btnsRow = document.createElement('div');
+                btnsRow.className = 'osc-ctrl-btns';
+                btnsRow.style.justifyContent = 'center';
+
+                const pulseBtn = document.createElement('button');
+                pulseBtn.className = 'osc-ctrl-pulse';
+                pulseBtn.style.height = '44px';
+                pulseBtn.style.width  = '56px';
+                pulseBtn.addEventListener('click', () => {
+                    sendOscMessage(msg.address, 1, msg.valueType);
+                    pulseBtn.classList.add('pulsing');
+                    setTimeout(() => {
+                        sendOscMessage(msg.address, 0, msg.valueType);
+                        pulseBtn.classList.remove('pulsing');
+                    }, 150);
+                });
+
+                btnsRow.appendChild(pulseBtn);
+                card.appendChild(btnsRow);
+            }
+
+            return card;
+        }
+
+        function startCtrlToggle(id, address, valueType) {
+            const intervalId = setInterval(() => {
+                sendOscMessage(address, 1, valueType);
+            }, 33); // 30 Hz
+            ctrlIntervals.set(id, intervalId);
+        }
+
+        function stopCtrlToggle(id) {
+            if (ctrlIntervals.has(id)) {
+                clearInterval(ctrlIntervals.get(id));
+                ctrlIntervals.delete(id);
+            }
+        }
+
+        // ─── Hook WS open/close to update OSC Send LED ───
+        const _origConnect = connect;
+        connect = function() {
+            _origConnect();
+            // Patch onopen/onclose after ws is created
+            setTimeout(() => {
+                if (!ws) return;
+                const origOnOpen  = ws.onopen;
+                const origOnClose = ws.onclose;
+                ws.onopen  = (e) => { if (origOnOpen)  origOnOpen(e);  updateOscSendLed(); };
+                ws.onclose = (e) => { if (origOnClose) origOnClose(e); updateOscSendLed(); };
+            }, 0);
+        };
+
         // Initialize
         initLFOCanvases();
         initSettingsPanel();
+        initTabs();
+        initOscSend();
+        initPresets();
         connect();
     </script>
 </body>

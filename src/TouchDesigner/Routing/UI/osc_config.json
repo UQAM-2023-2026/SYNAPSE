@@ -1,0 +1,224 @@
+{
+  "current": {
+    "messages": [
+      {
+        "id": "1770245143479",
+        "title": "duree",
+        "address": "/duree",
+        "value": "120",
+        "valueType": "int",
+        "controlType": "slider"
+      },
+      {
+        "id": "1770245143480",
+        "title": "abs",
+        "address": "/abs",
+        "value": "45",
+        "valueType": "int",
+        "controlType": "slider"
+      },
+      {
+        "id": "1770245143481",
+        "title": "eq",
+        "address": "/eq",
+        "value": "55",
+        "valueType": "int",
+        "controlType": "slider"
+      },
+      {
+        "id": "1770245143482",
+        "title": "app",
+        "address": "/app",
+        "value": "25",
+        "valueType": "int",
+        "controlType": "slider"
+      },
+      {
+        "id": "1770245143483",
+        "title": "ext",
+        "address": "/ext",
+        "value": "90",
+        "valueType": "int",
+        "controlType": "slider"
+      },
+      {
+        "id": "1770245264600",
+        "title": "prct_rhiz",
+        "address": "/prct_rhiz",
+        "value": "10",
+        "valueType": "int",
+        "controlType": "slider"
+      },
+      {
+        "id": "1770245264601",
+        "title": "base_rhiz",
+        "address": "/base_rhiz",
+        "value": "100",
+        "valueType": "int",
+        "controlType": "slider"
+      },
+      {
+        "id": "1770245264602",
+        "title": "base_dr",
+        "address": "/base_dr",
+        "value": "0.4",
+        "valueType": "float",
+        "controlType": "slider"
+      },
+      {
+        "id": "1770245264603",
+        "title": "n1_sim",
+        "address": "/n1_sim",
+        "value": "0",
+        "valueType": "float",
+        "controlType": "toggle"
+      },
+      {
+        "id": "1770245264604",
+        "title": "n2_sim",
+        "address": "/n2_sim",
+        "value": "0",
+        "valueType": "float",
+        "controlType": "toggle"
+      },
+      {
+        "id": "1770245264605",
+        "title": "n3_sim",
+        "address": "/n3_sim",
+        "value": "0",
+        "valueType": "float",
+        "controlType": "toggle"
+      },
+      {
+        "id": "1770245264606",
+        "title": "n4_sim",
+        "address": "/n4_sim",
+        "value": "0",
+        "valueType": "float",
+        "controlType": "toggle"
+      },
+      {
+        "id": "1770245264607",
+        "title": "reset",
+        "address": "/reset",
+        "value": "0",
+        "valueType": "float",
+        "controlType": "pulse"
+      }
+    ],
+    "target_ip": "10.0.2.245",
+    "target_port": 6666
+  },
+  "presets": {
+    "SYNAPSE": {
+      "messages": [
+        {
+          "id": "1770245143479",
+          "title": "duree",
+          "address": "/duree",
+          "value": "0",
+          "valueType": "float",
+          "controlType": "pulse"
+        },
+        {
+          "id": "1770245143480",
+          "title": "abs",
+          "address": "/abs",
+          "value": "45",
+          "valueType": "int",
+          "controlType": "slider"
+        },
+        {
+          "id": "1770245143481",
+          "title": "eq",
+          "address": "/eq",
+          "value": "55",
+          "valueType": "int",
+          "controlType": "slider"
+        },
+        {
+          "id": "1770245143482",
+          "title": "app",
+          "address": "/app",
+          "value": "25",
+          "valueType": "int",
+          "controlType": "slider"
+        },
+        {
+          "id": "1770245143483",
+          "title": "ext",
+          "address": "/ext",
+          "value": "90",
+          "valueType": "int",
+          "controlType": "slider"
+        },
+        {
+          "id": "1770245264600",
+          "title": "prct_rhiz",
+          "address": "/prct_rhiz",
+          "value": "10",
+          "valueType": "int",
+          "controlType": "slider"
+        },
+        {
+          "id": "1770245264601",
+          "title": "base_rhiz",
+          "address": "/base_rhiz",
+          "value": "100",
+          "valueType": "int",
+          "controlType": "slider"
+        },
+        {
+          "id": "1770245264602",
+          "title": "base_dr",
+          "address": "/base_dr",
+          "value": "0.4",
+          "valueType": "float",
+          "controlType": "slider"
+        },
+        {
+          "id": "1770245264603",
+          "title": "n1_sim",
+          "address": "/n1_sim",
+          "value": "0",
+          "valueType": "float",
+          "controlType": "toggle"
+        },
+        {
+          "id": "1770245264604",
+          "title": "n2_sim",
+          "address": "/n2_sim",
+          "value": "0",
+          "valueType": "float",
+          "controlType": "toggle"
+        },
+        {
+          "id": "1770245264605",
+          "title": "n3_sim",
+          "address": "/n3_sim",
+          "value": "0",
+          "valueType": "float",
+          "controlType": "toggle"
+        },
+        {
+          "id": "1770245264606",
+          "title": "n4_sim",
+          "address": "/n4_sim",
+          "value": "0",
+          "valueType": "float",
+          "controlType": "toggle"
+        },
+        {
+          "id": "1770245264607",
+          "title": "reset",
+          "address": "/reset",
+          "value": "0",
+          "valueType": "float",
+          "controlType": "pulse"
+        }
+      ],
+      "target_ip": "10.0.2.245",
+      "target_port": 6666
+    }
+  }
+}
