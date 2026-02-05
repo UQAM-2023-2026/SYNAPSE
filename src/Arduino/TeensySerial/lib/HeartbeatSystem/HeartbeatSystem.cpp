@@ -17,6 +17,7 @@ HeartbeatSystem::HeartbeatSystem()
       _enabled(true),
       _initialized(false),
       _hapticCallback(nullptr),
+      _ledCallback(nullptr),
       _ledStripCallback(nullptr)
 {
     _phase.phase = 0.0f;
@@ -168,6 +169,11 @@ void HeartbeatSystem::notifyCallbacks() {
         _hapticCallback();
     }
     
+    // Notify LED system at beat start (simple callback)
+    if (_phase.newBeatStarted && _ledCallback != nullptr) {
+        _ledCallback();
+    }
+    
     // Always notify LED strip with current phase (for smooth animation)
     if (_ledStripCallback != nullptr) {
         _ledStripCallback(_phase);
@@ -176,6 +182,10 @@ void HeartbeatSystem::notifyCallbacks() {
 
 void HeartbeatSystem::setHapticCallback(HeartbeatCallback callback) {
     _hapticCallback = callback;
+}
+
+void HeartbeatSystem::setLedCallback(HeartbeatCallback callback) {
+    _ledCallback = callback;
 }
 
 void HeartbeatSystem::setLedStripCallback(HeartbeatPhaseCallback callback) {
