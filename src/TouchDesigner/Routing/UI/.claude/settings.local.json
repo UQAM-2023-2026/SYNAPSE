@@ -12,7 +12,12 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(python server.py:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(node --check:*)",
+      "Bash(kill:*)",
+      "Bash(pgrep:*)",
+      "Bash(pkill:*)",
+      "Bash(lsof:*)"
     ]
   }
 }
