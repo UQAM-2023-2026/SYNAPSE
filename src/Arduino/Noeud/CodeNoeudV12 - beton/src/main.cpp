@@ -50,5 +50,12 @@ void loop() {
     updateNetworkOSC();
     SerialLoop();
     loopSendToTouch();
-    //delay(20);  // 20ms = good balance between responsiveness and stability
+    
+    // CRITICAL: 10ms delay allows UART buffers to accumulate complete OSC messages
+    // Without this delay, rapid polling can cause:
+    // - Incomplete message reads
+    // - Message corruption
+    // - Lost messages between calls
+    // - False disconnection timeouts
+    delay(10);
 }
