@@ -1,0 +1,61 @@
+#include <Arduino.h>
+#include "NetworkOSC.h"
+#include "SerialCommunication.h"
+#include "NodeStateAndID.h"
+
+// Make node global so it doesn't get destroyed after setup()
+NodeStateAndID node(1);
+
+void setup() {
+    Serial.begin(115200);
+
+    beginSerialCommunication(node);
+    beginNetworkOSC(node);
+
+    initNetworkOSC(
+        //local_IP
+        //IPAddress(10,0,2,225),
+        // ESP 
+        IPAddress(10,0,2,180),
+
+        //gateway
+        IPAddress(10,0,1,1),
+        //IPAddress(10,0,2,1),
+
+        //subnet
+        IPAddress(255,255,0,0),
+
+        //dns1
+        IPAddress(1,1,1,1),
+
+        //dns2
+        IPAddress(8,8,8,8),
+
+        //osc_listen_port
+        //osc Out
+        9600,
+
+        //target_IP
+        //IPAddress(10,0,2,222),
+        // adresse ordi lah lah 
+        IPAddress(10,0,2,245),
+        
+        //target_port
+        //osc In
+        8000
+    );
+}
+
+void loop() {
+    updateNetworkOSC();
+    SerialLoop();
+    loopSendToTouch();
+    
+    // CRITICAL: 10ms delay allows UART buffers to accumulate complete OSC messages
+    // Without this delay, rapid polling can cause:
+    // - Incomplete message reads
+    // - Message corruption
+    // - Lost messages between calls
+    // - False disconnection timeouts
+    delay(10);
+}

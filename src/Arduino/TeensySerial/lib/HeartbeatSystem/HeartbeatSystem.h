@@ -64,6 +64,7 @@ public:
     
     // Register callbacks - called at the START of each heartbeat
     void setHapticCallback(HeartbeatCallback callback);
+    void setLedCallback(HeartbeatCallback callback);
     void setLedStripCallback(HeartbeatPhaseCallback callback);
     
     // Enable/disable heartbeat (e.g., when dead)
@@ -89,6 +90,7 @@ private:
     
     // Callbacks
     HeartbeatCallback _hapticCallback;
+    HeartbeatCallback _ledCallback;
     HeartbeatPhaseCallback _ledStripCallback;
     
     // Internal helpers
