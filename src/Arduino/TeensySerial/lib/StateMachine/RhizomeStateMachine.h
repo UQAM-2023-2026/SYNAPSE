@@ -39,6 +39,7 @@ public:
     
     // Event handlers (called by protocol handlers)
     void onLoopDetected(uint8_t count);
+    void onLoopBroken();
     void onNodeConnected(float drainRate);
     void onMaleConnected();
     void onMaleDisconnected();

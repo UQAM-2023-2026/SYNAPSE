@@ -46,10 +46,15 @@ void PortManager::updateMaleState() {
             if (pinActive) {
                 _maleState = ConnState::DEBOUNCING_CONNECT;
                 _maleDebounceStart = now;
+                // Flush serial buffer immediately to prevent garbage corrupting OSC parser
+                while (MALE_SERIAL.available()) MALE_SERIAL.read();
             }
             break;
             
         case ConnState::DEBOUNCING_CONNECT:
+            // Keep draining garbage during debounce
+            while (MALE_SERIAL.available()) MALE_SERIAL.read();
+            
             if (!pinActive) {
                 _maleState = ConnState::DISCONNECTED;
             } else if (now - _maleDebounceStart >= CONNECT_DEBOUNCE_MS) {
@@ -89,10 +94,15 @@ void PortManager::updateFemaleState() {
             if (pinActive) {
                 _femaleState = ConnState::DEBOUNCING_CONNECT;
                 _femaleDebounceStart = now;
+                // Flush serial buffer immediately to prevent garbage corrupting OSC parser
+                while (FEMALE_SERIAL.available()) FEMALE_SERIAL.read();
             }
             break;
             
         case ConnState::DEBOUNCING_CONNECT:
+            // Keep draining garbage during debounce
+            while (FEMALE_SERIAL.available()) FEMALE_SERIAL.read();
+            
             if (!pinActive) {
                 _femaleState = ConnState::DISCONNECTED;
             } else if (now - _femaleDebounceStart >= CONNECT_DEBOUNCE_MS) {

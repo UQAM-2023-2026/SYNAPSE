@@ -102,3 +102,44 @@ void OscRouter::sendToFemale(const char* address, const char* format, ...) {
     // Simple wrapper - protocols use getFemaleOsc() for complex sends
     // This is for future extensibility
 }
+
+// No-op callback for draining pending OSC messages
+static void noOpOscCallback(MicroOscMessage&) {}
+
+void OscRouter::flushMaleSerial() {
+    // SLIP_END byte resets the remote SLIP parser state
+    static const uint8_t SLIP_END = 0xC0;
+    MALE_SERIAL.write(SLIP_END);
+    
+    // Process any pending data through MicroSlip to properly reset its internal state
+    // Raw byte drain bypasses MicroSlip's parseIndex, causing message corruption
+    int iterations = 0;
+    while (MALE_SERIAL.available() && iterations < 16) {
+        _oscMale.onOscMessageReceived(noOpOscCallback);
+        iterations++;
+    }
+    if (iterations > 0) {
+        Serial.print("[OSC] Flushed MALE: ");
+        Serial.print(iterations);
+        Serial.println(" iterations");
+    }
+}
+
+void OscRouter::flushFemaleSerial() {
+    // SLIP_END byte resets the remote SLIP parser state
+    static const uint8_t SLIP_END = 0xC0;
+    FEMALE_SERIAL.write(SLIP_END);
+    
+    // Process any pending data through MicroSlip to properly reset its internal state
+    // Raw byte drain bypasses MicroSlip's parseIndex, causing message corruption
+    int iterations = 0;
+    while (FEMALE_SERIAL.available() && iterations < 16) {
+        _oscFemale.onOscMessageReceived(noOpOscCallback);
+        iterations++;
+    }
+    if (iterations > 0) {
+        Serial.print("[OSC] Flushed FEMALE: ");
+        Serial.print(iterations);
+        Serial.println(" iterations");
+    }
+}

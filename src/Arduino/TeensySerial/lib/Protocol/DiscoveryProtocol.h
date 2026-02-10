@@ -18,6 +18,9 @@ class RhizomeStateMachine;
 // Callback when loop is detected (own ID received back)
 using LoopDetectedCallback = void (*)(uint8_t count);
 
+// Callback when loop is broken (own ID no longer received)
+using LoopBrokenCallback = void (*)();
+
 class DiscoveryProtocol {
 public:
     static constexpr uint8_t MAX_SEEN_IDS = 20;
@@ -35,6 +38,9 @@ public:
     
     // Callback for loop detection
     void onLoopDetected(LoopDetectedCallback cb) { _onLoopDetected = cb; }
+    
+    // Callback for loop broken
+    void onLoopBroken(LoopBrokenCallback cb) { _onLoopBroken = cb; }
     
     // ID bank management
     void clearSeenIds();
@@ -63,6 +69,7 @@ private:
     // Loop detection
     bool _loopDetected;
     LoopDetectedCallback _onLoopDetected;
+    LoopBrokenCallback _onLoopBroken;
     
     // Send /discover_list via MALE port
     void sendDiscoverList();

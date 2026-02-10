@@ -64,9 +64,21 @@ void RhizomeStateMachine::onLoopDetected(uint8_t count) {
         _data->setCount(count);
     }
     
-    // Can only enter GENERATING from DISCOVERING
-    if (_state == RhizomeState::DISCOVERING) {
+    // Can only enter GENERATING from DISCOVERING if BOTH ports connected
+    // (a loop requires a complete circuit)
+    if (_state == RhizomeState::DISCOVERING && _maleConnected && _femaleConnected) {
         transitionTo(RhizomeState::GENERATING);
+    }
+}
+
+void RhizomeStateMachine::onLoopBroken() {
+    Serial.println("[SM] Loop broken");
+    
+    // Exit GENERATING if loop is broken
+    if (_state == RhizomeState::GENERATING) {
+        transitionTo(RhizomeState::DISCOVERING);
+        discoveryProtocol.reset();
+        fullEnergySync.reset();
     }
 }
 
@@ -134,7 +146,15 @@ void RhizomeStateMachine::onMaleDisconnected() {
     // GENERATING -> broken loop
     if (_state == RhizomeState::GENERATING) {
         transitionTo(RhizomeState::DISCOVERING);
+        discoveryProtocol.reset();  // Clear _loopDetected flag
         fullEnergySync.reset();
+        return;
+    }
+    
+    // DISCOVERING -> lost the node in front of us, clear seenIds
+    if (_state == RhizomeState::DISCOVERING) {
+        discoveryProtocol.reset();
+        return;
     }
     
     // GIVING/MIDDLEMAN -> lost node connection
@@ -207,9 +227,16 @@ void RhizomeStateMachine::onFemaleDisconnected() {
         return;
     }
     
+    // DISCOVERING -> lost the node behind us, clear seenIds
+    if (_state == RhizomeState::DISCOVERING) {
+        discoveryProtocol.reset();
+        return;
+    }
+    
     // GENERATING -> broken loop
     if (_state == RhizomeState::GENERATING) {
         transitionTo(RhizomeState::DISCOVERING);
+        discoveryProtocol.reset();  // Clear _loopDetected flag
         fullEnergySync.reset();
     }
 }
