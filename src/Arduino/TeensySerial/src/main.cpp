@@ -51,7 +51,7 @@
  *   - Rhizome 2: RHIZOME_ID = 2
  *   - etc.
  *----------------------------------------------------------------------------*/
-constexpr uint8_t RHIZOME_ID = 12;  // TODO: Read from EEPROM or set via jumpers
+constexpr uint8_t RHIZOME_ID = 3;  // TODO: Read from EEPROM or set via jumpers
 
 /*------------------------------------------------------------------------------
  * Global Instances
@@ -75,6 +75,7 @@ void onFemaleDisconnectCallback();
 
 // Discovery -> State machine
 void onLoopDetectedCallback(uint8_t count);
+void onLoopBrokenCallback();
 
 // Node protocol -> State machine & Energy
 void onNodeConnectedCallback(float drainRate);
@@ -127,6 +128,7 @@ void setup() {
     // Initialize Protocols
     discoveryProtocol.begin(&oscRouter, RHIZOME_ID);
     discoveryProtocol.onLoopDetected(onLoopDetectedCallback);
+    discoveryProtocol.onLoopBroken(onLoopBrokenCallback);
     
     nodeProtocol.begin(&oscRouter, &rhizomeData);
     nodeProtocol.onNodeConnected(onNodeConnectedCallback);
@@ -177,7 +179,9 @@ void loop() {
     bool maleConn = portManager.isMaleConnected();
     bool femaleConn = portManager.isFemaleConnected();
     
-    if (state == RhizomeState::DISCOVERING) {
+    // Keep sending discover_list in both DISCOVERING and GENERATING
+    // so all rhizomes in the loop can detect it (not just the first one)
+    if (state == RhizomeState::DISCOVERING || state == RhizomeState::GENERATING) {
         discoveryProtocol.update(maleConn, femaleConn);
     }
     
@@ -206,6 +210,7 @@ void loop() {
  * Port Event Callbacks
  *----------------------------------------------------------------------------*/
 void onMaleConnectCallback() {
+    oscRouter.flushMaleSerial();  // Clear garbage from connection noise
     stateMachine.onMaleConnected();
 }
 
@@ -214,6 +219,7 @@ void onMaleDisconnectCallback() {
 }
 
 void onFemaleConnectCallback() {
+    oscRouter.flushFemaleSerial();  // Clear garbage from connection noise
     stateMachine.onFemaleConnected();
 }
 
@@ -226,6 +232,10 @@ void onFemaleDisconnectCallback() {
  *----------------------------------------------------------------------------*/
 void onLoopDetectedCallback(uint8_t count) {
     stateMachine.onLoopDetected(count);
+}
+
+void onLoopBrokenCallback() {
+    stateMachine.onLoopBroken();
 }
 
 void onNodeConnectedCallback(float drainRate) {

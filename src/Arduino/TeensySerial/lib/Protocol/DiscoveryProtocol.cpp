@@ -16,6 +16,7 @@ DiscoveryProtocol::DiscoveryProtocol()
     , _lastSendTime(0)
     , _loopDetected(false)
     , _onLoopDetected(nullptr)
+    , _onLoopBroken(nullptr)
 {}
 
 void DiscoveryProtocol::begin(OscRouter* router, uint8_t ownId) {
@@ -70,8 +71,9 @@ void DiscoveryProtocol::buildCsvString(char* buffer, size_t bufferSize) const {
 }
 
 void DiscoveryProtocol::update(bool maleConnected, bool femaleConnected) {
-    if (!_router || _loopDetected) return;
+    if (!_router) return;
     
+    // Keep sending even after loop detected so ALL rhizomes can detect it
     // Only send if MALE is connected
     if (maleConnected) {
         unsigned long now = millis();
@@ -116,6 +118,14 @@ void DiscoveryProtocol::handleDiscoverList(MicroOscMessage& msg) {
         
         if (_onLoopDetected) {
             _onLoopDetected(_seenCount);
+        }
+    } else if (!foundOwnId && _loopDetected) {
+        // We had a loop, but now our ID is missing - loop broken
+        _loopDetected = false;
+        Serial.println("[DISCOVERY] Loop broken!");
+        
+        if (_onLoopBroken) {
+            _onLoopBroken();
         }
     }
 }

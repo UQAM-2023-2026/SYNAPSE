@@ -39,6 +39,10 @@ public:
     MicroOscSlip<64>& getMaleOsc() { return _oscMale; }
     MicroOscSlip<64>& getFemaleOsc() { return _oscFemale; }
     
+    // Clear serial buffers (call on connection to remove garbage)
+    void flushMaleSerial();
+    void flushFemaleSerial();
+    
 private:
     MicroOscSlip<64> _oscMale;    // MALE port OSC (Serial3)
     MicroOscSlip<64> _oscFemale;  // FEMALE port OSC (Serial2)
