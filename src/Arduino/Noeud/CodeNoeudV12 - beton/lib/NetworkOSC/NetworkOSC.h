@@ -22,7 +22,7 @@ void initNetworkOSC(
     unsigned int targetPort
 );
 
-// --- À appeler dans loop()
+// --- Ã€ appeler dans loop()
 void updateNetworkOSC();
 
 // --- Envoi OSC : 4 channels (energy1, energy2, conn1, conn2)

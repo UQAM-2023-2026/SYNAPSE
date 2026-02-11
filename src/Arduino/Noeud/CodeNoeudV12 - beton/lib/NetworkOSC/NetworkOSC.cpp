@@ -98,7 +98,7 @@ void initNetworkOSC(
 }
 
 // -------------------------------------------------------------------
-// Update à appeler dans loop()
+// Update Ã  appeler dans loop()
 // -------------------------------------------------------------------
 void updateNetworkOSC() {
     if (!eth_connected) return;

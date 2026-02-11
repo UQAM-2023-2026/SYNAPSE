@@ -6,7 +6,7 @@
 #include <MicroOsc.h>
 
 // ===== POGOPIN 1 (UART1) PIN DEFINITIONS =====
-#define POGOPIN1_RX_PIN 5      // GPIO5 (blue wire)
+#define POGOPIN1_RX_PIN 2      // GPIO2 (was GPIO5 - conflicts with Ethernet on ESP32-PoE-ISO)
 #define POGOPIN1_TX_PIN 4      // GPIO4 (green wire)
 #define POGOPIN1_FLAG_PIN 13   // GPIO13 (connection detection flag)
 
@@ -21,25 +21,24 @@
 // UART configuration
 #define SERIAL_BAUD 9600
 
-// Timing constants
-#define CONNECTION_TIMEOUT 10000     // 10s without /energy = consider disconnected
-                                      // With 10ms loop delay and ~1Hz /energy messages, this should never trigger
-                                      // unless communication actually stops
-#define HANDSHAKE_TIMEOUT 3000       // 3s after sending /node without /energy = retry
-#define NODE_RESEND_INTERVAL 1000    // Minimum 1s between /node sends
-#define FLAG_DISCONNECT_DEBOUNCE 100 // 100ms debounce for FLAG-based disconnect
-                                      // Prevents momentary bounces from killing connection
-                                      // While still allowing fast disconnect on real removal
-
-// Debug verbosity (set to 0 for production, 1 for normal debug, 2 for verbose)
-#define DEBUG_SERIAL_LEVEL 1
-
-// ===== FUNCTION DECLARATIONS =====
+// ===== MAIN FUNCTIONS =====
 void beginSerialCommunication(NodeStateAndID &node);
-void checkConnectionStatus();
-void lookForMessages(MicroOscMessage &msg);
-float getRhizomeValue();     // 1.0 if connected, 0.0 if not
-void loopSendToTouch();
 void SerialLoop();
+
+// ===== DATA ACCESS (for TouchDesigner integration) =====
+float getRhizomeValue();           // 1.0 if any connected, 0.0 if not
+bool isRhizome1Connected();
+bool isRhizome2Connected();
+uint8_t getRhizome1ID();
+uint8_t getRhizome2ID();
+uint8_t getRhizome1Energy();
+uint8_t getRhizome2Energy();
+
+// ===== TOUCHDESIGNER INTEGRATION =====
+void loopSendToTouch();
+
+// ===== LEGACY COMPATIBILITY =====
+void checkConnectionStatus();      // Deprecated - use SerialLoop()
+void lookForMessages(MicroOscMessage &msg);  // Deprecated
 
 #endif

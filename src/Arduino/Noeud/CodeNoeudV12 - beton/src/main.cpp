@@ -16,11 +16,11 @@ void setup() {
         //local_IP
         //IPAddress(10,0,2,225),
         // ESP 
-        IPAddress(10,0,2,180),
+        IPAddress(10,0,2,170),
 
         //gateway
-        IPAddress(10,0,1,1),
-        //IPAddress(10,0,2,1),
+        //IPAddress(10,0,1,1),
+        IPAddress(10,0,2,1),
 
         //subnet
         IPAddress(255,255,0,0),
@@ -33,7 +33,7 @@ void setup() {
 
         //osc_listen_port
         //osc Out
-        9600,
+        9602,
 
         //target_IP
         //IPAddress(10,0,2,222),
@@ -42,7 +42,7 @@ void setup() {
         
         //target_port
         //osc In
-        8000
+        8002
     );
 }
 
@@ -50,12 +50,5 @@ void loop() {
     updateNetworkOSC();
     SerialLoop();
     loopSendToTouch();
-    
-    // CRITICAL: 10ms delay allows UART buffers to accumulate complete OSC messages
-    // Without this delay, rapid polling can cause:
-    // - Incomplete message reads
-    // - Message corruption
-    // - Lost messages between calls
-    // - False disconnection timeouts
-    delay(10);
+    //delay(20);  // 20ms = good balance between responsiveness and stability
 }
