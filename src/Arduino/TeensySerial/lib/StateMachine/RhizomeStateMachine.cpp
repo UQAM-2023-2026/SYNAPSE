@@ -34,7 +34,10 @@ void RhizomeStateMachine::update() {
     // This is here for future periodic checks if needed
     
     // Check for DEAD condition based on energy
-    if (_data && _data->getEnergy() <= 0.0f && _state != RhizomeState::DEAD) {
+    // GENERATING is exempt - it will generate energy even from 0%
+    if (_data && _data->getEnergy() <= 0.0f && 
+        _state != RhizomeState::DEAD && 
+        _state != RhizomeState::GENERATING) {
         onEnergyDepleted();
     }
 }
@@ -64,9 +67,15 @@ void RhizomeStateMachine::onLoopDetected(uint8_t count) {
         _data->setCount(count);
     }
     
-    // Can only enter GENERATING from DISCOVERING if BOTH ports connected
-    // (a loop requires a complete circuit)
-    if (_state == RhizomeState::DISCOVERING && _maleConnected && _femaleConnected) {
+    // Can enter GENERATING from DISCOVERING, DEAD, or MIDDLEMAN if BOTH ports connected
+    // MIDDLEMAN can detect a loop if the "node" it was connected to was actually 
+    // another rhizome forwarding /node - in a closed loop, there's no real node
+    if ((_state == RhizomeState::DISCOVERING || _state == RhizomeState::DEAD || _state == RhizomeState::MIDDLEMAN) 
+        && _maleConnected && _femaleConnected) {
+        // Clear node connection - we're in a closed loop, not connected to a real node
+        _nodeConnected = false;
+        _drainRate = 0.0f;
+        nodeProtocol.reset();  // Also clear NodeProtocol's state
         transitionTo(RhizomeState::GENERATING);
     }
 }
@@ -85,6 +94,13 @@ void RhizomeStateMachine::onLoopBroken() {
 void RhizomeStateMachine::onNodeConnected(float drainRate) {
     Serial.print("[SM] Node connected, drainRate=");
     Serial.println(drainRate);
+    
+    // GENERATING: Ignore /node - we're in a loop, not connected to a real node
+    // This prevents MIDDLEMAN feedback loops when rhizomes send /node to each other
+    if (_state == RhizomeState::GENERATING) {
+        Serial.println("[SM] GENERATING - ignoring /node (in loop)");
+        return;
+    }
     
     _nodeConnected = true;
     _drainRate = drainRate;
