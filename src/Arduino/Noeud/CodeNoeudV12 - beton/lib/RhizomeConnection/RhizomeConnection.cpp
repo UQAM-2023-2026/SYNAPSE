@@ -9,6 +9,7 @@ RhizomeConnection* RhizomeConnection::_instances[2] = {nullptr, nullptr};
 
 // Static callback dispatchers (MicroOsc requires static function pointers)
 void RhizomeConnection::messageCallback0(MicroOscMessage& msg) {
+    Serial.println("miaou");
     if (_instances[0]) _instances[0]->handleMessage(msg);
 }
 

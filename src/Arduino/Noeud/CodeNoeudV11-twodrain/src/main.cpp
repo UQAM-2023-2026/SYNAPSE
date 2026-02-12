@@ -14,7 +14,7 @@ void setup() {
 
     initNetworkOSC(
         //local_IP
-        IPAddress(10,0,2,225),
+        IPAddress(10,0,2,170),
         // ESP 
         //IPAddress(10,0,2,170),
 
@@ -33,7 +33,7 @@ void setup() {
 
         //osc_listen_port
         //osc Out
-        9600,
+        9602,
 
         //target_IP
         //IPAddress(10,0,2,222),

@@ -6,7 +6,7 @@
 #include <MicroOsc.h>
 
 // ===== POGOPIN 1 (UART1) PIN DEFINITIONS =====
-#define POGOPIN1_RX_PIN 5      // GPIO5 (blue wire)
+#define POGOPIN1_RX_PIN 2      // GPIO5 (blue wire)
 #define POGOPIN1_TX_PIN 4      // GPIO4 (green wire)
 #define POGOPIN1_FLAG_PIN 13   // GPIO13 (connection detection flag)
 
