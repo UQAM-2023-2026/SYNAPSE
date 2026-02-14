@@ -1,5 +1,8 @@
 /*==============================================================================
  * LedFeedback.cpp - LED strip feedback implementation
+ *
+ * Implements all LED behaviors per state with proper hardware configuration.
+ * Uses callbacks, no delay(), single FastLED.show() per frame.
  *============================================================================*/
 
 #include "LedFeedback.h"
@@ -18,40 +21,60 @@ void ledHeartbeatCallback() {
 LedFeedback::LedFeedback()
     : _currentState(RhizomeState::IDLE)
     , _currentEnergy(0)
+    , _displayedEnergy(0)
     , _maleConnected(false)
     , _femaleConnected(false)
-    , _pulsePhase(0)
-    , _pulseBrightness(LedConfig::PULSE_BASE)
-    , _pulseOffset(0.0f)
-    , _pulseStartMs(0)
+    , _lastFrameMs(0)
     , _pulseActive(false)
-    , _flowType(FlowType::NONE)
-    , _lastFlowUpdateMs(0)
-    , _lastPacketSpawnMs(0)
-    , _lockedLedCount(0)
-    , _lastGaugeUpdateMs(0)
+    , _pulseStartMs(0)
+    , _pulsePhase(0)
+    , _cycleStartMs(0)
+    , _flashActive(false)
+    , _flashStartMs(0)
+    , _flashCycleCount(0)
+    , _flowPosition(0)
+    , _lastAnimMs(0)
+    , _maleAnim(EmboutAnim::OFF)
+    , _femaleAnim(EmboutAnim::OFF)
 {}
 
 /*------------------------------------------------------------------------------
  * Initialization
  *----------------------------------------------------------------------------*/
 void LedFeedback::begin() {
-    Serial.println("[LedFeedback] Initializing...");
+    Serial.println("[LedFeedback] Initializing 3 strips...");
     
-    // APA102 on pins 12 (data) and 13 (clock)
-    FastLED.addLeds<APA102, 12, 13, BGR, DATA_RATE_MHZ(1)>(_leds, LedConfig::NUM_LEDS);
+    // Male embout: WS2812B on pin 1, 5 LEDs
+    FastLED.addLeds<WS2812B, LedConfig::PIN_MALE, GRB>(_ledsMale, LedConfig::EMBOUT_LEDS);
+    
+    // Female embout: WS2812B on pin 0, 5 LEDs
+    FastLED.addLeds<WS2812B, LedConfig::PIN_FEMALE, GRB>(_ledsFemale, LedConfig::EMBOUT_LEDS);
+    
+    // Tube: APA102 on pins 12/13, 15 LEDs
+    FastLED.addLeds<APA102, LedConfig::PIN_TUBE_DATA, LedConfig::PIN_TUBE_CLOCK, BGR, DATA_RATE_MHZ(1)>(
+        _ledsTube, LedConfig::TUBE_LEDS);
+    
     FastLED.setBrightness(255);
-    
     clearAll();
     FastLED.show();
     
-    Serial.println("[LedFeedback] Ready");
+    _cycleStartMs = millis();
+    _lastAnimMs = millis();
+    
+    Serial.println("[LedFeedback] Ready - Male(pin1), Female(pin0), Tube(APA102)");
 }
 
 /*------------------------------------------------------------------------------
- * Main Update
+ * Main Update (frame-rate limited to ~30 FPS)
  *----------------------------------------------------------------------------*/
 void LedFeedback::update(RhizomeState state, float energy, bool maleConnected, bool femaleConnected) {
+    // Frame rate limiter - only update LEDs every ~33ms (30 FPS)
+    unsigned long now = millis();
+    if (now - _lastFrameMs < 33) {
+        return;  // Skip this frame, don't call FastLED.show()
+    }
+    _lastFrameMs = now;
+    
     _currentState = state;
     _currentEnergy = energy;
     _maleConnected = maleConnected;
@@ -60,369 +83,411 @@ void LedFeedback::update(RhizomeState state, float energy, bool maleConnected, b
     // Handle DEAD state - all off
     if (state == RhizomeState::DEAD) {
         clearAll();
+        FastLED.setBrightness(0);
         FastLED.show();
         return;
     }
     
-    // Start fresh
+    // Handle flash event (overrides everything)
+    if (_flashActive) {
+        renderFlash();
+        FastLED.show();
+        return;
+    }
+    
+    // Update animations
+    updatePulse();
+    updateFlow();
+    updateGaugeDrain();
+    updateAnimationStates();
+    
+    // Clear and render
     clearAll();
     
-    // Update flow type based on state
-    switch (state) {
-        case RhizomeState::IDLE:
-            setFlowType(FlowType::NONE);
-            break;
-        case RhizomeState::DISCOVERING:
-            setFlowType(FlowType::SEEKING);
-            break;
-        case RhizomeState::GENERATING:
-            setFlowType(FlowType::INWARD);
-            break;
-        case RhizomeState::GIVING:
-            setFlowType(FlowType::OUTWARD);
-            break;
-        case RhizomeState::MIDDLEMAN:
-            setFlowType(FlowType::PASSTHROUGH);
-            break;
-        default:
-            setFlowType(FlowType::NONE);
-            break;
-    }
+    // Set global brightness based on energy
+    FastLED.setBrightness(getGlobalBrightness());
     
-    // MIDDLEMAN: Solid orange with passthrough, no pulse
-    if (state == RhizomeState::MIDDLEMAN) {
-        setAllSolid(255);
-        updateFlow();
-        FastLED.show();
-        return;
-    }
+    // Render embouts
+    renderEmbout(_ledsMale, _maleAnim);
+    renderEmbout(_ledsFemale, _femaleAnim);
     
-    // Normal states: Gauge + Flow + Pulse
-    updateGauge(energy);
-    
-    if (state == RhizomeState::GENERATING) {
-        updatePackets(energy);
-    } else {
-        updateFlow();
-    }
-    
-    updatePulse();
-    applyPulse();
+    // Render tube based on state
+    renderTube();
     
     FastLED.show();
 }
 
 /*------------------------------------------------------------------------------
- * Event Handlers
+ * Callbacks
  *----------------------------------------------------------------------------*/
 void LedFeedback::onHeartbeat() {
     _pulseActive = true;
     _pulseStartMs = millis();
-    // Don't set _pulseBrightness here - updatePulse() calculates it
+    _pulsePhase = 0.0f;
 }
 
 void LedFeedback::onStateChange(RhizomeState oldState, RhizomeState newState) {
-    // Reset flow particles on state change
-    for (int i = 0; i < MAX_PARTICLES; i++) {
-        _particles[i].active = false;
-    }
+    // Reset flow position on state change
+    _flowPosition = 0;
     
-    // Reset packets when leaving GENERATING
-    if (oldState == RhizomeState::GENERATING) {
-        for (int i = 0; i < MAX_PACKETS; i++) {
-            _packets[i].active = false;
-            _packets[i].locked = false;
-        }
-        _lockedLedCount = 0;
+    // Sync displayed energy to actual on state change
+    if (newState != RhizomeState::GIVING) {
+        _displayedEnergy = _currentEnergy;
+    }
+}
+
+void LedFeedback::onAllRhizomesFull() {
+    // Trigger the 100% celebration flash
+    if (!_flashActive) {
+        _flashActive = true;
+        _flashStartMs = millis();
+        _flashCycleCount = 0;
+        Serial.println("[LedFeedback] Flash event triggered!");
     }
 }
 
 /*------------------------------------------------------------------------------
- * Gauge Layer - Shows energy level MALE→FEMALE direction
- * NOTE: No timing gate - must render every frame after clearAll()
+ * Animation State Machine
  *----------------------------------------------------------------------------*/
-void LedFeedback::updateGauge(float energy) {
-    // MALE end is LED 0, FEMALE end is LED NUM_LEDS-1
-    // Energy fills from MALE toward FEMALE
-    int filledLeds = (int)((energy / 100.0f) * LedConfig::NUM_LEDS);
-    
-    for (int i = 0; i < filledLeds && i < LedConfig::NUM_LEDS; i++) {
-        _leds[i] = getColor(255);
-    }
-    
-    // Partial LED for smooth transition
-    if (filledLeds < LedConfig::NUM_LEDS) {
-        float fraction = ((energy / 100.0f) * LedConfig::NUM_LEDS) - filledLeds;
-        if (fraction > 0) {
-            _leds[filledLeds] = getColor((uint8_t)(255 * fraction));
-        }
-    }
-}
-
-int LedFeedback::getGaugeEdgeLed(float energy) {
-    // Returns the LED index at the edge of the gauge
-    return (int)((energy / 100.0f) * LedConfig::NUM_LEDS);
-}
-
-/*------------------------------------------------------------------------------
- * Flow Layer - State-dependent particle animation
- *----------------------------------------------------------------------------*/
-void LedFeedback::setFlowType(FlowType type) {
-    if (_flowType != type) {
-        _flowType = type;
-        // Clear particles when flow type changes
-        for (int i = 0; i < MAX_PARTICLES; i++) {
-            _particles[i].active = false;
-        }
-    }
-}
-
-void LedFeedback::updateFlow() {
-    if (_flowType == FlowType::NONE) return;
-    
-    // Gate particle state updates (spawning, movement) but always render
-    if (millis() - _lastFlowUpdateMs >= LedConfig::FLOW_UPDATE_MS) {
-        _lastFlowUpdateMs = millis();
-        updateParticles();
-        spawnParticle();
-    }
-    
-    // Always render particles every frame
-    renderParticles();
-}
-
-void LedFeedback::spawnParticle() {
-    // Spawn rate based on flow type
-    int spawnChance;
-    switch (_flowType) {
-        case FlowType::SEEKING: spawnChance = 10; break;  // Rare
-        case FlowType::INWARD: spawnChance = 30; break;
-        case FlowType::OUTWARD: spawnChance = 30; break;
-        case FlowType::PASSTHROUGH: spawnChance = 50; break;
-        default: return;
-    }
-    
-    if (random(100) >= spawnChance) return;
-    
-    // Find inactive particle
-    for (int i = 0; i < MAX_PARTICLES; i++) {
-        if (!_particles[i].active) {
-            _particles[i].active = true;
-            _particles[i].brightness = 200 + random(55);
-            
-            switch (_flowType) {
-                case FlowType::SEEKING:
-                    // FEMALE→MALE direction (high→low LED)
-                    _particles[i].position = LedConfig::NUM_LEDS - 1;
-                    _particles[i].speed = -LedConfig::SEEKING_SPEED;
-                    break;
-                    
-                case FlowType::INWARD:
-                    // FEMALE→gauge (high→middle)
-                    _particles[i].position = LedConfig::NUM_LEDS - 1;
-                    _particles[i].speed = -LedConfig::INWARD_SPEED;
-                    break;
-                    
-                case FlowType::OUTWARD:
-                    // Gauge→MALE (middle→low)
-                    _particles[i].position = getGaugeEdgeLed(_currentEnergy);
-                    _particles[i].speed = -LedConfig::OUTWARD_SPEED;
-                    break;
-                    
-                case FlowType::PASSTHROUGH:
-                    // FEMALE→MALE (high→low)
-                    _particles[i].position = LedConfig::NUM_LEDS - 1;
-                    _particles[i].speed = -LedConfig::PASSTHROUGH_SPEED;
-                    break;
-                    
-                default:
-                    break;
+void LedFeedback::updateAnimationStates() {
+    switch (_currentState) {
+        case RhizomeState::IDLE:
+            // Both embouts pulse ORANGE→WHITE
+            // If energy > 50%, male cycles CYAN↔PURPLE
+            if (_currentEnergy > 50.0f) {
+                _maleAnim = EmboutAnim::CYCLE_INFRA_SUPRA;
+            } else {
+                _maleAnim = EmboutAnim::IDLE_PULSE;
             }
+            _femaleAnim = EmboutAnim::IDLE_PULSE;
+            break;
+            
+        case RhizomeState::DISCOVERING:
+            // Connected embout = fixed orange, non-connected = continues IDLE animation
+            if (_maleConnected) {
+                _maleAnim = EmboutAnim::FIXED_ORANGE;
+            } else {
+                // Continue IDLE behavior (cycle if energy > 50%)
+                _maleAnim = (_currentEnergy > 50.0f) ? EmboutAnim::CYCLE_INFRA_SUPRA : EmboutAnim::IDLE_PULSE;
+            }
+            _femaleAnim = _femaleConnected ? EmboutAnim::FIXED_ORANGE : EmboutAnim::IDLE_PULSE;
+            break;
+            
+        case RhizomeState::GENERATING:
+            // Both embouts = fixed orange
+            _maleAnim = EmboutAnim::FIXED_ORANGE;
+            _femaleAnim = EmboutAnim::FIXED_ORANGE;
+            break;
+            
+        case RhizomeState::GIVING:
+            // Male = fixed orange (connected to node)
+            // Female = idle (not connected in giving)
+            _maleAnim = EmboutAnim::FIXED_ORANGE;
+            _femaleAnim = EmboutAnim::IDLE_PULSE;
+            break;
+            
+        case RhizomeState::MIDDLEMAN:
+            // Female sends /node to next rhizome = fixed orange
+            // Male relays from upstream = cycle CYAN↔PURPLE
+            _maleAnim = EmboutAnim::CYCLE_INFRA_SUPRA;
+            _femaleAnim = EmboutAnim::FIXED_ORANGE;
+            break;
+            
+        case RhizomeState::DEAD:
+            _maleAnim = EmboutAnim::OFF;
+            _femaleAnim = EmboutAnim::OFF;
+            break;
+    }
+}
+
+/*------------------------------------------------------------------------------
+ * Embout Rendering
+ *----------------------------------------------------------------------------*/
+void LedFeedback::renderEmbout(CRGB* leds, EmboutAnim anim) {
+    switch (anim) {
+        case EmboutAnim::OFF:
+            fill_solid(leds, LedConfig::EMBOUT_LEDS, CRGB::Black);
+            break;
+            
+        case EmboutAnim::IDLE_PULSE: {
+            // Pulsation using SAME energy color as tube
+            // Pulse blends toward white during heartbeat
+            CRGB baseColor = getEnergyColor(getEnergySaturation());
+            CRGB targetColor = blend(baseColor, COLOR_WHITE, (uint8_t)(_pulsePhase * 80));
+            fill_solid(leds, LedConfig::EMBOUT_LEDS, targetColor);
             break;
         }
-    }
-}
-
-void LedFeedback::updateParticles() {
-    for (int i = 0; i < MAX_PARTICLES; i++) {
-        if (!_particles[i].active) continue;
-        
-        _particles[i].position += _particles[i].speed;
-        
-        // Check bounds
-        if (_particles[i].position < 0 || _particles[i].position >= LedConfig::NUM_LEDS) {
-            _particles[i].active = false;
-            continue;
-        }
-        
-        // For INWARD flow, stop at gauge edge
-        if (_flowType == FlowType::INWARD) {
-            int gaugeEdge = getGaugeEdgeLed(_currentEnergy);
-            if (_particles[i].position <= gaugeEdge) {
-                _particles[i].active = false;
-            }
-        }
-    }
-}
-
-void LedFeedback::renderParticles() {
-    for (int i = 0; i < MAX_PARTICLES; i++) {
-        if (!_particles[i].active) continue;
-        
-        int led = (int)_particles[i].position;
-        if (led >= 0 && led < LedConfig::NUM_LEDS) {
-            // Add to existing LED (flow on top of gauge)
-            CRGB flowColor = getColor(_particles[i].brightness);
-            _leds[led] += flowColor;
-        }
+            
+        case EmboutAnim::FIXED_ORANGE:
+            // Pure ORANGE, only affected by global brightness
+            // NOT influenced by energy saturation or white blending
+            fill_solid(leds, LedConfig::EMBOUT_LEDS, COLOR_ORANGE);
+            break;
+            
+        case EmboutAnim::CYCLE_INFRA_SUPRA:
+            // CYAN↔PURPLE cycle, not affected by energy saturation
+            fill_solid(leds, LedConfig::EMBOUT_LEDS, getCycleColor());
+            break;
     }
 }
 
 /*------------------------------------------------------------------------------
- * Packet Layer - Tetris-style generation
+ * Tube Rendering
  *----------------------------------------------------------------------------*/
-void LedFeedback::updatePackets(float energy) {
-    if (millis() - _lastFlowUpdateMs < LedConfig::FLOW_UPDATE_MS) return;
-    _lastFlowUpdateMs = millis();
-    
-    // Calculate how many packets we should have locked based on energy
-    int targetLockedLeds = getGaugeEdgeLed(energy);
-    
-    // Spawn new packet if needed and not at 100%
-    if (energy < 100.0f && millis() - _lastPacketSpawnMs > 500) {
-        // Find inactive packet
-        for (int i = 0; i < MAX_PACKETS; i++) {
-            if (!_packets[i].active) {
-                // Target the next unfilled LED
-                int targetLed = _lockedLedCount;
-                if (targetLed < LedConfig::NUM_LEDS) {
-                    _packets[i].active = true;
-                    _packets[i].locked = false;
-                    _packets[i].position = LedConfig::NUM_LEDS - 1;  // Start from FEMALE end
-                    _packets[i].targetLed = targetLed;
-                    _lastPacketSpawnMs = millis();
-                }
-                break;
-            }
-        }
-    }
-    
-    updatePacketPositions();
-    renderPackets();
-}
-
-void LedFeedback::updatePacketPositions() {
-    for (int i = 0; i < MAX_PACKETS; i++) {
-        if (!_packets[i].active || _packets[i].locked) continue;
-        
-        // Move toward target
-        _packets[i].position -= LedConfig::PACKET_SPEED;
-        
-        // Check if reached target (lock in place like Tetris)
-        if (_packets[i].position <= _packets[i].targetLed) {
-            _packets[i].position = _packets[i].targetLed;
-            _packets[i].locked = true;
-            _lockedLedCount = max(_lockedLedCount, _packets[i].targetLed + 1);
-        }
+void LedFeedback::renderTube() {
+    switch (_currentState) {
+        case RhizomeState::IDLE:
+        case RhizomeState::DISCOVERING:
+            renderTubeIdle();
+            break;
+            
+        case RhizomeState::GENERATING:
+            renderTubeGenerating();
+            break;
+            
+        case RhizomeState::GIVING:
+            renderTubeGiving();
+            break;
+            
+        case RhizomeState::MIDDLEMAN:
+            renderTubeMiddleman();
+            break;
+            
+        case RhizomeState::DEAD:
+            fill_solid(_ledsTube, LedConfig::TUBE_LEDS, CRGB::Black);
+            break;
     }
 }
 
-void LedFeedback::renderPackets() {
-    for (int i = 0; i < MAX_PACKETS; i++) {
-        if (!_packets[i].active) continue;
-        
-        int startLed = (int)_packets[i].position;
-        
-        // Render packet (3 LEDs)
-        for (int j = 0; j < LedConfig::PACKET_SIZE; j++) {
-            int led = startLed + j;
-            if (led >= 0 && led < LedConfig::NUM_LEDS) {
-                // Locked packets are part of gauge, moving packets are brighter
-                uint8_t brightness = _packets[i].locked ? 255 : 200;
-                _leds[led] = getColor(brightness);
-            }
+void LedFeedback::renderTubeIdle() {
+    // Hardware: LED 0 = MALE end, LED 14 = FEMALE end
+    // Gauge from male (LED 0) toward female (LED 14)
+    // Pulses with heartbeat
+    int gaugeLeds = getGaugeLedCount();
+    CRGB gaugeColor = getEnergyColor(getEnergySaturation());
+    
+    // Apply pulse to tube (blend toward WHITE during heartbeat)
+    CRGB pulseColor = blend(gaugeColor, COLOR_WHITE, (uint8_t)(_pulsePhase * 80));
+    
+    for (int i = 0; i < LedConfig::TUBE_LEDS; i++) {
+        if (i < gaugeLeds) {
+            _ledsTube[i] = pulseColor;
+        } else if (i == gaugeLeds) {
+            // Partial LED for smooth gauge
+            float fraction = ((_currentEnergy / 100.0f) * LedConfig::TUBE_LEDS) - gaugeLeds;
+            _ledsTube[i] = pulseColor;
+            _ledsTube[i].fadeToBlackBy(255 - (uint8_t)(fraction * 255));
+        } else {
+            _ledsTube[i] = CRGB::Black;
         }
+    }
+}
+
+void LedFeedback::renderTubeGenerating() {
+    // Unidirectional ORANGE flow traversing the tube
+    // Hardware: LED 0 = MALE end, LED 14 = FEMALE end
+    // Flow direction: male (0) → female (14) - clockwise system direction
+    // Gauge grows from male (LED 0) toward female (LED 14)
+    
+    int gaugeLeds = getGaugeLedCount();
+    CRGB baseColor = getEnergyColor(getEnergySaturation());
+    
+    // Draw base gauge from male end (LED 0) toward female (LED 14)
+    for (int i = 0; i < gaugeLeds && i < LedConfig::TUBE_LEDS; i++) {
+        _ledsTube[i] = baseColor;
+    }
+    
+    // Draw flowing packet overlay (moving from male toward female: 0→14)
+    int flowStart = (int)_flowPosition;
+    for (int j = 0; j < LedConfig::FLOW_PACKET_SIZE; j++) {
+        int led = flowStart + j;
+        if (led >= 0 && led < LedConfig::TUBE_LEDS) {
+            // Bright orange flow
+            _ledsTube[led] = COLOR_ORANGE;
+            _ledsTube[led] += CRGB(40, 20, 0);  // Extra brightness
+        }
+    }
+    
+    // At 100%, tube uniformly full orange
+    if (_currentEnergy >= 100.0f) {
+        fill_solid(_ledsTube, LedConfig::TUBE_LEDS, COLOR_ORANGE);
+    }
+}
+
+void LedFeedback::renderTubeGiving() {
+    // Hardware: LED 0 = MALE end, LED 14 = FEMALE end
+    // Energy drains toward male (node connection)
+    // Gauge anchored at male (LED 0), shrinks from female side
+    
+    int gaugeLeds = (int)((_displayedEnergy / 100.0f) * LedConfig::TUBE_LEDS);
+    CRGB gaugeColor = getEnergyColor(getEnergySaturation());
+    
+    // Draw gauge from male end (LED 0) for gaugeLeds count
+    for (int i = 0; i < gaugeLeds && i < LedConfig::TUBE_LEDS; i++) {
+        _ledsTube[i] = gaugeColor;
+    }
+    
+    // Draw CYAN/PURPLE flux from female toward male (visible only in gauge)
+    CRGB fluxColor = getCycleColor();
+    int flowStart = (int)_flowPosition;
+    for (int j = 0; j < LedConfig::FLOW_PACKET_SIZE; j++) {
+        int led = flowStart - j;  // Packet trails behind position
+        // Only draw if within gauge AND valid range
+        if (led >= 0 && led < gaugeLeds && led < LedConfig::TUBE_LEDS) {
+            _ledsTube[led] = fluxColor;
+        }
+    }
+    
+    // When energy = 0, all off
+    if (_displayedEnergy <= 0.0f) {
+        fill_solid(_ledsTube, LedConfig::TUBE_LEDS, CRGB::Black);
+    }
+}
+
+void LedFeedback::renderTubeMiddleman() {
+    // Tube cycles between CYAN and PURPLE
+    fill_solid(_ledsTube, LedConfig::TUBE_LEDS, getCycleColor());
+}
+
+/*------------------------------------------------------------------------------
+ * Flash Event (100% Celebration)
+ *----------------------------------------------------------------------------*/
+void LedFeedback::renderFlash() {
+    uint32_t elapsed = millis() - _flashStartMs;
+    uint32_t cycleTime = LedConfig::FLASH_DURATION_MS * 2;  // On + Off
+    uint32_t totalTime = cycleTime * LedConfig::FLASH_CYCLES;
+    
+    if (elapsed >= totalTime) {
+        _flashActive = false;
+        return;
+    }
+    
+    // Determine if in "on" or "off" phase of flash
+    uint32_t posInCycle = elapsed % cycleTime;
+    bool flashOn = (posInCycle < LedConfig::FLASH_DURATION_MS);
+    
+    if (flashOn) {
+        // White flash on all LEDs
+        FastLED.setBrightness(255);
+        fill_solid(_ledsMale, LedConfig::EMBOUT_LEDS, COLOR_WHITE);
+        fill_solid(_ledsFemale, LedConfig::EMBOUT_LEDS, COLOR_WHITE);
+        fill_solid(_ledsTube, LedConfig::TUBE_LEDS, COLOR_WHITE);
+    } else {
+        // Off
+        clearAll();
     }
 }
 
 /*------------------------------------------------------------------------------
- * Pulse Layer - Lerp toward white on heartbeat
- * Baseline: LEDs at PULSE_BASE brightness (85%)
- * On heartbeat: blend toward white by pulseOffset amount
- * Preserves hue - no RGB clipping or channel imbalance
+ * Animation Updates (non-blocking)
  *----------------------------------------------------------------------------*/
 void LedFeedback::updatePulse() {
-    // Pulse duration ~300ms
-    const uint32_t PULSE_DURATION_MS = 300;
-    const float ATTACK_FRACTION = 0.1f;  // 10% attack, 90% decay
-    
     if (!_pulseActive) {
-        _pulseBrightness = LedConfig::PULSE_BASE;  // Baseline brightness
-        _pulseOffset = 0.0f;  // No white blend
+        _pulsePhase = 0.0f;
         return;
     }
     
     uint32_t elapsed = millis() - _pulseStartMs;
     
-    if (elapsed >= PULSE_DURATION_MS) {
+    if (elapsed >= LedConfig::PULSE_DURATION_MS) {
         _pulseActive = false;
-        _pulseBrightness = LedConfig::PULSE_BASE;
-        _pulseOffset = 0.0f;
+        _pulsePhase = 0.0f;
         return;
     }
     
-    // Calculate lerp offset toward white (0 → ACCENT → 0)
-    float progress = (float)elapsed / PULSE_DURATION_MS;
-    
-    if (progress < ATTACK_FRACTION) {
-        // Fast attack: 0 → ACCENT
-        _pulseOffset = LedConfig::PULSE_ACCENT * (progress / ATTACK_FRACTION);
-    } else {
-        // Slow decay: ACCENT → 0
-        float decayProgress = (progress - ATTACK_FRACTION) / (1.0f - ATTACK_FRACTION);
-        _pulseOffset = LedConfig::PULSE_ACCENT * (1.0f - decayProgress);
-    }
-    
-    // Brightness stays at base during pulse (white blend handles the accent)
-    _pulseBrightness = LedConfig::PULSE_BASE;
+    // Smooth sine-like pulse curve (0 → 1 → 0)
+    float progress = (float)elapsed / LedConfig::PULSE_DURATION_MS;
+    _pulsePhase = sin(progress * PI);
 }
 
-void LedFeedback::applyPulse() {
-    // Step 1: Apply base brightness (multiplicative dim)
-    for (int i = 0; i < LedConfig::NUM_LEDS; i++) {
-        _leds[i].r = (uint8_t)(_leds[i].r * _pulseBrightness);
-        _leds[i].g = (uint8_t)(_leds[i].g * _pulseBrightness);
-        _leds[i].b = (uint8_t)(_leds[i].b * _pulseBrightness);
+void LedFeedback::updateFlow() {
+    if (millis() - _lastAnimMs < LedConfig::ANIMATION_UPDATE_MS) return;
+    _lastAnimMs = millis();
+    
+    // Flow position for generating animation (male -> female: 0 -> 14)
+    if (_currentState == RhizomeState::GENERATING) {
+        _flowPosition += LedConfig::FLOW_SPEED;
+        if (_flowPosition >= LedConfig::TUBE_LEDS) {
+            _flowPosition = -LedConfig::FLOW_PACKET_SIZE;  // Wrap around
+        }
     }
     
-    // Step 2: Lerp toward white by pulseOffset (additive bloom without hue shift)
-    if (_pulseOffset > 0.001f) {
-        uint8_t blendAmount = (uint8_t)(_pulseOffset * 255.0f);
-        for (int i = 0; i < LedConfig::NUM_LEDS; i++) {
-            // Only blend lit LEDs (skip black pixels)
-            if (_leds[i].r > 0 || _leds[i].g > 0 || _leds[i].b > 0) {
-                _leds[i] = blend(_leds[i], CRGB::White, blendAmount);
-            }
+    // Flow position for giving animation (female -> male: 14 -> 0)
+    if (_currentState == RhizomeState::GIVING) {
+        _flowPosition -= LedConfig::FLOW_SPEED;
+        if (_flowPosition < -LedConfig::FLOW_PACKET_SIZE) {
+            _flowPosition = LedConfig::TUBE_LEDS;  // Wrap around from female end
         }
     }
 }
 
+void LedFeedback::updateGaugeDrain() {
+    // Smooth gauge drain for GIVING state
+    if (_currentState == RhizomeState::GIVING) {
+        if (_displayedEnergy > _currentEnergy) {
+            _displayedEnergy -= LedConfig::GAUGE_DRAIN_SPEED;
+            if (_displayedEnergy < _currentEnergy) {
+                _displayedEnergy = _currentEnergy;
+            }
+        }
+    } else {
+        // Keep displayed in sync with actual when not giving
+        _displayedEnergy = _currentEnergy;
+    }
+}
+
 /*------------------------------------------------------------------------------
- * Helpers
+ * Color Helpers
+ *----------------------------------------------------------------------------*/
+CRGB LedFeedback::getEnergyColor(float saturation) {
+    // Base color is ORANGE
+    // Lower saturation blends toward WHITE
+    // saturation: 1.0 = full orange, 0.0 = white
+    return blend(COLOR_WHITE, COLOR_ORANGE, (uint8_t)(saturation * 255));
+}
+
+CRGB LedFeedback::getCycleColor() {
+    // Smooth cycle between CYAN and PURPLE
+    uint32_t elapsed = millis() - _cycleStartMs;
+    float progress = (float)(elapsed % LedConfig::COLOR_CYCLE_MS) / LedConfig::COLOR_CYCLE_MS;
+    
+    // Sine wave for smooth transition: 0→1→0
+    float blend_amount = (sin(progress * TWO_PI) + 1.0f) / 2.0f;
+    
+    return blend(COLOR_CYAN, COLOR_PURPLE, (uint8_t)(blend_amount * 255));
+}
+
+uint8_t LedFeedback::getGlobalBrightness() {
+    // 0% energy = 0% brightness (min 10 for visibility)
+    // 100% energy = 100% brightness
+    uint8_t minBrightness = 10;
+    uint8_t maxBrightness = 255;
+    
+    return minBrightness + (uint8_t)((_currentEnergy / 100.0f) * (maxBrightness - minBrightness));
+}
+
+float LedFeedback::getEnergySaturation() {
+    // Non-linear mapping: orange visible early, white only at very low energy
+    // 0% → 0.30 (white tint)
+    // 10% → 0.70 (orange dominant)
+    // 20% → 0.82 (mostly orange)
+    // 50% → 0.95 (nearly full orange)
+    // 100% → 1.0 (full orange)
+    float normalized = _currentEnergy / 100.0f;
+    // Stronger curve: pow(x, 0.4) for faster orange appearance
+    float curved = pow(normalized, 0.4f);
+    return 0.30f + curved * 0.70f;
+}
+
+int LedFeedback::getGaugeLedCount() {
+    return (int)((_currentEnergy / 100.0f) * LedConfig::TUBE_LEDS);
+}
+
+/*------------------------------------------------------------------------------
+ * Utility
  *----------------------------------------------------------------------------*/
 void LedFeedback::clearAll() {
-    fill_solid(_leds, LedConfig::NUM_LEDS, CRGB::Black);
-}
-
-void LedFeedback::setAllSolid(uint8_t brightness) {
-    fill_solid(_leds, LedConfig::NUM_LEDS, getColor(brightness));
-}
-
-CRGB LedFeedback::getColor(uint8_t brightness) {
-    float scale = brightness / 255.0f;
-    return CRGB(
-        (uint8_t)(LedConfig::R * scale),
-        (uint8_t)(LedConfig::G * scale),
-        (uint8_t)(LedConfig::B * scale)
-    );
+    fill_solid(_ledsMale, LedConfig::EMBOUT_LEDS, CRGB::Black);
+    fill_solid(_ledsFemale, LedConfig::EMBOUT_LEDS, CRGB::Black);
+    fill_solid(_ledsTube, LedConfig::TUBE_LEDS, CRGB::Black);
 }
