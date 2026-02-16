@@ -13,11 +13,12 @@ FullEnergySync::FullEnergySync()
     : _router(nullptr)
     , _data(nullptr)
     , _sentOwnToken(false)
-    , _holdingToken(false)
-    , _heldTokenId(0)
+    , _heldCount(0)
     , _triggered(false)
     , _onAllFull(nullptr)
-{}
+{
+    memset(_heldTokenIds, 0, sizeof(_heldTokenIds));
+}
 
 void FullEnergySync::begin(OscRouter* router, RhizomeData* data) {
     _router = router;
@@ -29,8 +30,8 @@ void FullEnergySync::begin(OscRouter* router, RhizomeData* data) {
 
 void FullEnergySync::reset() {
     _sentOwnToken = false;
-    _holdingToken = false;
-    _heldTokenId = 0;
+    _heldCount = 0;
+    memset(_heldTokenIds, 0, sizeof(_heldTokenIds));
     _triggered = false;
 }
 
@@ -47,12 +48,9 @@ void FullEnergySync::update(bool inGeneratingState, bool maleConnected) {
         _sentOwnToken = true;
     }
     
-    // If we're holding a token and now at 100%, forward it
-    if (_holdingToken && isFull && maleConnected) {
-        sendFullToken(_heldTokenId);
-        _holdingToken = false;
-        Serial.print("[FULL] Forwarding held token ID=");
-        Serial.println(_heldTokenId);
+    // If we're holding tokens and now at 100%, forward them all
+    if (_heldCount > 0 && isFull && maleConnected) {
+        forwardAllHeldTokens();
     }
 }
 
@@ -91,13 +89,14 @@ void FullEnergySync::handleFullMessage(MicroOscMessage& msg, bool fromMale) {
         sendFullToken((uint8_t)tokenId);
     } else {
         // We're not full yet, hold the token
-        _holdingToken = true;
-        _heldTokenId = (uint8_t)tokenId;
+        addHeldToken((uint8_t)tokenId);
         Serial.print("[FULL] Holding token ID=");
         Serial.print(tokenId);
         Serial.print(" (our energy: ");
         Serial.print(energy);
-        Serial.println("%)");
+        Serial.print("%, held count: ");
+        Serial.print(_heldCount);
+        Serial.println(")");
     }
 }
 
@@ -108,4 +107,29 @@ void FullEnergySync::sendFullToken(uint8_t id) {
     
     Serial.print("[SEND MALE] /full ID=");
     Serial.println(id);
+}
+
+void FullEnergySync::addHeldToken(uint8_t id) {
+    // Check if already holding this token
+    for (uint8_t i = 0; i < _heldCount; i++) {
+        if (_heldTokenIds[i] == id) {
+            return;  // Already have this one
+        }
+    }
+    
+    // Add if we have space
+    if (_heldCount < MAX_HELD_TOKENS) {
+        _heldTokenIds[_heldCount++] = id;
+    }
+}
+
+void FullEnergySync::forwardAllHeldTokens() {
+    Serial.print("[FULL] Forwarding all held tokens (count: ");
+    Serial.print(_heldCount);
+    Serial.println(")");
+    
+    for (uint8_t i = 0; i < _heldCount; i++) {
+        sendFullToken(_heldTokenIds[i]);
+    }
+    _heldCount = 0;
 }

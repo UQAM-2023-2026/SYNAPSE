@@ -92,15 +92,19 @@ void RhizomeStateMachine::onLoopBroken() {
 }
 
 void RhizomeStateMachine::onNodeConnected(float drainRate) {
-    Serial.print("[SM] Node connected, drainRate=");
-    Serial.println(drainRate);
-    
     // GENERATING: Ignore /node - we're in a loop, not connected to a real node
     // This prevents MIDDLEMAN feedback loops when rhizomes send /node to each other
     if (_state == RhizomeState::GENERATING) {
-        Serial.println("[SM] GENERATING - ignoring /node (in loop)");
-        return;
+        return;  // Silently ignore - normal in loop mode
     }
+    
+    // DEAD with no one behind - can't contribute anything
+    if (_state == RhizomeState::DEAD && !_femaleConnected) {
+        return;  // Silently ignore
+    }
+    
+    Serial.print("[SM] Node connected, drainRate=");
+    Serial.println(drainRate);
     
     _nodeConnected = true;
     _drainRate = drainRate;
@@ -113,12 +117,27 @@ void RhizomeStateMachine::onNodeConnected(float drainRate) {
         // We have a rhizome behind us - become MIDDLEMAN (route their energy)
         // This works even if we're DEAD - we can still route!
         transitionTo(RhizomeState::MIDDLEMAN);
-    } else if (_state != RhizomeState::DEAD) {
+    } else {
         // No rhizome behind, and we have energy - give our own
         transitionTo(RhizomeState::GIVING);
-    } else {
-        // DEAD with no one behind - we can't contribute anything
-        Serial.println("[SM] DEAD with no upstream - staying DEAD");
+    }
+}
+
+void RhizomeStateMachine::onNodeLost() {
+    Serial.println("[SM] Node connection lost (timeout)");
+    
+    _nodeConnected = false;
+    _drainRate = 0.0f;
+    
+    // If we were GIVING or MIDDLEMAN, go back to DISCOVERING
+    if (_state == RhizomeState::GIVING || _state == RhizomeState::MIDDLEMAN) {
+        if (_maleConnected || _femaleConnected) {
+            transitionTo(RhizomeState::DISCOVERING);
+            discoveryProtocol.reset();
+        } else {
+            transitionTo(RhizomeState::IDLE);
+        }
+        nodeProtocol.reset();
     }
 }
 

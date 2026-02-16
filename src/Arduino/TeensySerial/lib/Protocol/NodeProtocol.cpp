@@ -16,7 +16,9 @@ NodeProtocol::NodeProtocol()
     , _drainRate(0.0f)
     , _lastEnergySent(0)
     , _lastNodeSentToFemale(0)
+    , _lastNodeReceived(0)
     , _onNodeConnected(nullptr)
+    , _onNodeLost(nullptr)
     , _onEnergyReceived(nullptr)
 {}
 
@@ -33,12 +35,29 @@ void NodeProtocol::reset() {
     _drainRate = 0.0f;
     _lastEnergySent = 0;
     _lastNodeSentToFemale = 0;
+    _lastNodeReceived = 0;
 }
 
 void NodeProtocol::update(RhizomeState state, bool maleConnected, bool femaleConnected) {
     if (!_router || !_data) return;
     
     unsigned long now = millis();
+    
+    // Check for node timeout - applies to GIVING and MIDDLEMAN states
+    if ((state == RhizomeState::GIVING || state == RhizomeState::MIDDLEMAN) 
+        && _nodeConnected && _lastNodeReceived > 0) {
+        unsigned long elapsed = now - _lastNodeReceived;
+        
+        if (elapsed >= NODE_TIMEOUT_MS) {
+            Serial.println("[NODE] Timeout - node connection lost");
+            _nodeConnected = false;
+            _drainRate = 0.0f;
+            _lastNodeReceived = 0;  // Prevent retriggering
+            if (_onNodeLost) {
+                _onNodeLost();
+            }
+        }
+    }
     
     // GIVING: Periodically send own energy to node
     if (state == RhizomeState::GIVING && _nodeConnected && maleConnected) {
@@ -48,8 +67,8 @@ void NodeProtocol::update(RhizomeState state, bool maleConnected, bool femaleCon
         }
     }
     
-    // MIDDLEMAN: Periodically send /node to FEMALE (act as node)
-    if (state == RhizomeState::MIDDLEMAN && femaleConnected) {
+    // MIDDLEMAN: Periodically send /node to FEMALE (only if we're receiving from upstream)
+    if (state == RhizomeState::MIDDLEMAN && femaleConnected && _nodeConnected) {
         if (now - _lastNodeSentToFemale >= NODE_SEND_INTERVAL_MS) {
             sendNodeToFemale();
             _lastNodeSentToFemale = now;
@@ -63,6 +82,7 @@ void NodeProtocol::handleNodeMessage(MicroOscMessage& msg) {
     Serial.print("[RECV MALE] /node drainRate=");
     Serial.println(drainRate);
     
+    _lastNodeReceived = millis();  // Reset timeout
     _nodeConnected = true;
     _drainRate = drainRate;
     

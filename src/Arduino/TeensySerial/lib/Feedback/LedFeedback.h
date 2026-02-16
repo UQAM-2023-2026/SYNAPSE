@@ -1,18 +1,16 @@
 /*==============================================================================
- * LedFeedback.h - LED strip feedback using Gauge/Flow/Pulse layers
+ * LedFeedback.h - LED strip feedback for Rhizome
  *
- * LED Behavior Specification:
- * - GAUGE: Shows energy level, always MALE→FEMALE direction
- * - FLOW: State-dependent particle animation
- * - PULSE: HeartbeatSystem modulation (0.5-1.0 brightness)
- * 
- * State behaviors:
- * - IDLE: Gauge + pulse, no flow
- * - DISCOVERING: Gauge + pulse + subtle seeking flow (FEMALE→MALE)
- * - GENERATING: Gauge + pulse + Tetris packets (FEMALE→gauge, lock on arrival)
- * - GIVING: Gauge + pulse + packet detach (gauge→MALE)
- * - MIDDLEMAN: Solid orange + passthrough flow (FEMALE→MALE), no pulse
- * - DEAD: All LEDs off
+ * Hardware Configuration:
+ * - Male Embout: WS2812B, pin 1, 5 LEDs
+ * - Female Embout: WS2812B, pin 0, 5 LEDs  
+ * - Tube: APA102, 15 LEDs, Data pin 12, Clock pin 13 (configurable)
+ *
+ * Color Rules:
+ * - ORANGE = energy, WHITE = low energy
+ * - CYAN = infra, PURPLE = supra
+ * - Global brightness depends on energy level
+ * - Lower energy = less saturated color (tends toward white)
  *============================================================================*/
 
 #ifndef LED_FEEDBACK_H
@@ -22,72 +20,48 @@
 #include <RhizomeState.h>
 
 /*------------------------------------------------------------------------------
- * Configuration
+ * Hardware Configuration
  *----------------------------------------------------------------------------*/
 namespace LedConfig {
-    // Strip configuration
-    constexpr int NUM_LEDS = 5;
-    constexpr int LED_PIN_MALE = 1;
-    constexpr int LED_PIN_FEMALE = 0;
+    // Embout strips (WS2812B)
+    constexpr int EMBOUT_LEDS = 5;
+    constexpr int PIN_MALE = 1;
+    constexpr int PIN_FEMALE = 0;
     
-    // Primary color
-    constexpr uint8_t R = 255;
-    constexpr uint8_t G = 60;
-    constexpr uint8_t B = 0;
+    // Tube strip (APA102) - pins configurable
+    constexpr int TUBE_LEDS = 15;
+    constexpr int PIN_TUBE_DATA = 12;
+    constexpr int PIN_TUBE_CLOCK = 13;
+    
+    // Colors (CRGB format)
+    #define COLOR_ORANGE  CRGB(255, 60, 0)
+    #define COLOR_WHITE   CRGB::White
+    #define COLOR_CYAN    CRGB(100, 36, 255)   // infra
+    #define COLOR_PURPLE  CRGB(99, 200, 142)   // supra
     
     // Timing
-    constexpr uint32_t FLOW_UPDATE_MS = 30;
-    constexpr uint32_t GAUGE_UPDATE_MS = 50;
+    constexpr uint32_t ANIMATION_UPDATE_MS = 30;
+    constexpr uint32_t PULSE_DURATION_MS = 800;
+    constexpr uint32_t FLASH_DURATION_MS = 200;
+    constexpr uint32_t FLASH_CYCLES = 2;
+    constexpr uint32_t COLOR_CYCLE_MS = 2000;    // CYAN↔PURPLE cycle period
     
-    // Flow speeds (pixels per update)
-    constexpr float SEEKING_SPEED = 0.3f;
-    constexpr float INWARD_SPEED = 0.8f;
-    constexpr float OUTWARD_SPEED = 0.8f;
-    constexpr float PASSTHROUGH_SPEED = 1.0f;
+    // Flow animation
+    constexpr float FLOW_SPEED = 0.5f;
+    constexpr int FLOW_PACKET_SIZE = 3;
     
-    // Pulse: lerp toward white on heartbeat (preserves hue)
-    // Base brightness applied as multiplier, accent blends toward white
-    constexpr float PULSE_BASE = 0.85f;     // Baseline brightness multiplier
-    constexpr float PULSE_ACCENT = 0.15f;   // Lerp amount toward white on beat (0.0-1.0)
-    
-    // Tetris packet
-    constexpr int PACKET_SIZE = 3;  // LEDs per packet
-    constexpr float PACKET_SPEED = 0.5f;
+    // Gauge animation  
+    constexpr float GAUGE_DRAIN_SPEED = 0.3f;
 }
 
 /*------------------------------------------------------------------------------
- * Flow Types
+ * Animation State for internal tracking
  *----------------------------------------------------------------------------*/
-enum class FlowType {
-    NONE,           // No flow
-    SEEKING,        // Subtle FEMALE→MALE (discovering)
-    INWARD,         // FEMALE→gauge (generating)
-    OUTWARD,        // Gauge→MALE (giving)
-    PASSTHROUGH     // FEMALE→MALE solid (middleman)
-};
-
-/*------------------------------------------------------------------------------
- * Particle for Flow Layer
- *----------------------------------------------------------------------------*/
-struct FlowParticle {
-    float position;     // 0.0 to NUM_LEDS
-    float speed;
-    uint8_t brightness;
-    bool active;
-    
-    FlowParticle() : position(0), speed(0), brightness(0), active(false) {}
-};
-
-/*------------------------------------------------------------------------------
- * Packet for Tetris-style Generation
- *----------------------------------------------------------------------------*/
-struct EnergyPacket {
-    float position;     // Current position
-    int targetLed;      // LED to lock onto (gauge edge)
-    bool active;
-    bool locked;        // Has reached target
-    
-    EnergyPacket() : position(0), targetLed(0), active(false), locked(false) {}
+enum class EmboutAnim : uint8_t {
+    OFF,
+    IDLE_PULSE,         // Pulsation ORANGE→WHITE
+    FIXED_ORANGE,       // Orange fixe (no pulse)
+    CYCLE_INFRA_SUPRA   // Cycle CYAN↔PURPLE
 };
 
 /*------------------------------------------------------------------------------
@@ -97,73 +71,73 @@ class LedFeedback {
 public:
     LedFeedback();
     
-    // Initialization
     void begin();
-    
-    // Main update - call every loop
     void update(RhizomeState state, float energy, bool maleConnected, bool femaleConnected);
     
-    // Heartbeat callback - sets pulse phase
+    // Callbacks
     void onHeartbeat();
-    
-    // State change notification
     void onStateChange(RhizomeState oldState, RhizomeState newState);
+    void onAllRhizomesFull();  // Event: tous à 100%
     
 private:
-    // LED arrays (APA102 on data 12, clock 13)
-    CRGB _leds[LedConfig::NUM_LEDS];
+    // LED arrays
+    CRGB _ledsMale[LedConfig::EMBOUT_LEDS];
+    CRGB _ledsFemale[LedConfig::EMBOUT_LEDS];
+    CRGB _ledsTube[LedConfig::TUBE_LEDS];
     
     // State tracking
     RhizomeState _currentState;
     float _currentEnergy;
+    float _displayedEnergy;     // For smooth gauge animation
     bool _maleConnected;
-    bool _femaleConnected;
+    bool _femaleConnected;    
+    // Frame rate limiting
+    unsigned long _lastFrameMs;    
+    // Heartbeat pulse
+    bool _pulseActive;
+    uint32_t _pulseStartMs;
+    float _pulsePhase;          // 0.0-1.0
     
-    // Pulse layer
-    float _pulsePhase;          // 0.0 to 1.0
-    float _pulseBrightness;     // Base brightness multiplier
-    float _pulseOffset;         // Lerp amount toward white (0.0 to PULSE_ACCENT)
-    uint32_t _pulseStartMs;     // When current pulse started
-    bool _pulseActive;          // Is in pulse cycle
+    // Color cycle (CYAN↔PURPLE)
+    uint32_t _cycleStartMs;
     
-    // Flow layer
-    FlowType _flowType;
-    static constexpr int MAX_PARTICLES = 8;
-    FlowParticle _particles[MAX_PARTICLES];
-    uint32_t _lastFlowUpdateMs;
+    // Flash event (100% celebration)
+    bool _flashActive;
+    uint32_t _flashStartMs;
+    uint8_t _flashCycleCount;
     
-    // Generation packets (Tetris)
-    static constexpr int MAX_PACKETS = 4;
-    EnergyPacket _packets[MAX_PACKETS];
-    uint32_t _lastPacketSpawnMs;
-    int _lockedLedCount;        // How many LEDs have locked packets
+    // Flow animation
+    float _flowPosition;
+    uint32_t _lastAnimMs;
     
-    // Timing
-    uint32_t _lastGaugeUpdateMs;
+    // Animation states per embout
+    EmboutAnim _maleAnim;
+    EmboutAnim _femaleAnim;
     
-    // Layer methods
-    void updateGauge(float energy);
-    void updateFlow();
+    // Core rendering
+    void renderEmbout(CRGB* leds, EmboutAnim anim);
+    void renderTube();
+    void renderTubeIdle();
+    void renderTubeGenerating();
+    void renderTubeGiving();
+    void renderTubeMiddleman();
+    void renderFlash();
+    
+    // Animation helpers
+    void updateAnimationStates();
     void updatePulse();
-    void updatePackets(float energy);
+    void updateFlow();
+    void updateGaugeDrain();
     
-    // Flow control
-    void setFlowType(FlowType type);
-    void spawnParticle();
-    void updateParticles();
-    void renderParticles();
+    // Color helpers
+    CRGB getEnergyColor(float saturation);
+    CRGB getCycleColor();
+    uint8_t getGlobalBrightness();
+    float getEnergySaturation();
+    int getGaugeLedCount();
     
-    // Packet control (Tetris generation)
-    void spawnPacket(int targetLed);
-    void updatePacketPositions();
-    void renderPackets();
-    int getGaugeEdgeLed(float energy);
-    
-    // Helpers
+    // Utility
     void clearAll();
-    void setAllSolid(uint8_t brightness);
-    void applyPulse();
-    CRGB getColor(uint8_t brightness);
 };
 
 // Global instance

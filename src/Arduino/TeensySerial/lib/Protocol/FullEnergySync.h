@@ -49,14 +49,22 @@ public:
     bool hasTriggered() const { return _triggered; }
     
 private:
+    static const uint8_t MAX_HELD_TOKENS = 16;  // Max tokens to hold
+    
     OscRouter* _router;
     RhizomeData* _data;
     
     // Token state
     bool _sentOwnToken;         // Have we sent our /full token?
-    bool _holdingToken;         // Are we holding a token waiting for 100%?
-    uint8_t _heldTokenId;       // ID of held token
+    uint8_t _heldTokenIds[MAX_HELD_TOKENS];  // IDs of held tokens
+    uint8_t _heldCount;         // Number of held tokens
     bool _triggered;            // Has celebration been triggered?
+    
+    // Add token to held list (if not already present)
+    void addHeldToken(uint8_t id);
+    
+    // Forward all held tokens
+    void forwardAllHeldTokens();
     
     // Callback
     AllFullCallback _onAllFull;
