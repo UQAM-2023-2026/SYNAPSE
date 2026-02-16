@@ -23,7 +23,7 @@
 
 // DRV2605 Waveform IDs
 namespace HapticEffects {
-    constexpr uint8_t SYSTOLE = 52;       // Sharp heartbeat
+    constexpr uint8_t CLICK = 1;          // Strong click 100% - clean, short
     constexpr uint8_t SHARP_CLICK = 4;    // Sharp click 100%
     constexpr uint8_t LONG_BUZZ = 118;    // Long buzz for generation
     constexpr uint8_t END = 0;            // Waveform terminator
@@ -63,12 +63,15 @@ private:
     // Generation buzz state
     bool _generationActive;
     
+    // Alternation for power safety (never both motors at once)
+    bool _useFirstMotor;
+    
     // Startup protection
     static constexpr uint32_t STARTUP_DELAY_MS = 2000;
     
     // Helpers
     void initDriver(Adafruit_DRV2605& drv, TwoWire* wire, bool& ready, const char* name);
-    void playHeartbeat(Adafruit_DRV2605& drv);
+    void playClick(Adafruit_DRV2605& drv);
     void playDoubleClick(Adafruit_DRV2605& drv);
     void startBuzz(Adafruit_DRV2605& drv);
     void stopBuzz(Adafruit_DRV2605& drv);

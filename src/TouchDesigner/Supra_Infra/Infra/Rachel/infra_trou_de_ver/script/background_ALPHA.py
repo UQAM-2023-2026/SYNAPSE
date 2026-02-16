@@ -21,7 +21,7 @@ def whileOff(channel, sampleIndex, val, prev):
 	return
 
 def onValueChange(channel, sampleIndex, val, prev):
-    if channel.name == 'phase':
+      if channel.name == 'phase' or 'Etats_Infra':
         targets = op('targets')  # ton Constant CHOP
 
         if val == 2:  # symbiose

@@ -25,6 +25,7 @@ HapticFeedback::HapticFeedback()
     , _maleConnected(false)
     , _femaleConnected(false)
     , _generationActive(false)
+    , _useFirstMotor(true)
 {}
 
 /*------------------------------------------------------------------------------
@@ -93,7 +94,6 @@ void HapticFeedback::update(RhizomeState state, float energy, bool maleConnected
     if (_generationActive && energy >= 100.0f) {
         _generationActive = false;
         if (_maleReady) stopBuzz(_drvMale);
-        if (_femaleReady) stopBuzz(_drvFemale);
         Serial.println("[HapticFeedback] Generation buzz stopped (100%)");
     }
 }
@@ -104,26 +104,18 @@ void HapticFeedback::update(RhizomeState state, float energy, bool maleConnected
 void HapticFeedback::onStateChange(RhizomeState oldState, RhizomeState newState) {
     if (!_initialized) return;
     
-    // Entering GENERATING - double click + start buzz
+    // Entering GENERATING - start continuous buzz on ONE motor only (power safety)
     if (newState == RhizomeState::GENERATING && oldState != RhizomeState::GENERATING) {
-        Serial.println("[HapticFeedback] GENERATING start - double click + buzz");
-        
-        if (_maleReady) playDoubleClick(_drvMale);
-        if (_femaleReady) playDoubleClick(_drvFemale);
-        
+        Serial.println("[HapticFeedback] GENERATING start - buzz on");
         _generationActive = true;
-        
-        // Start buzz after short delay for clicks
-        delay(100);
+        // Only male motor buzzes to avoid power spike from both motors
         if (_maleReady) startBuzz(_drvMale);
-        if (_femaleReady) startBuzz(_drvFemale);
     }
     
     // Leaving GENERATING - stop buzz
     if (oldState == RhizomeState::GENERATING && newState != RhizomeState::GENERATING) {
         _generationActive = false;
         if (_maleReady) stopBuzz(_drvMale);
-        if (_femaleReady) stopBuzz(_drvFemale);
         Serial.println("[HapticFeedback] GENERATING ended - buzz stopped");
     }
 }
@@ -138,9 +130,8 @@ void HapticFeedback::onAllRhizomesFull() {
     if (_maleReady) stopBuzz(_drvMale);
     if (_femaleReady) stopBuzz(_drvFemale);
     
-    // Double click celebration
-    if (_maleReady) playDoubleClick(_drvMale);
-    if (_femaleReady) playDoubleClick(_drvFemale);
+    // Single click on male motor only (avoid power spike)
+    if (_maleReady) playClick(_drvMale);
 }
 
 void HapticFeedback::onHeartbeat() {
@@ -148,24 +139,25 @@ void HapticFeedback::onHeartbeat() {
     if (millis() < STARTUP_DELAY_MS) return;
     if (!shouldPlayHeartbeat()) return;
     
-    // Heartbeat on unconnected ports
-    // In IDLE (both disconnected): both play
-    // Otherwise: only unconnected port plays
-    
+    // Determine which ports should play heartbeat
     bool playMale = !_maleConnected;
     bool playFemale = !_femaleConnected;
     
-    // If both disconnected (IDLE), both play
-    if (!_maleConnected && !_femaleConnected) {
-        playMale = true;
-        playFemale = true;
+    // If both disconnected (IDLE), alternate between motors to avoid power spike
+    if (playMale && playFemale) {
+        if (_useFirstMotor && _maleReady) {
+            playClick(_drvMale);
+        } else if (!_useFirstMotor && _femaleReady) {
+            playClick(_drvFemale);
+        }
+        _useFirstMotor = !_useFirstMotor;
     }
-    
-    if (playMale && _maleReady) {
-        playHeartbeat(_drvMale);
+    // If only one disconnected, play on that one
+    else if (playMale && _maleReady) {
+        playClick(_drvMale);
     }
-    if (playFemale && _femaleReady) {
-        playHeartbeat(_drvFemale);
+    else if (playFemale && _femaleReady) {
+        playClick(_drvFemale);
     }
 }
 
@@ -188,8 +180,8 @@ bool HapticFeedback::shouldPlayHeartbeat() const {
 /*------------------------------------------------------------------------------
  * Motor Control
  *----------------------------------------------------------------------------*/
-void HapticFeedback::playHeartbeat(Adafruit_DRV2605& drv) {
-    drv.setWaveform(0, HapticEffects::SYSTOLE);
+void HapticFeedback::playClick(Adafruit_DRV2605& drv) {
+    drv.setWaveform(0, HapticEffects::CLICK);
     drv.setWaveform(1, HapticEffects::END);
     drv.go();
 }

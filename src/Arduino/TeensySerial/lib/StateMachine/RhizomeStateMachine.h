@@ -41,6 +41,7 @@ public:
     void onLoopDetected(uint8_t count);
     void onLoopBroken();
     void onNodeConnected(float drainRate);
+    void onNodeLost();
     void onMaleConnected();
     void onMaleDisconnected();
     void onFemaleConnected();

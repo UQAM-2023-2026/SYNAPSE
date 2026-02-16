@@ -25,6 +25,8 @@ class RhizomeData;
 
 // Callback when node connection is established
 using NodeConnectedCallback = void (*)(float drainRate);
+// Callback when node connection is lost (timeout)
+using NodeLostCallback = void (*)(void);
 // Callback when energy is received from rhizome behind (for relay)
 using EnergyReceivedCallback = void (*)(uint8_t id, uint8_t energy);
 
@@ -45,6 +47,7 @@ public:
     
     // Callbacks
     void onNodeConnected(NodeConnectedCallback cb) { _onNodeConnected = cb; }
+    void onNodeLost(NodeLostCallback cb) { _onNodeLost = cb; }
     void onEnergyReceived(EnergyReceivedCallback cb) { _onEnergyReceived = cb; }
     
     // State queries
@@ -65,11 +68,14 @@ private:
     // Periodic timing
     unsigned long _lastEnergySent;
     unsigned long _lastNodeSentToFemale;
+    unsigned long _lastNodeReceived;  // For timeout detection
     static constexpr unsigned long ENERGY_SEND_INTERVAL_MS = 100;
     static constexpr unsigned long NODE_SEND_INTERVAL_MS = 500;
+    static constexpr unsigned long NODE_TIMEOUT_MS = 2500;  // 2.5 seconds - Node sends every ~1s, gives margin
     
     // Callbacks
     NodeConnectedCallback _onNodeConnected;
+    NodeLostCallback _onNodeLost;
     EnergyReceivedCallback _onEnergyReceived;
     
     // Send functions

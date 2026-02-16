@@ -51,14 +51,7 @@
  *   - Rhizome 2: RHIZOME_ID = 2
  *   - etc.
  *----------------------------------------------------------------------------*/
-constexpr uint8_t RHIZOME_ID = 2;  // TODO: Read from EEPROM or set via jumpers
-
-/*------------------------------------------------------------------------------
- * LED Strip Test (temporary - pins 0 and 1)
- *----------------------------------------------------------------------------*/
-constexpr int TEST_LEDS_PER_STRIP = 5;
-CRGB testLedsFemale[TEST_LEDS_PER_STRIP];  // Pin 0
-CRGB testLedsMale[TEST_LEDS_PER_STRIP];    // Pin 1
+constexpr uint8_t RHIZOME_ID = 3;  // TODO: Read from EEPROM or set via jumpers
 
 /*------------------------------------------------------------------------------
  * Global Instances
@@ -86,6 +79,7 @@ void onLoopBrokenCallback();
 
 // Node protocol -> State machine & Energy
 void onNodeConnectedCallback(float drainRate);
+void onNodeLostCallback();
 
 // Full energy sync -> Feedback
 void onAllFullCallback();
@@ -113,14 +107,6 @@ void setup() {
     Serial.print("ID: ");
     Serial.println(RHIZOME_ID);
     
-    // Test LED strips - static orange color
-    FastLED.addLeds<WS2812B, 0, GRB>(testLedsFemale, TEST_LEDS_PER_STRIP);
-    FastLED.addLeds<WS2812B, 1, GRB>(testLedsMale, TEST_LEDS_PER_STRIP);
-    fill_solid(testLedsFemale, TEST_LEDS_PER_STRIP, CRGB(255, 60, 0));
-    fill_solid(testLedsMale, TEST_LEDS_PER_STRIP, CRGB(255, 60, 0));
-    FastLED.show();
-    Serial.println("[TestLEDs] Static color set on pins 0 and 1");
-    
     // Initialize Core
     rhizomeData.setEnergy(10.0f);  // Start with some energy
     Serial.println("[Core] Initialized");
@@ -147,6 +133,7 @@ void setup() {
     
     nodeProtocol.begin(&oscRouter, &rhizomeData);
     nodeProtocol.onNodeConnected(onNodeConnectedCallback);
+    nodeProtocol.onNodeLost(onNodeLostCallback);
     
     fullEnergySync.begin(&oscRouter, &rhizomeData);
     fullEnergySync.onAllFull(onAllFullCallback);
@@ -225,7 +212,8 @@ void loop() {
  * Port Event Callbacks
  *----------------------------------------------------------------------------*/
 void onMaleConnectCallback() {
-    oscRouter.flushMaleSerial();  // Clear garbage from connection noise
+    // No flush needed - SLIP protocol is self-synchronizing
+    // Each message starts with SLIP_END which resets the parser
     stateMachine.onMaleConnected();
 }
 
@@ -234,7 +222,7 @@ void onMaleDisconnectCallback() {
 }
 
 void onFemaleConnectCallback() {
-    oscRouter.flushFemaleSerial();  // Clear garbage from connection noise
+    // No flush needed - SLIP protocol is self-synchronizing
     stateMachine.onFemaleConnected();
 }
 
@@ -266,9 +254,15 @@ void onNodeConnectedCallback(float drainRate) {
     }
 }
 
+void onNodeLostCallback() {
+    stateMachine.onNodeLost();
+    energyManager.setDrainRate(0.0f);
+}
+
 void onAllFullCallback() {
     Serial.println("[EVENT] All rhizomes at 100% - CELEBRATION!");
     hapticFeedback.onAllRhizomesFull();
+    ledFeedback.onAllRhizomesFull();
 }
 
 /*------------------------------------------------------------------------------
