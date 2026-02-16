@@ -121,8 +121,10 @@ void NodeProtocol::handleEnergyFromBehind(MicroOscMessage& msg) {
         _onEnergyReceived((uint8_t)id, (uint8_t)energy);
     }
     
-    // Relay to node (MALE port) - MIDDLEMAN behavior
-    relayEnergyToNode((uint8_t)id, (uint8_t)energy);
+    // Only relay when connected to node (MIDDLEMAN mode)
+    if (_nodeConnected) {
+        relayEnergyToNode((uint8_t)id, (uint8_t)energy);
+    }
 }
 
 void NodeProtocol::sendEnergyToNode() {

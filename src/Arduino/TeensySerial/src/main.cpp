@@ -51,7 +51,7 @@
  *   - Rhizome 2: RHIZOME_ID = 2
  *   - etc.
  *----------------------------------------------------------------------------*/
-constexpr uint8_t RHIZOME_ID = 2;  // TODO: Read from EEPROM or set via jumpers
+constexpr uint8_t RHIZOME_ID = 3;  // TODO: Read from EEPROM or set via jumpers
 
 /*------------------------------------------------------------------------------
  * Global Instances
@@ -212,7 +212,8 @@ void loop() {
  * Port Event Callbacks
  *----------------------------------------------------------------------------*/
 void onMaleConnectCallback() {
-    oscRouter.flushMaleSerial();  // Clear garbage from connection noise
+    // No flush needed - SLIP protocol is self-synchronizing
+    // Each message starts with SLIP_END which resets the parser
     stateMachine.onMaleConnected();
 }
 
@@ -221,7 +222,7 @@ void onMaleDisconnectCallback() {
 }
 
 void onFemaleConnectCallback() {
-    oscRouter.flushFemaleSerial();  // Clear garbage from connection noise
+    // No flush needed - SLIP protocol is self-synchronizing
     stateMachine.onFemaleConnected();
 }
 

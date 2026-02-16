@@ -71,7 +71,7 @@ private:
     unsigned long _lastNodeReceived;  // For timeout detection
     static constexpr unsigned long ENERGY_SEND_INTERVAL_MS = 100;
     static constexpr unsigned long NODE_SEND_INTERVAL_MS = 500;
-    static constexpr unsigned long NODE_TIMEOUT_MS = 1500;  // 1.5 seconds - Node sends every ~1s
+    static constexpr unsigned long NODE_TIMEOUT_MS = 2500;  // 2.5 seconds - Node sends every ~1s, gives margin
     
     // Callbacks
     NodeConnectedCallback _onNodeConnected;

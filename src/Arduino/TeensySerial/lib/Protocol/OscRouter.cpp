@@ -32,9 +32,21 @@ void OscRouter::begin() {
 }
 
 void OscRouter::update() {
+    // Debug: Check if any bytes are available on MALE serial
+    static unsigned long lastDebug = 0;
+    if (MALE_SERIAL.available() > 0 && millis() - lastDebug > 500) {
+        Serial.print("[DEBUG] MALE serial has ");
+        Serial.print(MALE_SERIAL.available());
+        Serial.println(" bytes");
+        lastDebug = millis();
+    }
+    
     // Process incoming messages from both ports
-    _oscMale.onOscMessageReceived(onMaleMessageStatic);
-    _oscFemale.onOscMessageReceived(onFemaleMessageStatic);
+    // Call multiple times to handle SLIP framing (each call processes one message)
+    for (int i = 0; i < 4; i++) {
+        _oscMale.onOscMessageReceived(onMaleMessageStatic);
+        _oscFemale.onOscMessageReceived(onFemaleMessageStatic);
+    }
 }
 
 void OscRouter::onMaleMessageStatic(MicroOscMessage& msg) {
@@ -47,6 +59,7 @@ void OscRouter::onFemaleMessageStatic(MicroOscMessage& msg) {
 
 void OscRouter::handleMaleMessage(MicroOscMessage& msg) {
     // Messages received on MALE port (from node or middleman in front)
+    Serial.println("[DEBUG] handleMaleMessage called");
     
     if (msg.checkOscAddress("/node")) {
         if (_nodeHandler) _nodeHandler->handleNodeMessage(msg);
@@ -103,43 +116,30 @@ void OscRouter::sendToFemale(const char* address, const char* format, ...) {
     // This is for future extensibility
 }
 
-// No-op callback for draining pending OSC messages
-static void noOpOscCallback(MicroOscMessage&) {}
-
 void OscRouter::flushMaleSerial() {
-    // SLIP_END byte resets the remote SLIP parser state
+    // Send SLIP_END to reset remote parser state
     static const uint8_t SLIP_END = 0xC0;
     MALE_SERIAL.write(SLIP_END);
     
-    // Process any pending data through MicroSlip to properly reset its internal state
-    // Raw byte drain bypasses MicroSlip's parseIndex, causing message corruption
+    // Process pending data with REAL callbacks (not noOp!)
+    // This handles both garbage AND valid messages correctly
     int iterations = 0;
-    while (MALE_SERIAL.available() && iterations < 16) {
-        _oscMale.onOscMessageReceived(noOpOscCallback);
+    while (MALE_SERIAL.available() && iterations < 8) {
+        _oscMale.onOscMessageReceived(onMaleMessageStatic);
         iterations++;
-    }
-    if (iterations > 0) {
-        Serial.print("[OSC] Flushed MALE: ");
-        Serial.print(iterations);
-        Serial.println(" iterations");
     }
 }
 
 void OscRouter::flushFemaleSerial() {
-    // SLIP_END byte resets the remote SLIP parser state
+    // Send SLIP_END to reset remote parser state
     static const uint8_t SLIP_END = 0xC0;
     FEMALE_SERIAL.write(SLIP_END);
     
-    // Process any pending data through MicroSlip to properly reset its internal state
-    // Raw byte drain bypasses MicroSlip's parseIndex, causing message corruption
+    // Process pending data with REAL callbacks (not noOp!)
+    // This handles both garbage AND valid messages correctly
     int iterations = 0;
-    while (FEMALE_SERIAL.available() && iterations < 16) {
-        _oscFemale.onOscMessageReceived(noOpOscCallback);
+    while (FEMALE_SERIAL.available() && iterations < 8) {
+        _oscFemale.onOscMessageReceived(onFemaleMessageStatic);
         iterations++;
-    }
-    if (iterations > 0) {
-        Serial.print("[OSC] Flushed FEMALE: ");
-        Serial.print(iterations);
-        Serial.println(" iterations");
     }
 }
