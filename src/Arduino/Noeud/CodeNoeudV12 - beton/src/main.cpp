@@ -36,9 +36,9 @@ void setup() {
         9603,
 
         //target_IP
-        //IPAddress(10,0,2,222),
+        IPAddress(10,0,2,222),
         // adresse ordi lah lah 
-        IPAddress(10,0,2,245),
+        //IPAddress(10,0,2,245),
         
         //target_port
         //osc In

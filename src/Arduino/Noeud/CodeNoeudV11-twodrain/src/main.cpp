@@ -14,9 +14,9 @@ void setup() {
 
     initNetworkOSC(
         //local_IP
-        IPAddress(10,0,2,170),
+        //IPAddress(10,0,2,225),
         // ESP 
-        //IPAddress(10,0,2,170),
+        IPAddress(10,0,2,170),
 
         //gateway
         //IPAddress(10,0,1,1),

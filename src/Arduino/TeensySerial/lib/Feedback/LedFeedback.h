@@ -26,7 +26,7 @@
  *----------------------------------------------------------------------------*/
 namespace LedConfig {
     // Strip configuration
-    constexpr int NUM_LEDS = 24;
+    constexpr int NUM_LEDS = 25;
     constexpr int LED_PIN_MALE = 1;
     constexpr int LED_PIN_FEMALE = 0;
     
