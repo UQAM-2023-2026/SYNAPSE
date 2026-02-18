@@ -51,7 +51,7 @@
  *   - Rhizome 2: RHIZOME_ID = 2
  *   - etc.
  *----------------------------------------------------------------------------*/
-constexpr uint8_t RHIZOME_ID = 3;  // TODO: Read from EEPROM or set via jumpers
+constexpr uint8_t RHIZOME_ID = 8;  // TODO: Read from EEPROM or set via jumpers
 
 /*------------------------------------------------------------------------------
  * Global Instances
