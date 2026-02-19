@@ -1,0 +1,691 @@
+{
+  "version": 2,
+  "timestamp": "2026-02-19T00:40:31.429Z",
+  "viewBox": {
+    "x": -98.06659299109845,
+    "y": 82.37547242151874,
+    "w": 1949.0063005789261,
+    "h": 1177.0469423104103
+  },
+  "zoomLevel": 1.046687226918684,
+  "devices": [
+    {
+      "id": "d2_mlsl2e0l",
+      "type": "server",
+      "x": 862.3242492675781,
+      "y": 679.9810791015625,
+      "label": "Tokyo-1",
+      "color": "#b176f9",
+      "notes": "IP : 192.168.8.173\n\nTouchdesigner"
+    },
+    {
+      "id": "d3_mlsl45su",
+      "type": "server",
+      "x": 1024.4436340332031,
+      "y": 675.8313446044922,
+      "label": "Tokyo-2",
+      "color": "#b176f9",
+      "notes": "IP : 192.168.8.93\n\nTouchdesigner"
+    },
+    {
+      "id": "d4_mlsl4632",
+      "type": "server",
+      "x": 1177.0726013183594,
+      "y": 674.3419189453125,
+      "label": "Tokyo-3",
+      "color": "#b176f9",
+      "notes": "IP : 192.168.8.30\n\nUnreal Engine"
+    },
+    {
+      "id": "d5_mlsl7joo",
+      "type": "router",
+      "x": 1026.76708984375,
+      "y": 335.47947692871094,
+      "label": "Emery",
+      "color": "#1e3a5f",
+      "notes": ""
+    },
+    {
+      "id": "d6_mlsl7z1e",
+      "type": "pc",
+      "x": 1027.1984252929688,
+      "y": 207.70803833007812,
+      "label": "Régie",
+      "color": "#1e3a5f",
+      "notes": "IP : 10.0.2.245"
+    },
+    {
+      "id": "d7_mlsl8bzu",
+      "type": "pc",
+      "x": 881.4900512695312,
+      "y": 337.1679229736328,
+      "label": "Audio",
+      "color": "#1e3a5f",
+      "notes": "IP Dante : 10.0.7.140\nIP : 10.0.2.218"
+    },
+    {
+      "id": "d8_mlsl96g8",
+      "type": "pc",
+      "x": 1169.19873046875,
+      "y": 333.72235107421875,
+      "label": "Racines",
+      "color": "#1e3a5f",
+      "notes": "IP : 10.0.2.167"
+    },
+    {
+      "id": "d9_mlsla62t",
+      "type": "pc",
+      "x": 697.6865234375,
+      "y": 947.0487670898438,
+      "label": "Mac Mini",
+      "color": "#3d3a1a",
+      "notes": "IP : 10.0.9.135"
+    },
+    {
+      "id": "d10_mlslcg1o",
+      "type": "pc",
+      "x": 383.7337341308594,
+      "y": 702.0992431640625,
+      "label": "Alienware",
+      "color": "#3d3a1a",
+      "notes": "IP : 10.0.9.27"
+    },
+    {
+      "id": "d13_mlslfm7f",
+      "type": "wifi",
+      "x": 771.6207885742188,
+      "y": 950.7637634277344,
+      "label": "SYN/APSE",
+      "color": "#3d1a1a",
+      "notes": ""
+    },
+    {
+      "id": "d14_mlslfug3",
+      "type": "wifi",
+      "x": 530.2262573242188,
+      "y": 700.7264709472656,
+      "label": "SYN/NDI",
+      "color": "#3d1a1a",
+      "notes": ""
+    },
+    {
+      "id": "d15_mlslgodu",
+      "type": "projector",
+      "x": 700.21240234375,
+      "y": 1041.5879516601562,
+      "label": "Projecteur (Dehors)",
+      "color": "#2e1a3d",
+      "notes": ""
+    },
+    {
+      "id": "d16_mlslh022",
+      "type": "projector",
+      "x": 527.6577453613281,
+      "y": 445.9128112792969,
+      "label": "Projecteur (Comms)",
+      "color": "#2e1a3d",
+      "notes": ""
+    },
+    {
+      "id": "d17_mlslh5vl",
+      "type": "projector",
+      "x": 293.1986999511719,
+      "y": 701.1133422851562,
+      "label": "Projecteur (Corridor)",
+      "color": "#2e1a3d",
+      "notes": ""
+    },
+    {
+      "id": "d18_mlslhj2q",
+      "type": "pc",
+      "x": 528.7325439453125,
+      "y": 544.8265991210938,
+      "label": "4070Ti",
+      "color": "#3d3a1a",
+      "notes": "IP : 10.0.9.122"
+    },
+    {
+      "id": "d19_mlslnj9f",
+      "type": "speaker",
+      "x": 782.7665405273438,
+      "y": 339.6718292236328,
+      "label": "4 Outs",
+      "color": "#fa00cc",
+      "notes": "IP : 10.0.7.201"
+    },
+    {
+      "id": "d20_mlslnju2",
+      "type": "soundcard",
+      "x": 622.9638671875,
+      "y": 947.4567260742188,
+      "label": "4 Outs (dehors)",
+      "color": "#f109a4",
+      "notes": "IP : 10.0.7.216"
+    },
+    {
+      "id": "d21_mlslnk3z",
+      "type": "soundcard",
+      "x": 552.4446868896484,
+      "y": 946.776123046875,
+      "label": "8 Outs",
+      "color": "#ff0597",
+      "notes": "IP : 10.0.7.246"
+    },
+    {
+      "id": "d22_mlslrj3h",
+      "type": "switch",
+      "x": 624.237060546875,
+      "y": 807.1796875,
+      "label": "Régie #1 - Unifi",
+      "color": "#1a3d3d",
+      "notes": "",
+      "portCount": 24,
+      "ports": {
+        "1": {
+          "deviceId": "d24_mlslrkq4",
+          "color": "#fbbf24",
+          "vlan": "Synapse"
+        },
+        "2": {
+          "deviceId": "d32_mlsmh6ds",
+          "color": "#fbbf24",
+          "vlan": "Synapse"
+        },
+        "5": {
+          "deviceId": "d9_mlsla62t",
+          "color": "#34d399",
+          "vlan": "NDI"
+        },
+        "8": {
+          "deviceId": "d30_mlsm0sks",
+          "color": "#fbbf24",
+          "vlan": "Synapse"
+        },
+        "9": {
+          "deviceId": "d14_mlslfug3",
+          "color": "#34d399",
+          "vlan": "NDI"
+        },
+        "19": {
+          "deviceId": "d21_mlslnk3z",
+          "color": "#ff00c8",
+          "vlan": "Dante"
+        },
+        "21": {
+          "deviceId": "d20_mlslnju2",
+          "color": "#ff05de",
+          "vlan": "Dante"
+        },
+        "23": {
+          "deviceId": "d13_mlslfm7f",
+          "color": "#fbbf24",
+          "vlan": "Synapse"
+        },
+        "25": {
+          "deviceId": "d5_mlsl7joo",
+          "color": "#a78bfa",
+          "vlan": "Default"
+        }
+      },
+      "hasSfp": true,
+      "portNumbering": "topdown"
+    },
+    {
+      "id": "d23_mlslrjp7",
+      "type": "switch",
+      "x": 1421.70556640625,
+      "y": 803.7403564453125,
+      "label": "Régie #2 - Cambium",
+      "color": "#1a3d3d",
+      "notes": "",
+      "portCount": 24,
+      "ports": {
+        "7": {
+          "deviceId": "d35_mlsmk5ng",
+          "color": "#fbbf24",
+          "vlan": "Synapse"
+        },
+        "13": {
+          "deviceId": "d34_mlsmj4jt",
+          "color": "#fbbf24",
+          "vlan": "Synapse"
+        },
+        "19": {
+          "deviceId": "d33_mlsmifue",
+          "color": "#fbbf24",
+          "vlan": "Synapse"
+        },
+        "25": {
+          "deviceId": "d5_mlsl7joo",
+          "color": "#a78bfa",
+          "vlan": "Synapse"
+        }
+      },
+      "hasSfp": true,
+      "portNumbering": "topdown"
+    },
+    {
+      "id": "d24_mlslrkq4",
+      "type": "switch",
+      "x": 946.8197021484375,
+      "y": 806.5311279296875,
+      "label": "Régie #1 - Linksys",
+      "color": "#1a3d3d",
+      "notes": "",
+      "portCount": 24,
+      "ports": {
+        "1": "d22_mlslrj3h",
+        "4": {
+          "deviceId": "d36_mlsml3xn",
+          "color": "#fbbf24",
+          "vlan": "Synapse"
+        }
+      },
+      "portNumbering": "ltr",
+      "hasSfp": false
+    },
+    {
+      "id": "d25_mlslyg8e",
+      "type": "esp32",
+      "x": 181.0426788330078,
+      "y": 1148.6985473632812,
+      "label": "Noeud #1",
+      "color": "#2e1a3d",
+      "notes": "IP : 10.0.2.180"
+    },
+    {
+      "id": "d26_mlslz8jv",
+      "type": "esp32",
+      "x": 249.38348388671875,
+      "y": 1147.73876953125,
+      "label": "Noeud #2",
+      "color": "#2e1a3d",
+      "notes": "IP : 10.0.2.175"
+    },
+    {
+      "id": "d27_mlslz8zc",
+      "type": "esp32",
+      "x": 321.00428009033203,
+      "y": 1148.824462890625,
+      "label": "Noeud #3",
+      "color": "#2e1a3d",
+      "notes": "IP : 10.0.2.170"
+    },
+    {
+      "id": "d28_mlslz9ew",
+      "type": "esp32",
+      "x": 390.25586700439453,
+      "y": 1147.387939453125,
+      "label": "Noeud #4",
+      "color": "#2e1a3d",
+      "notes": "IP : 10.0.2.165"
+    },
+    {
+      "id": "d29_mlsm0h6z",
+      "type": "switch",
+      "x": 289.76099395751953,
+      "y": 982.3389892578125,
+      "label": "Switch Noeud Noire",
+      "color": "#1a3d3d",
+      "notes": "",
+      "portCount": 5,
+      "ports": {
+        "1": "d25_mlslyg8e",
+        "2": "d26_mlslz8jv",
+        "3": "d27_mlslz8zc",
+        "4": "d28_mlslz9ew",
+        "5": "d30_mlsm0sks"
+      },
+      "portNumbering": "ltr",
+      "hasSfp": false
+    },
+    {
+      "id": "d30_mlsm0sks",
+      "type": "switch",
+      "x": 211.3548126220703,
+      "y": 812.0059204101562,
+      "label": "Switch Noeud Blanche",
+      "color": "#1a3d3d",
+      "notes": "",
+      "portCount": 5,
+      "ports": {
+        "1": "d22_mlslrj3h",
+        "2": "d31_mlsm25wl",
+        "3": "d29_mlsm0h6z"
+      },
+      "portNumbering": "ltr",
+      "hasSfp": false
+    },
+    {
+      "id": "d31_mlsm25wl",
+      "type": "esp32",
+      "x": 124.16002655029297,
+      "y": 988.552978515625,
+      "label": "Advatek Noeud",
+      "color": "#3d3a1a",
+      "notes": ""
+    },
+    {
+      "id": "d32_mlsmh6ds",
+      "type": "phone",
+      "x": 625.3347778320312,
+      "y": 702.2902221679688,
+      "label": "Enttec - 1",
+      "color": "",
+      "notes": "IP : 10.0.2.15"
+    },
+    {
+      "id": "d33_mlsmifue",
+      "type": "esp32",
+      "x": 1569.978271484375,
+      "y": 951.173095703125,
+      "label": "Enttec - 2",
+      "color": "#3d3a1a",
+      "notes": "IP :"
+    },
+    {
+      "id": "d34_mlsmj4jt",
+      "type": "esp32",
+      "x": 1422.958984375,
+      "y": 953.0780029296875,
+      "label": "Advatek Racine",
+      "color": "#3d3a1a",
+      "notes": ""
+    },
+    {
+      "id": "d35_mlsmk5ng",
+      "type": "esp32",
+      "x": 1269.0321044921875,
+      "y": 953.2875366210938,
+      "label": "Arduino Scéno - 2",
+      "color": "#3d3a1a",
+      "notes": ""
+    },
+    {
+      "id": "d36_mlsml3xn",
+      "type": "esp32",
+      "x": 945.6994934082031,
+      "y": 944.7124633789062,
+      "label": "Arduino Scéno - 1",
+      "color": "#3d3a1a",
+      "notes": ""
+    },
+    {
+      "id": "d37_mlsqedt8",
+      "type": "router",
+      "x": 1025.469970703125,
+      "y": 523.4299926757812,
+      "label": "Tokyo",
+      "color": "#b176f9",
+      "notes": ""
+    }
+  ],
+  "connections": [
+    {
+      "id": "c4_mlsles3d",
+      "from": "d6_mlsl7z1e",
+      "to": "d5_mlsl7joo",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c5_mlslet5m",
+      "from": "d5_mlsl7joo",
+      "to": "d7_mlsl8bzu",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c6_mlsletvk",
+      "from": "d5_mlsl7joo",
+      "to": "d8_mlsl96g8",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c10_mlslib51",
+      "from": "d9_mlsla62t",
+      "to": "d15_mlslgodu",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c11_mlsliic8",
+      "from": "d14_mlslfug3",
+      "to": "d10_mlslcg1o",
+      "name": "WiFi (Data)",
+      "color": "#f87171",
+      "pattern": "dotted"
+    },
+    {
+      "id": "c12_mlslijd9",
+      "from": "d14_mlslfug3",
+      "to": "d18_mlslhj2q",
+      "name": "WiFi (Data)",
+      "color": "#f87171",
+      "pattern": "dotted"
+    },
+    {
+      "id": "c13_mlsliuq4",
+      "from": "d10_mlslcg1o",
+      "to": "d17_mlslh5vl",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c14_mlslivm2",
+      "from": "d18_mlslhj2q",
+      "to": "d16_mlslh022",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c18_mlslq4s6",
+      "from": "d7_mlsl8bzu",
+      "to": "d19_mlslnj9f",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c28_mlsm17gh",
+      "from": "d22_mlslrj3h",
+      "to": "d30_mlsm0sks",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c29_mlsm1i4r",
+      "from": "d30_mlsm0sks",
+      "to": "d29_mlsm0h6z",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c30_mlsm1zt9",
+      "from": "d29_mlsm0h6z",
+      "to": "d25_mlslyg8e",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c31_mlsm20fh",
+      "from": "d29_mlsm0h6z",
+      "to": "d26_mlslz8jv",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c32_mlsm2110",
+      "from": "d29_mlsm0h6z",
+      "to": "d27_mlslz8zc",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c33_mlsm21o2",
+      "from": "d29_mlsm0h6z",
+      "to": "d28_mlslz9ew",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c35_mlsmabx5",
+      "from": "d30_mlsm0sks",
+      "to": "d31_mlsm25wl",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c36_mlsmaqb7",
+      "from": "d22_mlslrj3h",
+      "to": "d13_mlslfm7f",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c37_mlsmb7yt",
+      "from": "d22_mlslrj3h",
+      "to": "d14_mlslfug3",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c38_mlsmbv00",
+      "from": "d22_mlslrj3h",
+      "to": "d21_mlslnk3z",
+      "name": "Dante",
+      "color": "#f472b6",
+      "pattern": "dotted"
+    },
+    {
+      "id": "c39_mlsmbvva",
+      "from": "d22_mlslrj3h",
+      "to": "d20_mlslnju2",
+      "name": "Dante",
+      "color": "#f472b6",
+      "pattern": "dotted"
+    },
+    {
+      "id": "c40_mlsmbxu7",
+      "from": "d22_mlslrj3h",
+      "to": "d9_mlsla62t",
+      "name": "NDI",
+      "color": "#34d399",
+      "pattern": "dashed"
+    },
+    {
+      "id": "c41_mlsmhphr",
+      "from": "d22_mlslrj3h",
+      "to": "d32_mlsmh6ds",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c42_mlsmjjv2",
+      "from": "d23_mlslrjp7",
+      "to": "d33_mlsmifue",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c43_mlsmjkts",
+      "from": "d23_mlslrjp7",
+      "to": "d34_mlsmj4jt",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c44_mlsmkexc",
+      "from": "d23_mlslrjp7",
+      "to": "d35_mlsmk5ng",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c46_mlsozx46",
+      "from": "d22_mlslrj3h",
+      "to": "d24_mlslrkq4",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c47_mlsp6lt9",
+      "from": "d5_mlsl7joo",
+      "to": "d22_mlslrj3h",
+      "name": "Fibre",
+      "color": "#fb923c",
+      "pattern": "dashdot"
+    },
+    {
+      "id": "c48_mlsp7qa3",
+      "from": "d5_mlsl7joo",
+      "to": "d23_mlslrjp7",
+      "name": "Fibre",
+      "color": "#fb923c",
+      "pattern": "dashdot"
+    },
+    {
+      "id": "c49_mlspul4s",
+      "from": "d24_mlslrkq4",
+      "to": "d36_mlsml3xn",
+      "name": "",
+      "color": "#4e8cff",
+      "pattern": "solid"
+    },
+    {
+      "id": "c50_mlsqfemk",
+      "from": "d37_mlsqedt8",
+      "to": "d2_mlsl2e0l",
+      "name": "NDI",
+      "color": "#34d399",
+      "pattern": "dashed"
+    },
+    {
+      "id": "c51_mlsqff64",
+      "from": "d37_mlsqedt8",
+      "to": "d3_mlsl45su",
+      "name": "NDI",
+      "color": "#34d399",
+      "pattern": "dashed"
+    },
+    {
+      "id": "c52_mlsqffn3",
+      "from": "d37_mlsqedt8",
+      "to": "d4_mlsl4632",
+      "name": "NDI",
+      "color": "#34d399",
+      "pattern": "dashed"
+    },
+    {
+      "id": "c53_mlsqfgiq",
+      "from": "d37_mlsqedt8",
+      "to": "d5_mlsl7joo",
+      "name": "NDI",
+      "color": "#34d399",
+      "pattern": "dashed"
+    }
+  ],
+  "nextDeviceId": 38,
+  "nextConnId": 53
+}

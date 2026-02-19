@@ -112,7 +112,16 @@ uint8_t getRhizome2Energy() {
 }
 
 // ===== TOUCHDESIGNER INTEGRATION =====
+static unsigned long lastOSCSendTime = 0;
+static const unsigned long OSC_SEND_INTERVAL = 20; // Send OSC max ~50 times/second
+
 void loopSendToTouch() {
+    unsigned long now = millis();
+    if (now - lastOSCSendTime < OSC_SEND_INTERVAL) {
+        return; // Rate limit: skip if not enough time has passed
+    }
+    lastOSCSendTime = now;
+    
     int energy1 = connection1.isConnected() ? connection1.getEnergy() : 0;
     int energy2 = connection2.isConnected() ? connection2.getEnergy() : 0;
     int rhizId1 = connection1.isConnected() ? connection1.getRhizomeId() : 0;

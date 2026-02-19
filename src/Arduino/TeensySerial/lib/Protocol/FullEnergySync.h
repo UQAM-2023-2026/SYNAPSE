@@ -50,6 +50,7 @@ public:
     
 private:
     static const uint8_t MAX_HELD_TOKENS = 16;  // Max tokens to hold
+    static const uint32_t CONFIRM_DELAY_MS = 75;  // Temporal validation delay
     
     OscRouter* _router;
     RhizomeData* _data;
@@ -60,11 +61,18 @@ private:
     uint8_t _heldCount;         // Number of held tokens
     bool _triggered;            // Has celebration been triggered?
     
+    // Temporal validation for ALL_AT_100
+    bool _pendingConfirmation;  // Waiting for confirmation delay
+    uint32_t _confirmStartTime; // When we started waiting
+    
     // Add token to held list (if not already present)
     void addHeldToken(uint8_t id);
     
     // Forward all held tokens
     void forwardAllHeldTokens();
+    
+    // Check and trigger celebration if confirmed
+    void checkPendingConfirmation();
     
     // Callback
     AllFullCallback _onAllFull;
