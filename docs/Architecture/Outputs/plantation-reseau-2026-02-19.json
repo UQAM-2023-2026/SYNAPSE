@@ -1,39 +1,39 @@
 {
   "version": 2,
-  "timestamp": "2026-02-19T00:32:46.948Z",
+  "timestamp": "2026-02-19T00:40:31.429Z",
   "viewBox": {
-    "x": -146.63654636832598,
-    "y": -49.231754455427506,
-    "w": 2187.597918953091,
-    "h": 1321.1375667402976
+    "x": -98.06659299109845,
+    "y": 82.37547242151874,
+    "w": 1949.0063005789261,
+    "h": 1177.0469423104103
   },
-  "zoomLevel": 0.9325296857917441,
+  "zoomLevel": 1.046687226918684,
   "devices": [
     {
       "id": "d2_mlsl2e0l",
       "type": "server",
-      "x": 1167.9445495605469,
-      "y": 209.218505859375,
+      "x": 862.3242492675781,
+      "y": 679.9810791015625,
       "label": "Tokyo-1",
-      "color": "#1a3d3d",
+      "color": "#b176f9",
       "notes": "IP : 192.168.8.173\n\nTouchdesigner"
     },
     {
       "id": "d3_mlsl45su",
       "type": "server",
-      "x": 883.9655456542969,
-      "y": 211.5029296875,
+      "x": 1024.4436340332031,
+      "y": 675.8313446044922,
       "label": "Tokyo-2",
-      "color": "#1a3d3d",
+      "color": "#b176f9",
       "notes": "IP : 192.168.8.93\n\nTouchdesigner"
     },
     {
       "id": "d4_mlsl4632",
       "type": "server",
-      "x": 1025.8710021972656,
-      "y": 501.6932373046875,
+      "x": 1177.0726013183594,
+      "y": 674.3419189453125,
       "label": "Tokyo-3",
-      "color": "#1a3d3d",
+      "color": "#b176f9",
       "notes": "IP : 192.168.8.30\n\nUnreal Engine"
     },
     {
@@ -233,8 +233,8 @@
     {
       "id": "d23_mlslrjp7",
       "type": "switch",
-      "x": 1398.11376953125,
-      "y": 810.1744384765625,
+      "x": 1421.70556640625,
+      "y": 803.7403564453125,
       "label": "Régie #2 - Cambium",
       "color": "#1a3d3d",
       "notes": "",
@@ -377,8 +377,8 @@
     {
       "id": "d33_mlsmifue",
       "type": "esp32",
-      "x": 1547.458984375,
-      "y": 956.5348510742188,
+      "x": 1569.978271484375,
+      "y": 951.173095703125,
       "label": "Enttec - 2",
       "color": "#3d3a1a",
       "notes": "IP :"
@@ -386,8 +386,8 @@
     {
       "id": "d34_mlsmj4jt",
       "type": "esp32",
-      "x": 1400.439697265625,
-      "y": 958.4397583007812,
+      "x": 1422.958984375,
+      "y": 953.0780029296875,
       "label": "Advatek Racine",
       "color": "#3d3a1a",
       "notes": ""
@@ -395,8 +395,8 @@
     {
       "id": "d35_mlsmk5ng",
       "type": "esp32",
-      "x": 1246.5128173828125,
-      "y": 958.6492919921875,
+      "x": 1269.0321044921875,
+      "y": 953.2875366210938,
       "label": "Arduino Scéno - 2",
       "color": "#3d3a1a",
       "notes": ""
@@ -408,6 +408,15 @@
       "y": 944.7124633789062,
       "label": "Arduino Scéno - 1",
       "color": "#3d3a1a",
+      "notes": ""
+    },
+    {
+      "id": "d37_mlsqedt8",
+      "type": "router",
+      "x": 1025.469970703125,
+      "y": 523.4299926757812,
+      "label": "Tokyo",
+      "color": "#b176f9",
       "notes": ""
     }
   ],
@@ -448,7 +457,7 @@
       "id": "c11_mlsliic8",
       "from": "d14_mlslfug3",
       "to": "d10_mlslcg1o",
-      "name": "WiFi",
+      "name": "WiFi (Data)",
       "color": "#f87171",
       "pattern": "dotted"
     },
@@ -456,7 +465,7 @@
       "id": "c12_mlslijd9",
       "from": "d14_mlslfug3",
       "to": "d18_mlslhj2q",
-      "name": "WiFi",
+      "name": "WiFi (Data)",
       "color": "#f87171",
       "pattern": "dotted"
     },
@@ -475,30 +484,6 @@
       "name": "",
       "color": "#4e8cff",
       "pattern": "solid"
-    },
-    {
-      "id": "c15_mlsljr7n",
-      "from": "d3_mlsl45su",
-      "to": "d5_mlsl7joo",
-      "name": "Site2Site",
-      "color": "#34d399",
-      "pattern": "dashed"
-    },
-    {
-      "id": "c16_mlsljrxt",
-      "from": "d2_mlsl2e0l",
-      "to": "d5_mlsl7joo",
-      "name": "Site2Site",
-      "color": "#34d399",
-      "pattern": "dashed"
-    },
-    {
-      "id": "c17_mlsljsrw",
-      "from": "d4_mlsl4632",
-      "to": "d5_mlsl7joo",
-      "name": "Site2Site",
-      "color": "#34d399",
-      "pattern": "dashed"
     },
     {
       "id": "c18_mlslq4s6",
@@ -667,8 +652,40 @@
       "name": "",
       "color": "#4e8cff",
       "pattern": "solid"
+    },
+    {
+      "id": "c50_mlsqfemk",
+      "from": "d37_mlsqedt8",
+      "to": "d2_mlsl2e0l",
+      "name": "NDI",
+      "color": "#34d399",
+      "pattern": "dashed"
+    },
+    {
+      "id": "c51_mlsqff64",
+      "from": "d37_mlsqedt8",
+      "to": "d3_mlsl45su",
+      "name": "NDI",
+      "color": "#34d399",
+      "pattern": "dashed"
+    },
+    {
+      "id": "c52_mlsqffn3",
+      "from": "d37_mlsqedt8",
+      "to": "d4_mlsl4632",
+      "name": "NDI",
+      "color": "#34d399",
+      "pattern": "dashed"
+    },
+    {
+      "id": "c53_mlsqfgiq",
+      "from": "d37_mlsqedt8",
+      "to": "d5_mlsl7joo",
+      "name": "NDI",
+      "color": "#34d399",
+      "pattern": "dashed"
     }
   ],
-  "nextDeviceId": 36,
-  "nextConnId": 49
+  "nextDeviceId": 38,
+  "nextConnId": 53
 }
