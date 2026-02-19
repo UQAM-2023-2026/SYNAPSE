@@ -162,8 +162,8 @@ void HapticFeedback::onAllRhizomesFull() {
     
     // Stop generation buzz
     _generationActive = false;
-    if (_maleReady) stopBuzz(_drvMale);
-    if (_femaleReady) stopBuzz(_drvFemale);
+    if (_maleReady) stopContinuousBuzz(_drvMale);
+    if (_femaleReady) stopContinuousBuzz(_drvFemale);
     
     // Single click on male motor only (avoid power spike)
     if (_maleReady) playClick(_drvMale);
