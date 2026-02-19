@@ -5,14 +5,12 @@
  * Synchronized with HeartbeatSystem for pulse timing.
  * 
  * Behaviors per state:
- * - IDLE: No vibration
- * - DISCOVERING: No vibration
- * - GENERATING: Continuous buzz until 100%, refreshed periodically
- * - GIVING (to node): Progressive "glou glou" effect based on energy
+ * - IDLE: Heartbeat on unconnected port(s)
+ * - DISCOVERING: Heartbeat on unconnected port
+ * - GENERATING: Double-click start, continuous buzz until 100%
+ * - GIVING: Heartbeat (energy draining)
  * - MIDDLEMAN: No vibration
  * - DEAD: No vibration
- * 
- * Connection events: Effect 47 on the motor of the connected port
  *============================================================================*/
 
 #ifndef HAPTIC_FEEDBACK_H
@@ -26,7 +24,8 @@
 // DRV2605 Waveform IDs
 namespace HapticEffects {
     constexpr uint8_t CLICK = 1;          // Strong click 100% - clean, short
-    constexpr uint8_t CONNECTION = 47;    // Soft buzz 60% - connection feedback
+    constexpr uint8_t SHARP_CLICK = 4;    // Sharp click 100%
+    constexpr uint8_t LONG_BUZZ = 118;    // Long buzz for generation
     constexpr uint8_t END = 0;            // Waveform terminator
 }
 
@@ -44,8 +43,6 @@ public:
     void onStateChange(RhizomeState oldState, RhizomeState newState);
     void onAllRhizomesFull();  // Triggered by FullEnergySync
     void onHeartbeat();         // Triggered by HeartbeatSystem
-    void onMaleConnect();       // Connection event - male port
-    void onFemaleConnect();     // Connection event - female port
     
     bool isReady() const { return _initialized; }
     
@@ -66,32 +63,18 @@ private:
     // Generation buzz state
     bool _generationActive;
     
-    // GIVING state: glou glou effect tracking
-    uint32_t _lastGlouGlouPulse;  // When we last played a pulse
-    
     // Alternation for power safety (never both motors at once)
     bool _useFirstMotor;
     
     // Startup protection
     static constexpr uint32_t STARTUP_DELAY_MS = 2000;
     
-    // RTP mode amplitude for continuous buzz (0-127)
-    static constexpr uint8_t RTP_BUZZ_AMPLITUDE = 80;
-    
-    // GIVING pulse timing (energy-based interpolation)
-    static constexpr uint32_t GLOU_MIN_INTERVAL_MS = 150;   // At 0% energy
-    static constexpr uint32_t GLOU_MAX_INTERVAL_MS = 1500;  // At 100% energy
-    
     // Helpers
     void initDriver(Adafruit_DRV2605& drv, TwoWire* wire, bool& ready, const char* name);
     void playClick(Adafruit_DRV2605& drv);
-    void playConnectionEffect(Adafruit_DRV2605& drv);
-    void playGlouGlouPulse(Adafruit_DRV2605& drv);
-    void startContinuousBuzz(Adafruit_DRV2605& drv);  // RTP mode continuous vibration
-    void stopContinuousBuzz(Adafruit_DRV2605& drv);   // Stop and restore mode
-    void updateGiving();  // GIVING state glou glou logic
-    
-    uint32_t calculateGlouGlouInterval() const;  // Energy-based interval
+    void playDoubleClick(Adafruit_DRV2605& drv);
+    void startBuzz(Adafruit_DRV2605& drv);
+    void stopBuzz(Adafruit_DRV2605& drv);
     
     bool shouldPlayHeartbeat() const;
 };

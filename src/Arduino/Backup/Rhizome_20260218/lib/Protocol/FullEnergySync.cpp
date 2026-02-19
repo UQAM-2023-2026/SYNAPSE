@@ -15,8 +15,6 @@ FullEnergySync::FullEnergySync()
     , _sentOwnToken(false)
     , _heldCount(0)
     , _triggered(false)
-    , _pendingConfirmation(false)
-    , _confirmStartTime(0)
     , _onAllFull(nullptr)
 {
     memset(_heldTokenIds, 0, sizeof(_heldTokenIds));
@@ -35,8 +33,6 @@ void FullEnergySync::reset() {
     _heldCount = 0;
     memset(_heldTokenIds, 0, sizeof(_heldTokenIds));
     _triggered = false;
-    _pendingConfirmation = false;
-    _confirmStartTime = 0;
 }
 
 void FullEnergySync::update(bool inGeneratingState, bool maleConnected) {
@@ -56,9 +52,6 @@ void FullEnergySync::update(bool inGeneratingState, bool maleConnected) {
     if (_heldCount > 0 && isFull && maleConnected) {
         forwardAllHeldTokens();
     }
-    
-    // Check pending confirmation with temporal validation
-    checkPendingConfirmation();
 }
 
 void FullEnergySync::handleFullMessage(MicroOscMessage& msg, bool fromMale) {
@@ -73,11 +66,12 @@ void FullEnergySync::handleFullMessage(MicroOscMessage& msg, bool fromMale) {
     
     // Check if this is our own token coming back
     if ((uint8_t)tokenId == _data->getId()) {
-        // Start temporal validation - don't trigger immediately
-        if (!_pendingConfirmation && !_triggered) {
-            _pendingConfirmation = true;
-            _confirmStartTime = millis();
-            Serial.println("[FULL] Own token received - starting confirmation delay");
+        // Loop complete! All rhizomes are at 100%
+        _triggered = true;
+        Serial.println("[FULL] Own token received back - ALL RHIZOMES FULL!");
+        
+        if (_onAllFull) {
+            _onAllFull();
         }
         
         // Forward one more time so others also trigger
@@ -138,31 +132,4 @@ void FullEnergySync::forwardAllHeldTokens() {
         sendFullToken(_heldTokenIds[i]);
     }
     _heldCount = 0;
-}
-
-void FullEnergySync::checkPendingConfirmation() {
-    if (!_pendingConfirmation || _triggered) return;
-    if (!_data) return;
-    
-    float energy = _data->getEnergy();
-    
-    // Cancel if energy dropped below 100%
-    if (energy < 100.0f) {
-        _pendingConfirmation = false;
-        Serial.println("[FULL] Confirmation cancelled - energy dropped below 100%");
-        return;
-    }
-    
-    // Check if confirmation delay has passed
-    uint32_t elapsed = millis() - _confirmStartTime;
-    if (elapsed >= CONFIRM_DELAY_MS) {
-        // Confirmed! All rhizomes at 100% for the required duration
-        _triggered = true;
-        _pendingConfirmation = false;
-        Serial.println("[FULL] Confirmed - ALL RHIZOMES FULL!");
-        
-        if (_onAllFull) {
-            _onAllFull();
-        }
-    }
 }
