@@ -5,10 +5,10 @@ const int RPWM = 5; // Marche Avant
 const int LPWM = 6; // Marche Arrière
 const int R_EN = 7; // Enable Droite
 const int L_EN = 8; // Enable Gauche
-const int RPWMA2 = 9; // Marche Avant
-const int LPWMA2 = 10; // Marche Arrière
-const int R_ENA2 = 11; // Enable Droite
-const int L_ENA2 = 12; // Enable Gauche
+const int RPWMA2 = A1; // Marche Avant
+const int LPWMA2 = A2; // Marche Arrière
+const int R_ENA2 = A3; // Enable Droite
+const int L_ENA2 = A4; // Enable Gauche
  
 void setup() {
   Serial.begin(9600); // Pour le débogage sur l'écran PC
