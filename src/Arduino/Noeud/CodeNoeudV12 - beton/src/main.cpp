@@ -16,14 +16,14 @@ void setup() {
         //local_IP
         //IPAddress(10,0,2,225),
         // ESP 
-        IPAddress(10,0,2,175),
+        IPAddress(10,0,2,165),
 
         //gateway
         //IPAddress(10,0,1,1),
         IPAddress(10,0,2,1),
 
         //subnet
-        IPAddress(255,255,0,0),
+        IPAddress(255,255,255,0),
 
         //dns1
         IPAddress(1,1,1,1),
@@ -33,7 +33,7 @@ void setup() {
 
         //osc_listen_port
         //osc Out
-        9601,
+        9603,
 
         //target_IP
         //IPAddress(10,0,2,222),
@@ -42,7 +42,7 @@ void setup() {
         
         //target_port
         //osc In
-        8001
+        8003
     );
 }
 
