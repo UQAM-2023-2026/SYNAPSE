@@ -26,8 +26,8 @@ namespace HapticEffects {
     constexpr uint8_t CLICK = 1;              // Strong click 100% - for heartbeat
     constexpr uint8_t SOFT_CLICK = 3;         // Strong click 30% - for glou-glou (less power)
     constexpr uint8_t SHARP_CLICK = 4;        // Sharp click 100%
-    constexpr uint8_t TICK = 17;              // Tick 1 - 100% - for connection feedback
-    constexpr uint8_t SOFT_BUZZ = 13;         // Soft Fuzz 60% - lighter buzz for generation
+    constexpr uint8_t TICK = 47;              // Tick 1 - 100% - for connection feedback
+    constexpr uint8_t SOFT_BUZZ = 14;         // Soft Fuzz 60% - lighter buzz for generation
     constexpr uint8_t END = 0;                // Waveform terminator
 }
 
@@ -67,7 +67,7 @@ private:
     // Generation buzz state
     bool _generationActive;
     unsigned long _lastBuzzRefresh;  // For periodic buzz refresh
-    static constexpr unsigned long BUZZ_REFRESH_MS = 250;  // Refresh before effect ends (~300ms)
+    static constexpr unsigned long BUZZ_REFRESH_MS = 800;  // Refresh buzz interval
     
     // Alternation for power safety (never both motors at once)
     bool _useFirstMotor;

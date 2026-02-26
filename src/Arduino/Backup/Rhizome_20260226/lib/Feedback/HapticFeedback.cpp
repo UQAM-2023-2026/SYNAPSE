@@ -99,13 +99,11 @@ void HapticFeedback::update(RhizomeState state, float energy, bool maleConnected
     if (_generationActive && energy >= 100.0f) {
         _generationActive = false;
         if (_maleReady) stopBuzz(_drvMale);
-        if (_femaleReady) stopBuzz(_drvFemale);
     }
     
-    // Periodic buzz refresh during GENERATING (waveform-based, safe)
-    if (_generationActive && (now - _lastBuzzRefresh >= BUZZ_REFRESH_MS)) {
-        if (_maleReady) startBuzz(_drvMale);
-        if (_femaleReady) startBuzz(_drvFemale);
+    // Periodic buzz refresh during GENERATING (soft buzz effect is short)
+    if (_generationActive && _maleReady && (now - _lastBuzzRefresh >= BUZZ_REFRESH_MS)) {
+        startBuzz(_drvMale);
         _lastBuzzRefresh = now;
     }
     
@@ -126,19 +124,17 @@ void HapticFeedback::update(RhizomeState state, float energy, bool maleConnected
 void HapticFeedback::onStateChange(RhizomeState oldState, RhizomeState newState) {
     if (!_initialized) return;
     
-    // Entering GENERATING - start buzz on both motors
+    // Entering GENERATING - start soft periodic buzz
     if (newState == RhizomeState::GENERATING && oldState != RhizomeState::GENERATING) {
         _generationActive = true;
         _lastBuzzRefresh = millis();
         if (_maleReady) startBuzz(_drvMale);
-        if (_femaleReady) startBuzz(_drvFemale);
     }
     
-    // Leaving GENERATING - stop buzz on both motors
+    // Leaving GENERATING - stop buzz
     if (oldState == RhizomeState::GENERATING && newState != RhizomeState::GENERATING) {
         _generationActive = false;
         if (_maleReady) stopBuzz(_drvMale);
-        if (_femaleReady) stopBuzz(_drvFemale);
     }
     
     // Entering GIVING - start glou-glou pulsing (with initial delay to avoid power spike)
@@ -238,7 +234,6 @@ void HapticFeedback::playDoubleClick(Adafruit_DRV2605& drv) {
 }
 
 void HapticFeedback::startBuzz(Adafruit_DRV2605& drv) {
-    // Use waveform mode with soft fuzz - safe and non-blocking
     drv.setWaveform(0, HapticEffects::SOFT_BUZZ);
     drv.setWaveform(1, HapticEffects::END);
     drv.go();
