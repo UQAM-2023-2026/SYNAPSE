@@ -51,8 +51,7 @@
  *   - Rhizome 2: RHIZOME_ID = 2
  *   - etc.
  *----------------------------------------------------------------------------*/
-constexpr uint8_t RHIZOME_ID = 70;  // TODO: Read from EEPROM or set via jumpers
-
+constexpr uint8_t RHIZOME_ID = 12;  // TODO: Read from EEPROM or set via jumpers
 /*------------------------------------------------------------------------------
  * Global Instances
  *----------------------------------------------------------------------------*/
@@ -215,6 +214,7 @@ void onMaleConnectCallback() {
     // No flush needed - SLIP protocol is self-synchronizing
     // Each message starts with SLIP_END which resets the parser
     stateMachine.onMaleConnected();
+    hapticFeedback.onMaleConnected();  // Tick feedback on connection
 }
 
 void onMaleDisconnectCallback() {
@@ -224,6 +224,7 @@ void onMaleDisconnectCallback() {
 void onFemaleConnectCallback() {
     // No flush needed - SLIP protocol is self-synchronizing
     stateMachine.onFemaleConnected();
+    hapticFeedback.onFemaleConnected();  // Tick feedback on connection
 }
 
 void onFemaleDisconnectCallback() {

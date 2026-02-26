@@ -25,7 +25,10 @@ HapticFeedback::HapticFeedback()
     , _maleConnected(false)
     , _femaleConnected(false)
     , _generationActive(false)
+    , _lastBuzzRefresh(0)
     , _useFirstMotor(true)
+    , _glouGlouActive(false)
+    , _lastGlouGlouPulse(0)
 {}
 
 /*------------------------------------------------------------------------------
@@ -90,11 +93,30 @@ void HapticFeedback::update(RhizomeState state, float energy, bool maleConnected
     _maleConnected = maleConnected;
     _femaleConnected = femaleConnected;
     
+    unsigned long now = millis();
+    
     // Auto-stop generation buzz when fully charged
     if (_generationActive && energy >= 100.0f) {
         _generationActive = false;
         if (_maleReady) stopBuzz(_drvMale);
-        Serial.println("[HapticFeedback] Generation buzz stopped (100%)");
+        if (_femaleReady) stopBuzz(_drvFemale);
+    }
+    
+    // Periodic buzz refresh during GENERATING (waveform-based, safe)
+    if (_generationActive && (now - _lastBuzzRefresh >= BUZZ_REFRESH_MS)) {
+        if (_maleReady) startBuzz(_drvMale);
+        if (_femaleReady) startBuzz(_drvFemale);
+        _lastBuzzRefresh = now;
+    }
+    
+    // Update glou-glou pulsing during GIVING state
+    // Interval based on energy: high energy = slow, low energy = fast
+    if (GLOU_ENABLED && _glouGlouActive && _maleReady) {
+        unsigned long interval = getGlouGlouInterval(energy);
+        if (now - _lastGlouGlouPulse >= interval) {
+            playSoftClick(_drvMale);  // Use soft click to reduce power draw
+            _lastGlouGlouPulse = now;
+        }
     }
 }
 
@@ -104,19 +126,30 @@ void HapticFeedback::update(RhizomeState state, float energy, bool maleConnected
 void HapticFeedback::onStateChange(RhizomeState oldState, RhizomeState newState) {
     if (!_initialized) return;
     
-    // Entering GENERATING - start continuous buzz on ONE motor only (power safety)
+    // Entering GENERATING - start buzz on both motors
     if (newState == RhizomeState::GENERATING && oldState != RhizomeState::GENERATING) {
-        Serial.println("[HapticFeedback] GENERATING start - buzz on");
         _generationActive = true;
-        // Only male motor buzzes to avoid power spike from both motors
+        _lastBuzzRefresh = millis();
         if (_maleReady) startBuzz(_drvMale);
+        if (_femaleReady) startBuzz(_drvFemale);
     }
     
-    // Leaving GENERATING - stop buzz
+    // Leaving GENERATING - stop buzz on both motors
     if (oldState == RhizomeState::GENERATING && newState != RhizomeState::GENERATING) {
         _generationActive = false;
         if (_maleReady) stopBuzz(_drvMale);
-        Serial.println("[HapticFeedback] GENERATING ended - buzz stopped");
+        if (_femaleReady) stopBuzz(_drvFemale);
+    }
+    
+    // Entering GIVING - start glou-glou pulsing (with initial delay to avoid power spike)
+    if (newState == RhizomeState::GIVING && oldState != RhizomeState::GIVING) {
+        _glouGlouActive = true;
+        _lastGlouGlouPulse = millis();  // Initial delay handled by interval calculation
+    }
+    
+    // Leaving GIVING - stop glou-glou immediately
+    if (oldState == RhizomeState::GIVING && newState != RhizomeState::GIVING) {
+        _glouGlouActive = false;
     }
 }
 
@@ -132,6 +165,16 @@ void HapticFeedback::onAllRhizomesFull() {
     
     // Single click on male motor only (avoid power spike)
     if (_maleReady) playClick(_drvMale);
+}
+
+void HapticFeedback::onMaleConnected() {
+    if (!_initialized || !_maleReady) return;
+    playTick(_drvMale);
+}
+
+void HapticFeedback::onFemaleConnected() {
+    if (!_initialized || !_femaleReady) return;
+    playTick(_drvFemale);
 }
 
 void HapticFeedback::onHeartbeat() {
@@ -162,19 +205,8 @@ void HapticFeedback::onHeartbeat() {
 }
 
 bool HapticFeedback::shouldPlayHeartbeat() const {
-    // No heartbeat when dead
-    if (_currentState == RhizomeState::DEAD) return false;
-    
-    // No heartbeat when middleman
-    if (_currentState == RhizomeState::MIDDLEMAN) return false;
-    
-    // No heartbeat when generating (continuous buzz instead)
-    if (_generationActive) return false;
-    
-    // No heartbeat at 0% energy
-    if (_currentEnergy <= 0) return false;
-    
-    return true;
+    // Heartbeat disabled to save battery
+    return false;
 }
 
 /*------------------------------------------------------------------------------
@@ -182,6 +214,18 @@ bool HapticFeedback::shouldPlayHeartbeat() const {
  *----------------------------------------------------------------------------*/
 void HapticFeedback::playClick(Adafruit_DRV2605& drv) {
     drv.setWaveform(0, HapticEffects::CLICK);
+    drv.setWaveform(1, HapticEffects::END);
+    drv.go();
+}
+
+void HapticFeedback::playSoftClick(Adafruit_DRV2605& drv) {
+    drv.setWaveform(0, HapticEffects::SOFT_CLICK);
+    drv.setWaveform(1, HapticEffects::END);
+    drv.go();
+}
+
+void HapticFeedback::playTick(Adafruit_DRV2605& drv) {
+    drv.setWaveform(0, HapticEffects::TICK);
     drv.setWaveform(1, HapticEffects::END);
     drv.go();
 }
@@ -194,11 +238,27 @@ void HapticFeedback::playDoubleClick(Adafruit_DRV2605& drv) {
 }
 
 void HapticFeedback::startBuzz(Adafruit_DRV2605& drv) {
-    drv.setWaveform(0, HapticEffects::LONG_BUZZ);
+    // Use waveform mode with soft fuzz - safe and non-blocking
+    drv.setWaveform(0, HapticEffects::SOFT_BUZZ);
     drv.setWaveform(1, HapticEffects::END);
     drv.go();
 }
 
 void HapticFeedback::stopBuzz(Adafruit_DRV2605& drv) {
     drv.stop();
+}
+
+unsigned long HapticFeedback::getGlouGlouInterval(float energy) const {
+    // Clamp energy to 0-100
+    float e = constrain(energy, 0.0f, 100.0f);
+    
+    // Normalize to 0-1
+    float t = e / 100.0f;
+    
+    // Ease-in (quadratic): slow acceleration at low energy, fast at high
+    // t^2 gives us: 0% -> 0, 50% -> 0.25, 100% -> 1
+    float eased = t * t;
+    
+    // Map: 0 (low energy) -> MIN interval (fast), 1 (high energy) -> MAX interval (slow)
+    return GLOU_MIN_INTERVAL_MS + (unsigned long)(eased * (GLOU_MAX_INTERVAL_MS - GLOU_MIN_INTERVAL_MS));
 }
