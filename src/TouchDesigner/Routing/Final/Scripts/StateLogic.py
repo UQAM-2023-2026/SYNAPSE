@@ -1,9 +1,9 @@
 Thresholds = op('Thresholds')
 
-absorption_threshold = Thresholds['Absorption'].eval()
-equilibre_threshold = Thresholds['Equilibre'].eval()
-appel_threshold = Thresholds['Appel'].eval()
-extreme_threshold = Thresholds['Extreme'].eval()
+absorption_threshold = Thresholds[0].eval()
+equilibre_threshold = Thresholds[1].eval()
+appel_threshold = Thresholds[2].eval()
+extreme_threshold = Thresholds[3].eval()
 
 def get_state_index(ratio):
 	if ratio == 0:
