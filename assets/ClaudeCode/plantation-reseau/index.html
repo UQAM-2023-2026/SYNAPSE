@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Outil de planification visuelle d'infrastructure réseau - Plan de Plantation Informatique">
+  <title>Plan de Plantation Réseau</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="app">
+    <!-- LEFT SIDEBAR — Equipment Palette -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>🖧 Plan de Plantation</h1>
+        <p>Glissez, connectez, exportez.</p>
+      </div>
+
+      <div class="palette-section">
+        <h2>Équipements</h2>
+        <div class="palette-grid" id="palette">
+          <div class="palette-item" data-type="pc">
+            <span class="icon">🖥️</span>
+            <span class="label">Ordinateur</span>
+          </div>
+          <div class="palette-item" data-type="laptop">
+            <span class="icon">💻</span>
+            <span class="label">Laptop</span>
+          </div>
+          <div class="palette-item" data-type="regie">
+            <span class="icon">🎛️</span>
+            <span class="label">Régie</span>
+          </div>
+          <div class="palette-item" data-type="server">
+            <span class="icon">🖴</span>
+            <span class="label">Serveur</span>
+          </div>
+          <div class="palette-item" data-type="wifi">
+            <span class="icon">📡</span>
+            <span class="label">Antenne WiFi</span>
+          </div>
+          <div class="palette-item" data-type="switch">
+            <span class="icon">🔀</span>
+            <span class="label">Switch</span>
+          </div>
+          <div class="palette-item" data-type="router">
+            <span class="icon">🌐</span>
+            <span class="label">Routeur</span>
+          </div>
+          <div class="palette-item" data-type="esp32">
+            <span class="icon">🔌</span>
+            <span class="label">ESP32</span>
+          </div>
+          <div class="palette-item" data-type="projector">
+            <span class="icon">📽️</span>
+            <span class="label">Projecteur</span>
+          </div>
+          <div class="palette-item" data-type="phone">
+            <span class="icon">📱</span>
+            <span class="label">Téléphone</span>
+          </div>
+          <div class="palette-item" data-type="camera">
+            <span class="icon">📷</span>
+            <span class="label">Caméra</span>
+          </div>
+          <div class="palette-item" data-type="soundcard">
+            <span class="icon">🎵</span>
+            <span class="label">Carte de Son</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-actions">
+        <button class="btn btn-connect" id="btn-connect">
+          <span class="btn-icon">🔗</span> Mode Connexion
+        </button>
+        <button class="btn btn-danger" id="btn-delete">
+          <span class="btn-icon">🗑️</span> Supprimer sélection
+        </button>
+        <button class="btn btn-danger" id="btn-clear">
+          <span class="btn-icon">💣</span> Tout effacer
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CANVAS -->
+    <main class="canvas-area">
+      <!-- Floating Toolbar -->
+      <div class="toolbar">
+        <button class="btn" id="btn-save">
+          <span class="btn-icon">💾</span> Sauvegarder
+        </button>
+        <button class="btn" id="btn-load">
+          <span class="btn-icon">📂</span> Charger
+        </button>
+        <button class="btn btn-primary" id="btn-export">
+          <span class="btn-icon">📄</span> Exporter PDF
+        </button>
+      </div>
+
+      <!-- Mode indicator -->
+      <div class="mode-indicator" id="mode-indicator">
+        <span class="dot"></span>
+        <span id="mode-text">Sélectionner un équipement</span>
+      </div>
+
+      <!-- SVG Canvas -->
+      <svg id="canvas-svg" class="mode-select">
+        <defs>
+          <pattern id="grid-small" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="0.5" />
+          </pattern>
+          <pattern id="grid-large" width="100" height="100" patternUnits="userSpaceOnUse">
+            <rect width="100" height="100" fill="url(#grid-small)" />
+            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="0.8" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid-large)" id="canvas-bg" />
+        <g id="connections-layer"></g>
+        <g id="temp-connection-layer"></g>
+        <g id="devices-layer"></g>
+      </svg>
+
+      <!-- Status bar -->
+      <div class="status-bar" id="status-bar"></div>
+
+      <!-- Zoom controls -->
+      <div class="zoom-controls">
+        <button class="btn" id="btn-zoom-in" title="Zoom +">＋</button>
+        <button class="btn" id="btn-zoom-reset" title="Reset zoom">⟲</button>
+        <button class="btn" id="btn-zoom-out" title="Zoom −">−</button>
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL — Properties Inspector -->
+    <aside class="inspector" id="inspector">
+      <!-- Empty state -->
+      <div class="inspector-empty" id="inspector-empty">
+        <div class="inspector-empty-icon">👆</div>
+        <p>Cliquez sur un appareil pour voir ses propriétés</p>
+      </div>
+
+      <!-- Device properties (shown when a device is selected) -->
+      <div class="inspector-content" id="inspector-content" style="display:none;">
+        <!-- Header -->
+        <div class="inspector-header" id="inspector-header">
+          <span class="inspector-device-icon" id="insp-icon"></span>
+          <div>
+            <div class="inspector-device-type" id="insp-type"></div>
+            <div class="inspector-device-id" id="insp-id"></div>
+          </div>
+        </div>
+
+        <!-- Editable fields -->
+        <div class="inspector-section">
+          <h3>Identité</h3>
+          <div class="inspector-field">
+            <label for="insp-type-select">Type</label>
+            <select id="insp-type-select">
+              <option value="pc">🖥️ Ordinateur</option>
+              <option value="laptop">💻 Laptop</option>
+              <option value="regie">🎛️ Régie</option>
+              <option value="server">🖴 Serveur</option>
+              <option value="wifi">📡 Antenne WiFi</option>
+              <option value="switch">🔀 Switch</option>
+              <option value="router">🌐 Routeur</option>
+              <option value="esp32">🔌 ESP32</option>
+              <option value="projector">📽️ Projecteur</option>
+              <option value="phone">📱 Téléphone</option>
+              <option value="camera">📷 Caméra</option>
+              <option value="soundcard">🎵 Carte de Son</option>
+            </select>
+          </div>
+          <div class="inspector-field">
+            <label for="insp-name">Nom</label>
+            <input type="text" id="insp-name" placeholder="ex: PC Régie 01">
+          </div>
+          <div class="inspector-field">
+            <label for="insp-color">Couleur de fond</label>
+            <div class="color-row">
+              <input type="color" id="insp-color" value="#242836">
+              <div class="color-presets" id="insp-color-presets">
+                <div class="color-preset" style="background:#242836" data-color="#242836" title="Défaut"></div>
+                <div class="color-preset" style="background:#1e3a5f" data-color="#1e3a5f" title="Bleu"></div>
+                <div class="color-preset" style="background:#1a3d2e" data-color="#1a3d2e" title="Vert"></div>
+                <div class="color-preset" style="background:#3d1a1a" data-color="#3d1a1a" title="Rouge"></div>
+                <div class="color-preset" style="background:#3d2e1a" data-color="#3d2e1a" title="Orange"></div>
+                <div class="color-preset" style="background:#2e1a3d" data-color="#2e1a3d" title="Violet"></div>
+                <div class="color-preset" style="background:#3d3a1a" data-color="#3d3a1a" title="Jaune"></div>
+                <div class="color-preset" style="background:#1a3d3d" data-color="#1a3d3d" title="Cyan"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="inspector-section">
+          <h3>Notes / Description</h3>
+          <div class="inspector-field">
+            <textarea id="insp-notes" placeholder="ex: IP 192.168.1.10, SN: ABC123..." rows="4"></textarea>
+          </div>
+        </div>
+
+        <!-- Switch port grid (only visible for switch devices) -->
+        <div class="inspector-section" id="insp-ports-section" style="display:none;">
+          <h3>Ports du Switch</h3>
+          <div class="inspector-field">
+            <label for="insp-port-count">Configuration</label>
+            <select id="insp-port-count">
+              <option value="24">24 ports (2 × 12)</option>
+              <option value="5">5 ports (1 × 5)</option>
+            </select>
+          </div>
+          <div class="inspector-field" id="insp-numbering-field">
+            <label for="insp-port-numbering">Numérotation</label>
+            <select id="insp-port-numbering">
+              <option value="ltr">← → Gauche à droite (1-12 / 13-24)</option>
+              <option value="topdown">↕ Haut-bas (1,3,5… / 2,4,6…)</option>
+            </select>
+            <div class="inspector-field" id="insp-sfp-field" style="display:none;">
+              <label class="checkbox-label">
+                <input type="checkbox" id="insp-sfp-toggle">
+                <span>Port SFP (fibre optique)</span>
+              </label>
+            </div>
+            <div class="port-grid-container" id="insp-port-grid"></div>
+            <div class="port-assign-panel" id="port-assign-panel" style="display:none;">
+              <label>Port <span id="port-assign-number"></span></label>
+              <div class="inspector-field">
+                <label>Appareil</label>
+                <select id="port-assign-select">
+                  <option value="">— Vide —</option>
+                </select>
+              </div>
+              <div class="inspector-field">
+                <label>VLAN</label>
+                <input type="text" id="port-assign-vlan" placeholder="ex: 10, 20, trunk">
+              </div>
+              <div class="inspector-field">
+                <label>Couleur du port</label>
+                <div class="color-row">
+                  <input type="color" id="port-assign-color" value="#4e8cff">
+                  <div class="color-presets" id="port-color-presets">
+                    <div class="color-preset" style="background:#4e8cff" data-color="#4e8cff" title="Bleu"></div>
+                    <div class="color-preset" style="background:#34d399" data-color="#34d399" title="Vert"></div>
+                    <div class="color-preset" style="background:#fb923c" data-color="#fb923c" title="Orange"></div>
+                    <div class="color-preset" style="background:#f87171" data-color="#f87171" title="Rouge"></div>
+                    <div class="color-preset" style="background:#a78bfa" data-color="#a78bfa" title="Violet"></div>
+                    <div class="color-preset" style="background:#fbbf24" data-color="#fbbf24" title="Jaune"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="port-assign-actions">
+                <button class="btn btn-sm" id="port-assign-cancel">Annuler</button>
+                <button class="btn btn-primary btn-sm" id="port-assign-ok">Appliquer</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connections list -->
+          <div class="inspector-section">
+            <h3>Connexions <span class="conn-count" id="insp-conn-count">0</span></h3>
+            <div class="inspector-connections" id="insp-connections">
+              <p class="no-connections">Aucune connexion</p>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="inspector-actions">
+            <button class="btn btn-primary" id="insp-apply">
+              ✓ Appliquer les modifications
+            </button>
+            <button class="btn btn-danger" id="insp-delete-device">
+              <span class="btn-icon">🗑️</span> Supprimer l'appareil
+            </button>
+          </div>
+        </div>
+    </aside>
+  </div>
+
+  <!-- Connection popover (still used for inline connection editing on click) -->
+  <div class="popover-overlay" id="popover-overlay"></div>
+  <div class="connection-popover" id="connection-popover">
+    <div class="popover-title">
+      Propriétés du lien
+      <button class="popover-close" id="popover-close">✕</button>
+    </div>
+    <div class="popover-field">
+      <label>Nom du lien</label>
+      <input type="text" id="conn-name" placeholder="ex: Ethernet Cat6">
+    </div>
+    <div class="popover-field">
+      <label>Couleur</label>
+      <div class="color-row">
+        <input type="color" id="conn-color" value="#4e8cff">
+        <div class="color-presets" id="color-presets">
+          <div class="color-preset" style="background:#4e8cff" data-color="#4e8cff"></div>
+          <div class="color-preset" style="background:#34d399" data-color="#34d399"></div>
+          <div class="color-preset" style="background:#f87171" data-color="#f87171"></div>
+          <div class="color-preset" style="background:#fb923c" data-color="#fb923c"></div>
+          <div class="color-preset" style="background:#a78bfa" data-color="#a78bfa"></div>
+          <div class="color-preset" style="background:#fbbf24" data-color="#fbbf24"></div>
+          <div class="color-preset" style="background:#f472b6" data-color="#f472b6"></div>
+          <div class="color-preset" style="background:#e8eaed" data-color="#e8eaed"></div>
+        </div>
+      </div>
+    </div>
+    <div class="popover-field">
+      <label>Style de ligne</label>
+      <select id="conn-pattern">
+        <option value="solid">━━━ Plein</option>
+        <option value="dashed">╌╌╌ Tirets</option>
+        <option value="dotted">┄┄┄ Pointillé</option>
+        <option value="dashdot">╌┄╌ Tiret-Point</option>
+      </select>
+    </div>
+    <div class="popover-actions">
+      <button class="btn btn-danger" id="conn-delete">
+        <span class="btn-icon">🗑️</span> Supprimer
+      </button>
+      <button class="btn btn-primary" id="conn-save">
+        ✓ Appliquer
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="file-input" accept=".json" style="display:none;">
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- External libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>

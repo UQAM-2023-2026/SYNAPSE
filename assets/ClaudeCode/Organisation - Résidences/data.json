@@ -1,0 +1,1092 @@
+{
+  "availabilities": {
+    "Aldric": [],
+    "Alexandre": [
+      {
+        "date": "2026-01-14",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 17
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 20
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 21
+      },
+      {
+        "date": "2026-01-15",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-15",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-15",
+        "hour": 20
+      },
+      {
+        "date": "2026-01-15",
+        "hour": 21
+      },
+      {
+        "date": "2026-01-16",
+        "hour": 12
+      },
+      {
+        "date": "2026-01-16",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 12
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 17
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 20
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 21
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 17
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 20
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 21
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 9
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 10
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 11
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 12
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 17
+      },
+      {
+        "date": "2026-01-22",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-22",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-22",
+        "hour": 20
+      },
+      {
+        "date": "2026-01-22",
+        "hour": 21
+      }
+    ],
+    "Anthonny": [],
+    "Clément": [],
+    "Dom": [],
+    "Emmanuel": [],
+    "Florence": [],
+    "JC": [],
+    "Justin": [],
+    "Katianna": [],
+    "Laura": [],
+    "Louis-David": [],
+    "Loïc": [],
+    "Léa": [],
+    "Maria": [],
+    "Maude": [],
+    "Max": [],
+    "Med": [],
+    "Mery": [],
+    "No": [],
+    "Noum": [],
+    "Rachel": [],
+    "Raton": [],
+    "Sarah": [],
+    "Sasha": [
+      {
+        "date": "2026-01-14",
+        "hour": 12
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 17
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 20
+      },
+      {
+        "date": "2026-01-14",
+        "hour": 21
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 10
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 11
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 12
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 17
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 20
+      },
+      {
+        "date": "2026-01-12",
+        "hour": 21
+      },
+      {
+        "date": "2026-01-16",
+        "hour": 12
+      },
+      {
+        "date": "2026-01-16",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-16",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-16",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-16",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 10
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 11
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 12
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 17
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 20
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 21
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 9
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 12
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 17
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 20
+      },
+      {
+        "date": "2026-01-21",
+        "hour": 21
+      },
+      {
+        "date": "2026-01-23",
+        "hour": 12
+      },
+      {
+        "date": "2026-01-23",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-23",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-23",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-23",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 2
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 1
+      },
+      {
+        "date": "2026-01-19",
+        "hour": 0
+      },
+      {
+        "date": "2026-01-17",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-17",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-17",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-17",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-17",
+        "hour": 17
+      },
+      {
+        "date": "2026-01-17",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-17",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-18",
+        "hour": 15
+      },
+      {
+        "date": "2026-01-18",
+        "hour": 16
+      },
+      {
+        "date": "2026-01-18",
+        "hour": 17
+      },
+      {
+        "date": "2026-01-18",
+        "hour": 18
+      },
+      {
+        "date": "2026-01-18",
+        "hour": 19
+      },
+      {
+        "date": "2026-01-18",
+        "hour": 20
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 12
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 13
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 14
+      },
+      {
+        "date": "2026-01-20",
+        "hour": 17
+      }
+    ],
+    "Thierry": [],
+    "Tom": [],
+    "Ugo": [],
+    "Émilie": []
+  },
+  "people": [
+    "Sasha",
+    "Dom",
+    "Rachel",
+    "Florence",
+    "Tom",
+    "Aldric",
+    "Émilie",
+    "Maria",
+    "Maude",
+    "Noum",
+    "Med",
+    "Thierry",
+    "No",
+    "JC",
+    "Justin",
+    "Raton",
+    "Anthonny",
+    "Sarah",
+    "Ugo",
+    "Clément",
+    "Max",
+    "Mery",
+    "Laura",
+    "Emmanuel",
+    "Alexandre",
+    "Katianna",
+    "Louis-David",
+    "Léa",
+    "Loïc"
+  ],
+  "projects": {
+    "Aldric": "",
+    "Alexandre": "",
+    "Anthonny": "",
+    "Clément": "",
+    "Dom": "",
+    "Emmanuel": "",
+    "Florence": "",
+    "JC": "",
+    "Justin": "",
+    "Katianna": "",
+    "Laura": "",
+    "Louis-David": "",
+    "Loïc": "",
+    "Léa": "",
+    "Maria": "",
+    "Maude": "",
+    "Max": "",
+    "Med": "",
+    "Mery": "",
+    "No": "",
+    "Noum": "",
+    "Rachel": "",
+    "Raton": "",
+    "Sarah": "",
+    "Sasha": "",
+    "Thierry": "",
+    "Tom": "",
+    "Ugo": "",
+    "Émilie": ""
+  },
+  "residencies": [
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-12",
+      "description": "Remise en ordre des espaces",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "setup"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-12",
+      "description": "Rétrospective S4",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "presentation"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-14",
+      "description": "PLANIFICATION S5",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "planification"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-14",
+      "description": "Résidence Emery",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-19",
+      "description": "Résidence Emery",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-21",
+      "description": "Résidence - Test lumière",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-21",
+      "description": "Résidence - Test lumière",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-26",
+      "description": "Résidence Emery",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-26",
+      "description": "TEST INTÉRIEUR 1",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "test"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-28",
+      "description": "Résidence Emery",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-01-28",
+      "description": "REVUE S5",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "revue"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-02",
+      "description": "PLANIFICATION S6",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "planification"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-02",
+      "description": "Résidence Emery",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-04",
+      "description": "Résidence - Test lumière",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-04",
+      "description": "Résidence - Test lumière",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-09",
+      "description": "Résidence Emery",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-09",
+      "description": "Résidence Emery",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-11",
+      "description": "Résidence Emery",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-11",
+      "description": "TEST INTÉRIEUR 2",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "test"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-16",
+      "description": "Résidence Emery",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-16",
+      "description": "REVUE S6",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "revue"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-18",
+      "description": "RÉTRO S6 - PLANIFICATION S7",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "planification"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-18",
+      "description": "Résidence Emery",
+      "endTime": "22:00",
+      "imported": true,
+      "people": [],
+      "session": "SOIR",
+      "startTime": "18:00",
+      "type": "residence"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-23",
+      "description": "Montage Synapse",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "montage"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-25",
+      "description": "Générale Synapse",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "generale"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-02-26",
+      "description": "Lancement Synapse",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "lancement"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-03-02",
+      "description": "Démontage",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "demontage"
+    },
+    {
+      "createdAt": "2026-01-14T21:13:59.859Z",
+      "date": "2026-03-16",
+      "description": "Post-mortem",
+      "endTime": "17:00",
+      "imported": true,
+      "people": [],
+      "session": "PM",
+      "startTime": "13:00",
+      "type": "postmortem"
+    },
+    {
+      "createdAt": "2026-01-15T01:16:48.430Z",
+      "date": "2026-01-16",
+      "description": "Présentation des moodboard + choix",
+      "endTime": "15:00",
+      "people": [
+        "Sasha",
+        "Noum",
+        "JC",
+        "Clément",
+        "Laura",
+        "Alexandre"
+      ],
+      "startTime": "13:00",
+      "teams": [],
+      "titre": "Meeting - Photos",
+      "type": "planification"
+    },
+    {
+      "createdAt": "2026-01-15T01:17:26.200Z",
+      "date": "2026-01-19",
+      "description": "",
+      "endTime": "18:00",
+      "people": [
+        "Sasha",
+        "Noum",
+        "JC",
+        "Clément",
+        "Laura",
+        "Alexandre"
+      ],
+      "startTime": "16:00",
+      "teams": [],
+      "titre": "Setup Photos - TESTS",
+      "type": "test"
+    },
+    {
+      "createdAt": "2026-01-15T01:18:09.319Z",
+      "date": "2026-01-21",
+      "description": "",
+      "endTime": "21:00",
+      "people": [
+        "Sasha",
+        "Dom",
+        "Rachel",
+        "Florence",
+        "Tom",
+        "Aldric",
+        "Émilie",
+        "Maria",
+        "Maude",
+        "Noum",
+        "Med",
+        "Thierry",
+        "No",
+        "JC",
+        "Justin",
+        "Raton",
+        "Anthonny",
+        "Sarah",
+        "Ugo",
+        "Clément",
+        "Max",
+        "Mery",
+        "Laura",
+        "Emmanuel",
+        "Alexandre",
+        "Katianna",
+        "Louis-David",
+        "Léa",
+        "Loïc"
+      ],
+      "startTime": "12:00",
+      "teams": [
+        "racines",
+        "noeud",
+        "rhizome",
+        "sceno",
+        "visuels",
+        "son",
+        "dt",
+        "prod"
+      ],
+      "titre": "PHOTOS DE PROJET",
+      "type": "lancement"
+    },
+    {
+      "createdAt": "2026-01-15T01:54:43.959Z",
+      "date": "2026-01-24",
+      "description": "",
+      "endTime": "23:59",
+      "people": [
+        "Sasha",
+        "Dom",
+        "Rachel",
+        "Florence",
+        "Tom",
+        "Aldric",
+        "Émilie",
+        "Maria",
+        "Maude",
+        "Noum",
+        "Med",
+        "Thierry",
+        "No",
+        "JC",
+        "Justin",
+        "Raton",
+        "Anthonny",
+        "Sarah",
+        "Ugo",
+        "Clément",
+        "Max",
+        "Mery",
+        "Laura",
+        "Emmanuel",
+        "Alexandre",
+        "Katianna",
+        "Louis-David",
+        "Léa",
+        "Loïc"
+      ],
+      "startTime": "19:00",
+      "teams": [
+        "racines",
+        "noeud",
+        "rhizome",
+        "sceno",
+        "visuels",
+        "son",
+        "dt",
+        "prod"
+      ],
+      "titre": "Soirée de financement",
+      "type": "residence"
+    }
+  ],
+  "teamMembers": {
+    "dt": [
+      "Sasha",
+      "Dom",
+      "Justin"
+    ],
+    "noeud": [
+      "Dom",
+      "Aldric",
+      "JC",
+      "Anthonny",
+      "Katianna",
+      "Raton",
+      "Emmanuel"
+    ],
+    "prod": [
+      "Sasha",
+      "Léa",
+      "Louis-David",
+      "Katianna",
+      "Alexandre"
+    ],
+    "racines": [
+      "Noum",
+      "No",
+      "Ugo",
+      "Mery",
+      "Alexandre"
+    ],
+    "rhizome": [
+      "Loïc",
+      "Justin",
+      "Clément",
+      "Louis-David"
+    ],
+    "sceno": [
+      "Rachel",
+      "Émilie",
+      "Maude",
+      "Léa",
+      "Laura",
+      "Max",
+      "Sarah"
+    ],
+    "son": [
+      "JC",
+      "Med",
+      "Thierry"
+    ],
+    "visuels": [
+      "Florence",
+      "Tom",
+      "Maria",
+      "Laura",
+      "Léa"
+    ]
+  }
+}

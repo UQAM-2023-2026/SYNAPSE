@@ -1,0 +1,271 @@
+{
+  "cours": "EDM3003",
+  "session": "Hiver 2026",
+  "residences": [
+    {
+      "cours": 1,
+      "jour": "LUN",
+      "date": "2026-01-12",
+      "pm": {
+        "type": "setup",
+        "titre": "Remise en ordre des espaces de travail",
+        "description": "Présentation du plan de cours"
+      },
+      "soir": {
+        "type": "presentation",
+        "titre": "Rétrospective de groupe sur la présentation du S4"
+      }
+    },
+    {
+      "cours": 2,
+      "jour": "MER",
+      "date": "2026-01-14",
+      "pm": {
+        "type": "planification",
+        "titre": "PLANIFICATION S5"
+      },
+      "soir": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      }
+    },
+    {
+      "cours": 3,
+      "jour": "LUN",
+      "date": "2026-01-19",
+      "pm": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      },
+      "soir": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      }
+    },
+    {
+      "cours": 4,
+      "jour": "MER",
+      "date": "2026-01-21",
+      "pm": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery",
+        "note": "Test lumière/déploiement studio NB"
+      },
+      "soir": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery",
+        "note": "Test lumière/déploiement studio NB"
+      }
+    },
+    {
+      "cours": 5,
+      "jour": "LUN",
+      "date": "2026-01-26",
+      "pm": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      },
+      "soir": {
+        "type": "test",
+        "titre": "TEST INTÉRIEUR 1"
+      }
+    },
+    {
+      "cours": 6,
+      "jour": "MER",
+      "date": "2026-01-28",
+      "pm": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      },
+      "soir": {
+        "type": "revue",
+        "titre": "REVUE S5 - RÉTRO S5 - INTÉRIEUR"
+      }
+    },
+    {
+      "cours": 7,
+      "jour": "LUN",
+      "date": "2026-02-02",
+      "pm": {
+        "type": "planification",
+        "titre": "PLANIFICATION S6"
+      },
+      "soir": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      }
+    },
+    {
+      "cours": 8,
+      "jour": "MER",
+      "date": "2026-02-04",
+      "pm": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery",
+        "note": "Test lumière/déploiement studio NB"
+      },
+      "soir": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery",
+        "note": "Test lumière/déploiement studio NB"
+      }
+    },
+    {
+      "cours": 9,
+      "jour": "LUN",
+      "date": "2026-02-09",
+      "pm": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      },
+      "soir": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      }
+    },
+    {
+      "cours": 10,
+      "jour": "MER",
+      "date": "2026-02-11",
+      "pm": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      },
+      "soir": {
+        "type": "test",
+        "titre": "TEST INTÉRIEUR 2"
+      }
+    },
+    {
+      "cours": 11,
+      "jour": "LUN",
+      "date": "2026-02-16",
+      "pm": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      },
+      "soir": {
+        "type": "revue",
+        "titre": "REVUE S6 : EXTÉRIEUR",
+        "note": "TEST UTILISATEUR / PUBLIC INVITÉ"
+      }
+    },
+    {
+      "cours": 12,
+      "jour": "MER",
+      "date": "2026-02-18",
+      "pm": {
+        "type": "planification",
+        "titre": "RÉTRO S6 PLANIFICATION S7"
+      },
+      "soir": {
+        "type": "residence",
+        "titre": "Résidence de création-production au Emery"
+      }
+    },
+    {
+      "cours": 13,
+      "jour": "LUN",
+      "date": "2026-02-23",
+      "pm": {
+        "type": "montage",
+        "titre": "Montage synapse (lundi-mardi-mercredi)"
+      },
+      "soir": null
+    },
+    {
+      "cours": 14,
+      "jour": "MER",
+      "date": "2026-02-25",
+      "pm": {
+        "type": "generale",
+        "titre": "Générale Synapse"
+      },
+      "soir": null
+    },
+    {
+      "cours": null,
+      "jour": "JEU",
+      "date": "2026-02-26",
+      "pm": {
+        "type": "lancement",
+        "titre": "Lancement Synapse (Opération de jeudi à dimanche)"
+      },
+      "soir": null
+    },
+    {
+      "cours": 15,
+      "jour": "LUN",
+      "date": "2026-03-02",
+      "pm": {
+        "type": "demontage",
+        "titre": "Démontage 2 mars",
+        "description": "Rangement - Remise en ordre du Emery (2 au 5 mars)"
+      },
+      "soir": null
+    },
+    {
+      "cours": null,
+      "jour": "LUN",
+      "date": "2026-03-16",
+      "pm": {
+        "type": "postmortem",
+        "titre": "Rencontre post-mortem"
+      },
+      "soir": null
+    }
+  ],
+  "notes": [
+    {
+      "date": "2026-03-02",
+      "note": "INSTALLATION DU PROJET - PRÉSENTATION DU S4 - MONTAGE : un horaire spécifique sera produit"
+    }
+  ],
+  "types_activites": {
+    "setup": {
+      "nom": "Mise en place",
+      "couleur": "#6c757d"
+    },
+    "presentation": {
+      "nom": "Présentation",
+      "couleur": "#17a2b8"
+    },
+    "planification": {
+      "nom": "Planification",
+      "couleur": "#007bff"
+    },
+    "residence": {
+      "nom": "Résidence de création",
+      "couleur": "#28a745"
+    },
+    "test": {
+      "nom": "Test technique",
+      "couleur": "#ffc107"
+    },
+    "revue": {
+      "nom": "Revue / Rétro",
+      "couleur": "#dc3545"
+    },
+    "montage": {
+      "nom": "Montage",
+      "couleur": "#6f42c1"
+    },
+    "generale": {
+      "nom": "Générale",
+      "couleur": "#fd7e14"
+    },
+    "lancement": {
+      "nom": "Lancement",
+      "couleur": "#e83e8c"
+    },
+    "demontage": {
+      "nom": "Démontage",
+      "couleur": "#6c757d"
+    },
+    "postmortem": {
+      "nom": "Post-mortem",
+      "couleur": "#20c997"
+    }
+  }
+}
