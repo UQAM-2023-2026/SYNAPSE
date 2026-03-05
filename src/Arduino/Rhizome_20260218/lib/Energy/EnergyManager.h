@@ -56,7 +56,7 @@ private:
     // Energy rates
     float _drainRate;                     // Set by node
     static constexpr float BASE_REGEN_RATE = 0.5f;    // Slow regen
-    static constexpr float ENERGY_THRESHOLD = 60.0f;   // IDLE/DEAD regen cap
+    static constexpr float ENERGY_THRESHOLD = 65.0f;   // IDLE/DEAD regen cap
     static constexpr float MAX_ENERGY = 100.0f;
     static constexpr float MIN_ENERGY = 0.0f;
     
